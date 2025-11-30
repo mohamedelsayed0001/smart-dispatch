@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutDashboard, Users, FileText, BarChart3 } from 'lucide-react';
+import { LayoutDashboard, Users, FileText, BarChart3, Truck } from 'lucide-react';
 import './styles/AdminSidebar.css';
 
 const AdminSidebar = ({ activeMenu, setActiveMenu }) => {
@@ -26,6 +26,7 @@ const AdminSidebar = ({ activeMenu, setActiveMenu }) => {
       <div className="sidebar-menu">
         <MenuItem icon={LayoutDashboard} label="Dashboard" id="dashboard" />
         <MenuItem icon={Users} label="System Users" id="users" />
+        <MenuItem icon={Truck} label="Vehicles" id="vehicles" />
         <MenuItem icon={FileText} label="Reports" id="reports" />
         <MenuItem icon={BarChart3} label="Analysis" id="analysis" />
       </div>

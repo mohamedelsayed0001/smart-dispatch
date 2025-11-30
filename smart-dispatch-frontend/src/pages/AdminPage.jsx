@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import AdminSidebar from '../components/admin/AdminSidebar';
 import Dashboard from '../components/admin/Dashboard';
 import SystemUsers from '../components/admin/SystemUsers';
+import Vehicles from '../components/admin/Vehicles';
 import Reports from '../components/admin/Reports';
 import Analysis from '../components/admin/Analysis';
 import { fetchDashboardData, fetchUsers, fetchReports } from '../utils/api';
@@ -60,6 +61,7 @@ const AdminPage = () => {
               onRefresh={handleRefreshUsers}
             />
           )}
+          {activeMenu === 'vehicles' && <Vehicles />}
           {activeMenu === 'reports' && (
             <Reports
               reports={reports}

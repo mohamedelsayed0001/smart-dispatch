@@ -87,36 +87,30 @@ INSERT INTO Incident (type, level, description, latitude, longitude, status, tim
 -- ==================== VEHICLE DATA ====================
 -- Edge cases: Various types, all statuses, NULL operator_id,
 -- different capacities, vehicles without operators
-
 INSERT INTO Vehicle (type, status, capacity, operator_id) VALUES
--- Active vehicles with operators
-('Ambulance', 'available', 2, 1),
-('Fire Truck', 'on_duty', 6, 2),
-('Police Car', 'available', 4, 3),
-('Ambulance', 'on_duty', 2, 4),
-('Fire Truck', 'available', 8, 1),
+-- Vehicles ready for assignment
+('Ambulance', 'Available', 2, 1),
+('Fire Truck', 'Available', 8, 1),
+('Police Car', 'Available', 4, 3),
+('Ambulance', 'Available', 2, 4),
+('Rescue Boat', 'Available', 12, 2),
+('Motorcycle', 'Available', 1, 4),  -- Minimum capacity edge case
+('Ambulance', 'Available', 2, NULL),
+('Police Car', 'Available', 4, NULL),
+('Fire Truck', 'Available', 6, NULL),
+('K9 Unit', 'Available', 2, 2),
+('SWAT Van', 'Available', 10, NULL),
 
--- Vehicles in maintenance
-('Ambulance', 'maintenance', 2, NULL),
-('Police Car', 'maintenance', 4, NULL),
+-- Vehicles currently responding
+('Fire Truck', 'OnRoute', 6, 2),
+('Ambulance', 'OnRoute', 2, 4),
+('Helicopter', 'OnRoute', 4, 3),
+('Hazmat Unit', 'OnRoute', 4, 1),
 
--- Out of service vehicles
-('Fire Truck', 'out_of_service', 6, NULL),
-
--- Vehicles with various capacities
-('Rescue Boat', 'available', 12, 2),
-('Helicopter', 'available', 4, 3),
-('Motorcycle', 'available', 1, 4), -- Minimum capacity edge case
-
--- Vehicles without assigned operators (available pool)
-('Ambulance', 'available', 2, NULL),
-('Police Car', 'available', 4, NULL),
-('Fire Truck', 'available', 6, NULL),
-
--- Special vehicle types
-('Hazmat Unit', 'on_duty', 4, 1),
-('K9 Unit', 'available', 2, 2),
-('SWAT Van', 'available', 10, NULL);
+-- Vehicles actively resolving incidents
+('Ambulance', 'Resolving', 2, 1),
+('Police Car', 'Resolving', 4, 3),
+('Fire Truck', 'Resolving', 6, 1);
 
 -- ==================== VEHICLE LOCATION DATA ====================
 -- Edge cases: Multiple locations per vehicle (tracking over time),
