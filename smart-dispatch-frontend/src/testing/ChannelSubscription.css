@@ -1,0 +1,414 @@
+.channel-subscription {
+  width: 60%;
+  padding: 20px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+}
+
+.channel-subscription h2 {
+  color: #333;
+  border-bottom: 3px solid #17a2b8;
+  padding-bottom: 10px;
+}
+
+.channel-subscription h3 {
+  color: #555;
+  margin-top: 25px;
+}
+
+.channel-subscription h4 {
+  color: #666;
+  margin: 0;
+}
+
+/* Alerts */
+.alert {
+  padding: 12px 16px;
+  margin-bottom: 20px;
+  border-radius: 4px;
+  animation: slideIn 0.3s ease-out;
+}
+
+.alert-error {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+.alert-success {
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Buttons */
+.btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background-color: #007bff;
+  color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: #0056b3;
+}
+
+.btn-success {
+  background-color: #28a745;
+  color: white;
+}
+
+.btn-success:hover:not(:disabled) {
+  background-color: #218838;
+}
+
+.btn-danger {
+  background-color: #dc3545;
+  color: white;
+}
+
+.btn-danger:hover:not(:disabled) {
+  background-color: #c82333;
+}
+
+.btn-info {
+  background-color: #17a2b8;
+  color: white;
+}
+
+.btn-info:hover:not(:disabled) {
+  background-color: #138496;
+}
+
+.btn-small {
+  padding: 6px 12px;
+  font-size: 12px;
+  margin-left: 5px;
+}
+
+.btn-channel {
+  background-color: #e9ecef;
+  color: #333;
+  margin: 5px;
+  padding: 8px 16px;
+  border: 2px solid #dee2e6;
+}
+
+.btn-channel:hover:not(:disabled) {
+  background-color: #dee2e6;
+  border-color: #adb5bd;
+}
+
+.btn-channel.subscribed {
+  background-color: #28a745;
+  color: white;
+  border-color: #1e7e34;
+}
+
+/* Connection Section */
+.connection-section {
+  background-color: #f8f9fa;
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid #dee2e6;
+  margin-bottom: 30px;
+}
+
+.connection-status {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.status-dot {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  margin-right: 10px;
+  animation: pulse 2s infinite;
+}
+
+.connected .status-dot {
+  background-color: #28a745;
+}
+
+.disconnected .status-dot {
+  background-color: #dc3545;
+  animation: none;
+}
+
+.connected .status-text {
+  color: #155724;
+}
+
+.disconnected .status-text {
+  color: #721c24;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.jwt-input-section {
+  display: flex;
+  gap: 10px;
+}
+
+.jwt-input {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  font-family: 'Courier New', Courier, monospace;
+}
+
+.jwt-input:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+}
+
+/* Subscribe Section */
+.subscribe-section {
+  background-color: #f9f9f9;
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  margin-bottom: 30px;
+}
+
+.section-label {
+  margin: 0 0 15px 0;
+  font-weight: 600;
+  color: #333;
+}
+
+.preset-channels {
+  margin-bottom: 25px;
+}
+
+.channel-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.custom-channel {
+  padding-top: 15px;
+  border-top: 1px solid #ddd;
+}
+
+.custom-form {
+  display: flex;
+  gap: 10px;
+}
+
+.channel-input {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.channel-input:focus {
+  outline: none;
+  border-color: #17a2b8;
+  box-shadow: 0 0 0 3px rgba(23, 162, 184, 0.25);
+}
+
+/* Messages Section */
+.messages-section {
+  margin-top: 30px;
+}
+
+.no-channels {
+  text-align: center;
+  color: #999;
+  padding: 30px;
+  font-style: italic;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+}
+
+.channels-messages {
+  display: grid;
+  gap: 20px;
+}
+
+.channel-messages-box {
+  border: 2px solid #dee2e6;
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.channel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #f8f9fa;
+  padding: 15px;
+  border-bottom: 2px solid #dee2e6;
+}
+
+.channel-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.message-count {
+  background-color: #e9ecef;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #333;
+}
+
+.messages-container {
+  height: 400px;
+  overflow-y: auto;
+  padding: 15px;
+  background-color: #fafbfc;
+}
+
+.no-messages {
+  text-align: center;
+  color: #999;
+  padding: 50px 20px;
+  font-style: italic;
+}
+
+.messages-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.message-item {
+  background-color: white;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  padding: 12px;
+  margin-bottom: 8px;
+  animation: messageSlideIn 0.3s ease-out;
+}
+
+@keyframes messageSlideIn {
+  from {
+    transform: translateX(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.message-meta {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.message-time {
+  font-size: 12px;
+  color: #999;
+  font-weight: 600;
+}
+
+.message-content {
+  background-color: #f8f9fa;
+  padding: 10px;
+  border-radius: 4px;
+  border-left: 3px solid #17a2b8;
+  overflow-x: auto;
+}
+
+.message-content pre {
+  margin: 0;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 12px;
+  color: #333;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .connection-section {
+    flex-direction: column;
+  }
+
+  .jwt-input-section {
+    flex-direction: column;
+  }
+
+  .custom-form {
+    flex-direction: column;
+  }
+
+  .channel-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .channel-actions {
+    margin-top: 10px;
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .btn-small {
+    margin-left: 0;
+    margin-right: 5px;
+    margin-bottom: 5px;
+  }
+
+  .messages-container {
+    height: 300px;
+  }
+}

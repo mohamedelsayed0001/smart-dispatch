@@ -1,0 +1,27 @@
+/* Analysis Component Styles */
+
+.coming-soon {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  padding: 48px 24px;
+  text-align: center;
+}
+
+.coming-soon-icon {
+  color: #d1d5db;
+  margin-bottom: 16px;
+}
+
+.coming-soon-text {
+  font-size: 16px;
+  color: #6b7280;
+  font-weight: 500;
+  margin: 0;
+}
+
+.coming-soon-subtext {
+  font-size: 14px;
+  color: #9ca3af;
+  margin: 8px 0 0 0;
+}
