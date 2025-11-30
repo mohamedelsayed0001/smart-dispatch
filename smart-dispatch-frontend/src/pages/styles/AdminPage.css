@@ -1,0 +1,47 @@
+/* Admin Page Styles - Pure CSS */
+/* Main Container and Layout */
+
+.admin-container {
+  display: flex;
+  height: 100vh;
+  background-color: #f9fafb;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+}
+
+/* Main Content Area */
+.admin-main {
+  flex: 1;
+  overflow: auto;
+  background-color: #f9fafb;
+}
+
+.admin-content {
+  padding: 32px;
+}
+
+/* View Container */
+.view-container {
+  width: 100%;
+}
+
+.page-title {
+  font-size: 30px;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0 0 24px 0;
+}
+
+@media (max-width: 768px) {
+  .admin-container {
+    flex-direction: column;
+  }
+  
+  .admin-content {
+    padding: 16px;
+  }
+  
+  .page-title {
+    font-size: 24px;
+  }
+}
+

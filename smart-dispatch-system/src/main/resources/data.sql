@@ -19,26 +19,28 @@ SET FOREIGN_KEY_CHECKS = 1;
 
 INSERT INTO User (name, email, password, role) VALUES
 -- Operators
-('John Smith', 'john.smith@emergency.gov', 'hashed_pass_1', 'operator'),
-('María García', 'maria.garcia@emergency.gov', 'hashed_pass_2', 'operator'),
-('李明 (Li Ming)', 'li.ming@emergency.gov', 'hashed_pass_3', 'operator'),
-('Sarah O''Connor', 'sarah.oconnor@emergency.gov', 'hashed_pass_4', 'operator'),
-('Inactive Operator', 'inactive.operator@emergency.gov', 'hashed_pass_5', 'operator'),
+('John Smith', 'john.smith@emergency.gov', 'hashed_pass_1', 'OPERATOR'),
+('María García', 'maria.garcia@emergency.gov', 'hashed_pass_2', 'OPERATOR'),
+('李明 (Li Ming)', 'li.ming@emergency.gov', 'hashed_pass_3', 'OPERATOR'),
+('Sarah O''Connor', 'sarah.oconnor@emergency.gov', 'hashed_pass_4', 'OPERATOR'),
+('Inactive Operator', 'inactive.operator@emergency.gov', 'hashed_pass_5', 'OPERATOR'),
 
 -- Citizens
-('Alice Johnson', 'alice.j@gmail.com', 'hashed_pass_6', 'citizen'),
-('Bob Brown', 'bob.brown@yahoo.com', 'hashed_pass_7', 'citizen'),
-('Charlie Davis-Wilson', 'charlie+test@email.com', 'hashed_pass_8', 'citizen'),
-('Deleted User Name', 'deleted@email.com', 'hashed_pass_9', 'citizen'),
-('Anonymous Reporter', 'anon123@protonmail.com', 'hashed_pass_10', 'citizen'),
-('Test Citizen', 'test.citizen@test.com', 'hashed_pass_11', 'citizen'),
-('José Hernández', 'jose.hernandez@mail.com', 'hashed_pass_12', 'citizen'),
+('Alice Johnson', 'alice.j@gmail.com', 'hashed_pass_6', 'CITIZEN'),
+('Bob Brown', 'bob.brown@yahoo.com', 'hashed_pass_7', 'CITIZEN'),
+('Charlie Davis-Wilson', 'charlie+test@email.com', 'hashed_pass_8', 'CITIZEN'),
+('Deleted User Name', 'deleted@email.com', 'hashed_pass_9', 'CITIZEN'),
+('Anonymous Reporter', 'anon123@protonmail.com', 'hashed_pass_10', 'CITIZEN'),
+('Test Citizen', 'test.citizen@test.com', 'hashed_pass_11', 'CITIZEN'),
+('José Hernández', 'jose.hernandez@mail.com', 'hashed_pass_12', 'CITIZEN'),
 
 -- Dispatchers
-('Emma Wilson', 'emma.wilson@dispatch.gov', 'hashed_pass_13', 'dispatcher'),
-('Michael Chen', 'michael.chen@dispatch.gov', 'hashed_pass_14', 'dispatcher'),
-('Rebecca Taylor', 'rebecca.taylor@dispatch.gov', 'hashed_pass_15', 'dispatcher'),
-('David Kim', 'david.kim@dispatch.gov', 'hashed_pass_16', 'dispatcher');
+('Emma Wilson', 'emma.wilson@dispatch.gov', 'hashed_pass_13', 'DISPATCHER'),
+('Michael Chen', 'michael.chen@dispatch.gov', 'hashed_pass_14', 'DISPATCHER'),
+('Rebecca Taylor', 'rebecca.taylor@dispatch.gov', 'hashed_pass_15', 'DISPATCHER'),
+('David Kim', 'david.kim@dispatch.gov', 'hashed_pass_16', 'DISPATCHER'),
+
+('fff', 'bomb@gmail.com', '123', 'ADMIN');
 
 -- ==================== INCIDENT DATA ====================
 -- Edge cases: All statuses, NULL citizen_id, same location incidents,

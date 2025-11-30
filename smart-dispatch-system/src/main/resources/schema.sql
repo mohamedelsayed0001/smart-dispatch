@@ -17,7 +17,7 @@ CREATE TABLE User (
     name VARCHAR(255) NOT NULL,
     password VARCHAR(255) NOT NULL,
     email VARCHAR(255) UNIQUE NOT NULL,
-    role ENUM('operator', 'citizen', 'dispatcher') NOT NULL,
+    role ENUM('OPERATOR', 'CITIZEN', 'DISPATCHER', 'ADMIN') NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_user_role (role),
     INDEX idx_user_email (email)
