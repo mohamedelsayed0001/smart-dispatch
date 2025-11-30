@@ -1,6 +1,6 @@
 package com.smartdispatch.vehiclemanagement.model;
 
-import com.smartdispatch.vehiclemanagement.Status;
+import com.smartdispatch.vehiclemanagement.Enum.Status;
 import lombok.*;
 @Getter
 @Setter

@@ -1,6 +1,6 @@
 package com.smartdispatch.vehiclemanagement.rowmapper;
 
-import com.smartdispatch.vehiclemanagement.Status;
+import com.smartdispatch.vehiclemanagement.Enum.Status;
 import com.smartdispatch.vehiclemanagement.model.VehicleEntity;
 
 import org.springframework.jdbc.core.RowMapper;

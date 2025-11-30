@@ -1,4 +1,4 @@
-package com.smartdispatch.vehiclemanagement;
+package com.smartdispatch.vehiclemanagement.Config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
