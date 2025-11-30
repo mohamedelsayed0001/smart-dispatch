@@ -85,38 +85,39 @@ INSERT INTO Incident (type, level, description, latitude, longitude, status, tim
 ('Medical', 'Medium', NULL, 40.7489, -74.0776, 'pending', DATE_SUB(NOW(), INTERVAL 12 MINUTE), NULL, 12);
 
 -- ==================== VEHICLE DATA ====================
--- Edge cases: Various types, all statuses, NULL operator_id,
+-- Edge cases: Various types, all enum statuses, NULL operator_id,
 -- different capacities, vehicles without operators
 
 INSERT INTO Vehicle (type, status, capacity, operator_id) VALUES
 -- Active vehicles with operators
-('Ambulance', 'available', 2, 1),
-('Fire Truck', 'on_duty', 6, 2),
-('Police Car', 'available', 4, 3),
-('Ambulance', 'on_duty', 2, 4),
-('Fire Truck', 'available', 8, 1),
+('Ambulance', 'AVAILABLE', 2, 1),
+('Fire Truck', 'ON_ROUTE', 6, 2),
+('Police Car', 'AVAILABLE', 4, 3),
+('Ambulance', 'ON_ROUTE', 2, 4),
+('Fire Truck', 'AVAILABLE', 8, 1),
 
--- Vehicles in maintenance
-('Ambulance', 'maintenance', 2, NULL),
-('Police Car', 'maintenance', 4, NULL),
+-- Vehicles in maintenance (map to AVAILABLE as pool)
+('Ambulance', 'AVAILABLE', 2, NULL),
+('Police Car', 'AVAILABLE', 4, NULL),
 
--- Out of service vehicles
-('Fire Truck', 'out_of_service', 6, NULL),
+-- Out of service vehicles (map to RESOLVING or AVAILABLE as appropriate)
+('Fire Truck', 'RESOLVING', 6, NULL),
 
 -- Vehicles with various capacities
-('Rescue Boat', 'available', 12, 2),
-('Helicopter', 'available', 4, 3),
-('Motorcycle', 'available', 1, 4), -- Minimum capacity edge case
+('Rescue Boat', 'AVAILABLE', 12, 2),
+('Helicopter', 'AVAILABLE', 4, 3),
+('Motorcycle', 'AVAILABLE', 1, 4), -- Minimum capacity edge case
 
 -- Vehicles without assigned operators (available pool)
-('Ambulance', 'available', 2, NULL),
-('Police Car', 'available', 4, NULL),
-('Fire Truck', 'available', 6, NULL),
+('Ambulance', 'AVAILABLE', 2, NULL),
+('Police Car', 'AVAILABLE', 4, NULL),
+('Fire Truck', 'AVAILABLE', 6, NULL),
 
 -- Special vehicle types
-('Hazmat Unit', 'on_duty', 4, 1),
-('K9 Unit', 'available', 2, 2),
-('SWAT Van', 'available', 10, NULL);
+('Hazmat Unit', 'ON_ROUTE', 4, 1),
+('K9 Unit', 'AVAILABLE', 2, 2),
+('SWAT Van', 'AVAILABLE', 10, NULL);
+
 
 -- ==================== VEHICLE LOCATION DATA ====================
 -- Edge cases: Multiple locations per vehicle (tracking over time),

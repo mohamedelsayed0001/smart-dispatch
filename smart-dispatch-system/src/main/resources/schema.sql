@@ -48,7 +48,7 @@ CREATE TABLE Incident (
 CREATE TABLE Vehicle (
     id INT AUTO_INCREMENT PRIMARY KEY,
     type VARCHAR(50) NOT NULL,
-    status VARCHAR(20) NOT NULL,
+    status ENUM('AVAILABLE', 'ON_ROUTE', 'RESOLVING') NOT NULL,
     capacity INT NOT NULL CHECK (capacity > 0),
     operator_id INT NULL,
     FOREIGN KEY (operator_id) REFERENCES User(id) ON DELETE SET NULL,
