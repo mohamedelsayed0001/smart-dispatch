@@ -21,8 +21,8 @@ import java.util.List;
 public class JwtAuthFilter extends OncePerRequestFilter {
 
     private static final List<String> PUBLIC_URLS = List.of(
-            "/api/user/login",
-            "/api/user/signup",
+            "/api/auth/login",
+            "/api/auth/signup",
             "/api/check/users",
             "/ws"
     );
