@@ -1,12 +1,7 @@
 package com.smartdispatch.security.service;
 
-import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.messaging.simp.broker.SubscriptionRegistry;
-import org.springframework.messaging.support.MessageBuilder;
-import org.springframework.messaging.Message;
 import org.springframework.stereotype.Service;
-import org.springframework.util.MultiValueMap;
 
 @Service
 public class NotificationService {
