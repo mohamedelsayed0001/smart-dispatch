@@ -40,6 +40,7 @@ INSERT INTO Incident (type, level, description, latitude, longitude, status, tim
 ('Medical', 'High', 'Heart attack patient, needs immediate attention', 40.7580, -73.9855, 'pending', DATE_SUB(NOW(), INTERVAL 5 MINUTE), NULL, 7),
 ('Accident', 'Medium', 'Vehicle collision at intersection', 40.7489, -73.9680, 'pending', DATE_SUB(NOW(), INTERVAL 15 MINUTE), NULL, 8),
 ('Crime', 'High', 'Armed robbery in progress', 40.7614, -73.9776, 'pending', DATE_SUB(NOW(), INTERVAL 2 MINUTE), NULL, NULL),
+('Crime', 'High', 'Armed robbery in progress', 40.7614, -73.9776, 'pending', DATE_SUB(NOW(), INTERVAL 2 MINUTE), NULL, NULL),
 ('Fire', 'High', 'Apartment fire, 3rd floor', 40.7306, -73.9352, 'assigned', DATE_SUB(NOW(), INTERVAL 30 MINUTE), NULL, 9),
 ('Medical', 'Critical', 'Multiple casualty accident', 40.7549, -73.9840, 'assigned', DATE_SUB(NOW(), INTERVAL 20 MINUTE), NULL, 10),
 ('Flood', 'Medium', 'Water main break, street flooding', 40.7282, -74.0776, 'assigned', DATE_SUB(NOW(), INTERVAL 45 MINUTE), NULL, 11),
@@ -53,11 +54,26 @@ INSERT INTO Incident (type, level, description, latitude, longitude, status, tim
 ('Medical', 'High', 'Incident at southern boundary', -89.999999, 180.0, 'pending', DATE_SUB(NOW(), INTERVAL 30 MINUTE), NULL, 7),
 ('Fire', 'High', 'Historical incident - warehouse fire', 40.7282, -73.9776, 'resolved', DATE_SUB(NOW(), INTERVAL 30 DAY), DATE_SUB(NOW(), INTERVAL 29 DAY), 8),
 ('Other', 'Medium', 'This is an incident with a very long description that goes into extensive detail...', 40.7589, -73.9680, 'pending', DATE_SUB(NOW(), INTERVAL 8 MINUTE), NULL, 10),
+('Other', 'Medium', 'This is an incident with a very long description that goes into extensive detail...', 40.7589, -73.9680, 'pending', DATE_SUB(NOW(), INTERVAL 8 MINUTE), NULL, 10),
 ('Other', 'Low', 'Help', 40.7306, -73.9840, 'resolved', DATE_SUB(NOW(), INTERVAL 6 HOUR), DATE_SUB(NOW(), INTERVAL 345 MINUTE), 11),
 ('Medical', 'Medium', NULL, 40.7489, -74.0776, 'pending', DATE_SUB(NOW(), INTERVAL 12 MINUTE), NULL, 12);
 
 -- ==================== VEHICLE DATA ====================
 INSERT INTO Vehicle (type, status, capacity, operator_id) VALUES
+('AMBULANCE', 'Available', 2, 1),
+('FIRETRUCK', 'OnRoute', 6, 2),
+('POLICE', 'Available', 4, 3),
+('AMBULANCE', 'OnRoute', 2, 4),
+('FIRETRUCK', 'Available', 8, 1),
+('AMBULANCE', 'Available', 2, NULL),
+('POLICE', 'Available', 4, NULL),
+('FIRETRUCK', 'Resolving', 6, NULL),
+('AMBULANCE', 'Available', 2, 2),
+('POLICE', 'Available', 4, 3),
+('FIRETRUCK', 'Available', 6, 4),
+('AMBULANCE', 'Available', 2, NULL),
+('POLICE', 'Available', 4, NULL),
+('FIRETRUCK', 'Available', 6, NULL);
 ('AMBULANCE', 'Available', 2, 1),
 ('FIRETRUCK', 'OnRoute', 6, 2),
 ('POLICE', 'Available', 4, 3),
@@ -84,14 +100,18 @@ INSERT INTO vehicle_location (vehicle_id, longitude, latitude, time_stamp) VALUE
 (2, -73.9865, 40.7570, DATE_SUB(NOW(), INTERVAL 25 MINUTE)),
 (2, -73.9875, 40.7560, DATE_SUB(NOW(), INTERVAL 20 MINUTE)),
 (2, -73.9352, 40.7306, NOW()),
+(2, -73.9352, 40.7306, NOW()),
 (3, -73.9680, 40.7489, DATE_SUB(NOW(), INTERVAL 2 HOUR)),
 (3, -73.9680, 40.7489, DATE_SUB(NOW(), INTERVAL 1 HOUR)),
+(3, -73.9680, 40.7489, NOW());
 (3, -73.9680, 40.7489, NOW());
 
 -- ==================== NOTIFICATION DATA ====================
 -- Keep notifications as-is (no schema conflicts)
+-- Keep notifications as-is (no schema conflicts)
 INSERT INTO Notification (notified_id, notification_type, content, time_sent, time_delivered) VALUES
 (6, 'incident_alert', 'Your reported fire incident has been assigned to Fire Truck #2', DATE_SUB(NOW(), INTERVAL 25 MINUTE), DATE_SUB(NOW(), INTERVAL 25 MINUTE)),
+(7, 'incident_alert', 'Medical emergency assigned. Ambulance en route.', DATE_SUB(NOW(), INTERVAL 18 MINUTE), DATE_SUB(NOW(), INTERVAL 18 MINUTE));
 (7, 'incident_alert', 'Medical emergency assigned. Ambulance en route.', DATE_SUB(NOW(), INTERVAL 18 MINUTE), DATE_SUB(NOW(), INTERVAL 18 MINUTE));
 
 -- ==================== ASSIGNMENT DATA ====================

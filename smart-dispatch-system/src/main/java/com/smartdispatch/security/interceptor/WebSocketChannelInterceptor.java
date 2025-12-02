@@ -1,6 +1,7 @@
 package com.smartdispatch.security.interceptor;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.Ordered;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
@@ -23,15 +24,24 @@ public class WebSocketChannelInterceptor implements ChannelInterceptor, Ordered 
 
     @Autowired
     private JwtService jwtService;
+    @Value("${app.security.enabled:true}")
+    private boolean securityEnabled;
 
     @Override
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(message);
 
         System.out.println("bombena WebSocketChannelInterceptor: PreSend called for command " + accessor.getCommand());
-        
-        if (!accessor.getCommand().equals(StompCommand.CONNECT)) {
+
+        // If not a CONNECT frame, leave unchanged
+        if (accessor.getCommand() == null || !accessor.getCommand().equals(StompCommand.CONNECT)) {
             return message;
+        }
+
+        // If security is disabled for this app (dev mode), allow anonymous websocket CONNECT
+        if (!securityEnabled) {
+            System.out.println("WebSocket security disabled - allowing anonymous CONNECT");
+            return MessageBuilder.createMessage(message.getPayload(), accessor.getMessageHeaders());
         }
 
         System.out.println("CONNECT command detected");
@@ -79,8 +89,7 @@ public class WebSocketChannelInterceptor implements ChannelInterceptor, Ordered 
 
         System.out.println("WebSocket authentication successful for user: " + userDetails.getUsername() + " with roles: " + authorities);
 
-        return MessageBuilder.createMessage(message.getPayload(),
-                accessor.getMessageHeaders());
+        return MessageBuilder.createMessage(message.getPayload(), accessor.getMessageHeaders());
     }
 
     @Override

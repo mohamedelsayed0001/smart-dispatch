@@ -21,13 +21,28 @@ public class VehicleDaoImp implements VehicleDao {
 
     @Override
     public List<Vehicle> findAvailableVehiclesByType(String type) {
-        String sql = "SELECT * FROM Vehicle WHERE status ='AVAILABLE' AND type = ? ";
+        String sql = "SELECT v.*, " +
+                "(SELECT latitude FROM vehicle_location vl WHERE vl.vehicle_id = v.id ORDER BY time_stamp DESC LIMIT 1) AS currentLatitude, " +
+                "(SELECT longitude FROM vehicle_location vl WHERE vl.vehicle_id = v.id ORDER BY time_stamp DESC LIMIT 1) AS currentLongitude " +
+                "FROM Vehicle v WHERE status ='AVAILABLE' AND type = ?";
         return jdbcTemplate.query(sql,VEHICLE_ROW_MAPPER,type);
     }
 
     @Override
     public List<Vehicle> findAvailableVehicles() {
-        String sql = "SELECT * FROM Vehicle WHERE status ='AVAILABLE'";
+        String sql = "SELECT v.*, " +
+                "(SELECT latitude FROM vehicle_location vl WHERE vl.vehicle_id = v.id ORDER BY time_stamp DESC LIMIT 1) AS currentLatitude, " +
+                "(SELECT longitude FROM vehicle_location vl WHERE vl.vehicle_id = v.id ORDER BY time_stamp DESC LIMIT 1) AS currentLongitude " +
+                "FROM Vehicle v WHERE status ='AVAILABLE'";
+        return jdbcTemplate.query(sql,VEHICLE_ROW_MAPPER);
+    }
+
+    @Override
+    public List<Vehicle> findAllVehicles() {
+        String sql = "SELECT v.*, " +
+                "(SELECT latitude FROM vehicle_location vl WHERE vl.vehicle_id = v.id ORDER BY time_stamp DESC LIMIT 1) AS currentLatitude, " +
+                "(SELECT longitude FROM vehicle_location vl WHERE vl.vehicle_id = v.id ORDER BY time_stamp DESC LIMIT 1) AS currentLongitude " +
+                "FROM Vehicle v";
         return jdbcTemplate.query(sql,VEHICLE_ROW_MAPPER);
     }
 
@@ -42,7 +57,8 @@ public class VehicleDaoImp implements VehicleDao {
     @Override
     public Vehicle findById(Integer id) {
         String sql = "SELECT * FROM Vehicle WHERE id = ?";
-        return jdbcTemplate.queryForObject(sql,VEHICLE_ROW_MAPPER , id);
+        List<Vehicle> results = jdbcTemplate.query(sql, VEHICLE_ROW_MAPPER, id);
+        return results.isEmpty() ? null : results.get(0);
     }
 
 
@@ -57,6 +73,15 @@ public class VehicleDaoImp implements VehicleDao {
             vehicle.setStatus(rs.getString("status"));
             vehicle.setCapacity(rs.getInt("capacity"));
             vehicle.setOperatorId(rs.getInt("operator_id"));
+            // map last known location if available
+            try {
+                double lat = rs.getDouble("currentLatitude");
+                if (!rs.wasNull()) vehicle.setCurrentLatitude(lat);
+            } catch (SQLException ignored) {}
+            try {
+                double lon = rs.getDouble("currentLongitude");
+                if (!rs.wasNull()) vehicle.setCurrentLongitude(lon);
+            } catch (SQLException ignored) {}
             return vehicle;
         }
     }

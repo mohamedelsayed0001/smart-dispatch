@@ -24,6 +24,12 @@ public class AssignmentDaoImp implements AssignmentDao {
         this.jdbcTemplate = jdbcTemplate;
     }
 
+    @Override
+    public List<Assignment> getAllAssignments() {
+        String sql = "SELECT * FROM Assignment ";
+        return jdbcTemplate.query(sql,ASSIGNMENT_ROW_MAPPER);
+    }
+
     public Integer createAssignment(Assignment assignment) {
         String sql = "INSERT INTO Assignment (dispatcher_id, incident_id, vehicle_id, status, time_assigned) " +
                 "VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)";
@@ -51,7 +57,15 @@ public class AssignmentDaoImp implements AssignmentDao {
     @Override
     public Assignment findById(Integer id) {
         String sql = "SELECT * FROM Assignment WHERE id = ?";
-        return jdbcTemplate.queryForObject(sql, ASSIGNMENT_ROW_MAPPER, id);
+        List<Assignment> results = jdbcTemplate.query(sql, ASSIGNMENT_ROW_MAPPER, id);
+        return results.isEmpty() ? null : results.get(0);
+    }
+
+    @Override
+    public boolean updateVehicle(Integer assignmentId, Integer vehicleId) {
+        String sql = "UPDATE Assignment SET vehicle_id = ?, time_assigned = CURRENT_TIMESTAMP WHERE id = ?";
+        int updatedRows = jdbcTemplate.update(sql, vehicleId, assignmentId);
+        return updatedRows > 0;
     }
 
 

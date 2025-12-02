@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
@@ -20,9 +21,11 @@ import com.smartdispatch.security.filter.JwtAuthFilter;
 public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
+    private final boolean securityEnabled;
 
-    SecurityConfig(JwtAuthFilter jwtAuthFilter) {
+    SecurityConfig(JwtAuthFilter jwtAuthFilter, @Value("${app.security.enabled:true}") boolean securityEnabled) {
         this.jwtAuthFilter = jwtAuthFilter;
+        this.securityEnabled = securityEnabled;
     }
 
     @Bean
@@ -34,9 +37,12 @@ public class SecurityConfig {
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(auth -> auth
-                        .anyRequest().permitAll()
-                )
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+                    .anyRequest().permitAll()
+                );
+
+            if (securityEnabled) {
+                http.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+            }
 
         return http.build();
     }

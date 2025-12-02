@@ -25,6 +25,12 @@ public class IncidentDaoImp implements IncidentDao {
     }
 
     @Override
+    public List<Incident> getAllIncidents() {
+        String sql = "SELECT * FROM Incident";
+        return jdbcTemplate.query(sql,INCIDENT_ROW_MAPPER);
+    }
+
+    @Override
     public boolean updateStatus(Integer incidentId, String status) {
         String sql = "UPDATE Incident SET status = ? WHERE id = ?";
         int rowsAffected = jdbcTemplate.update(sql, status, incidentId);
@@ -34,7 +40,8 @@ public class IncidentDaoImp implements IncidentDao {
     @Override
     public Incident findById(Integer id) {
         String sql = "SELECT * FROM Incident WHERE id = ?";
-        return jdbcTemplate.queryForObject(sql, INCIDENT_ROW_MAPPER, id);
+        List<Incident> results = jdbcTemplate.query(sql, INCIDENT_ROW_MAPPER, id);
+        return results.isEmpty() ? null : results.get(0);
     }
 
     private static class RowMapperIncident implements RowMapper<Incident> {
