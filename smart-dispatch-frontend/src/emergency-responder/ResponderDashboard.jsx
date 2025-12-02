@@ -1,12 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
 import { responderAPI } from './service/api';
+import locationService from './service/locationService';
 import webSocketService from './service/websocket';
 import AssignmentCard from './AssignmentCard';
 import AssignmentDetails from './AssignmentDetails';
 import './css/responder.css';
 
 const ResponderDashboard = () => {
-  // TEMPORARY: Hardcoded responderId for testing - replace with actual auth later
   const RESPONDER_ID = 1; // Change this to test different responders
   
   const [profile, setProfile] = useState(null);
@@ -58,6 +58,8 @@ const ResponderDashboard = () => {
 
       setProfile(profileRes.data);
       setActiveAssignments(assignmentsRes.data);
+
+      locationService.handleInitialLocation(RESPONDER_ID);
       
       // Connect to WebSocket
       if (!isConnecting.current) {

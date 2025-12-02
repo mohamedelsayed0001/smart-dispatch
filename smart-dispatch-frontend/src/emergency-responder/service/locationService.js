@@ -33,6 +33,28 @@ class LocationService {
     });
   }
 
+  async handleInitialLocation(responderId) {
+    try {
+      // 1. Request permission
+      const permissionGranted = await this.requestPermission();
+      if (!permissionGranted) return;
+
+      // 2. Get current position
+      const location = await this.getCurrentPosition();
+
+      // 3. Send to backend once
+      await responderAPI.updateLocation(responderId, {
+        latitude: location.latitude,
+        longitude: location.longitude,
+        timestamp: new Date().toISOString()
+      });
+
+      console.log('Initial location updated in DB');
+    } catch (err) {
+      console.error('Error updating initial location:', err);
+    }
+  }
+
   // Get current position once
   async getCurrentPosition() {
     return new Promise((resolve, reject) => {
@@ -60,58 +82,42 @@ class LocationService {
 
   // Start tracking location
   startTracking(responderId, onLocationUpdate, onError) {
-    if (this.isTracking) {
-      console.warn('Location tracking already started');
-      return;
-    }
-
-    // Store responderId for API calls
-    this.responderId = responderId;
+    if (this.isTracking) return;
     this.isTracking = true;
+    this.responderId = responderId;
 
-    this.watchId = navigator.geolocation.watchPosition(
-      (position) => {
-        const location = {
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude,
-          accuracy: position.coords.accuracy,
-          timestamp: new Date().toISOString(),
-        };
+    let isRequesting = false;
 
-        // Check if we should send update (time-based or distance-based)
-        if (this.shouldSendUpdate(location)) {
-          this.sendLocationUpdate(location);
-          this.lastUpdate = location;
-        }
+    this.updateTimer = setInterval(async () => {
+      if (isRequesting) return;
+      isRequesting = true;
 
-        // Always call the callback for UI updates
-        if (onLocationUpdate) {
-          onLocationUpdate(location);
-        }
-      },
-      (error) => {
-        console.error('Location error:', error);
-        if (onError) {
-          onError(this.handleLocationError(error));
-        }
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 5000,
+      try {
+        const location = await this.getCurrentPosition();
+        this.lastUpdate = location;
+
+        // Always update backend
+        await this.sendLocationUpdate(location);
+
+        // Always update UI
+        if (onLocationUpdate) onLocationUpdate(location);
+      } catch (err) {
+        console.error("Periodic update error:", err);
+        if (onError) onError(err);
+      } finally {
+        isRequesting = false;
       }
-    );
+    }, this.updateInterval);
   }
 
   // Stop tracking location
   stopTracking() {
-    if (this.watchId !== null) {
-      navigator.geolocation.clearWatch(this.watchId);
-      this.watchId = null;
-      this.isTracking = false;
-      this.lastUpdate = null;
-      this.responderId = null;
-    }
+    if (this.watchId !== null) navigator.geolocation.clearWatch(this.watchId);
+    if (this.updateTimer) clearInterval(this.updateTimer);
+    this.watchId = null;
+    this.updateTimer = null;
+    this.isTracking = false;
+    this.lastUpdate = null;
   }
 
   // Check if we should send location update
@@ -119,10 +125,12 @@ class LocationService {
     if (!this.lastUpdate) return true;
 
     const timeDiff = new Date(newLocation.timestamp) - new Date(this.lastUpdate.timestamp);
-    
+    console.log("here 1");
+
     // Send update every updateInterval milliseconds
     if (timeDiff >= this.updateInterval) return true;
 
+    console.log("here 2");
     // Send update if moved significant distance
     const distance = this.calculateDistance(
       this.lastUpdate.latitude,
@@ -144,6 +152,8 @@ class LocationService {
     try {
       // Send via WebSocket if connected (faster)
       if (webSocketService.isConnected()) {
+        console.log("updateee");
+
         webSocketService.sendLocationUpdate({
           latitude: location.latitude,
           longitude: location.longitude,
