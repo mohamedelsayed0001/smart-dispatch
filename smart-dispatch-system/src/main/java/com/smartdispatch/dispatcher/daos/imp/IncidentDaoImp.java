@@ -20,7 +20,7 @@ public class IncidentDaoImp implements IncidentDao {
 
     @Override
     public List<Incident> getAllPendingIncidents() {
-        String sql = "SELECT * FROM Incident WHERE status ='pending'";
+        String sql = "SELECT * FROM Incident WHERE status ='PENDING'";
         return jdbcTemplate.query(sql,INCIDENT_ROW_MAPPER);
     }
 
