@@ -74,20 +74,6 @@ INSERT INTO Vehicle (type, status, capacity, operator_id) VALUES
 ('AMBULANCE', 'Available', 2, NULL),
 ('POLICE', 'Available', 4, NULL),
 ('FIRETRUCK', 'Available', 6, NULL);
-('AMBULANCE', 'Available', 2, 1),
-('FIRETRUCK', 'OnRoute', 6, 2),
-('POLICE', 'Available', 4, 3),
-('AMBULANCE', 'OnRoute', 2, 4),
-('FIRETRUCK', 'Available', 8, 1),
-('AMBULANCE', 'Available', 2, NULL),
-('POLICE', 'Available', 4, NULL),
-('FIRETRUCK', 'Resolving', 6, NULL),
-('AMBULANCE', 'Available', 2, 2),
-('POLICE', 'Available', 4, 3),
-('FIRETRUCK', 'Available', 6, 4),
-('AMBULANCE', 'Available', 2, NULL),
-('POLICE', 'Available', 4, NULL),
-('FIRETRUCK', 'Available', 6, NULL);
 
 -- ==================== VEHICLE LOCATION DATA ====================
 INSERT INTO vehicle_location (vehicle_id, longitude, latitude, time_stamp) VALUES
@@ -103,7 +89,7 @@ INSERT INTO vehicle_location (vehicle_id, longitude, latitude, time_stamp) VALUE
 (2, -73.9352, 40.7306, NOW()),
 (3, -73.9680, 40.7489, DATE_SUB(NOW(), INTERVAL 2 HOUR)),
 (3, -73.9680, 40.7489, DATE_SUB(NOW(), INTERVAL 1 HOUR)),
-(3, -73.9680, 40.7489, NOW());
+(3, -73.9680, 40.7489, NOW()),
 (3, -73.9680, 40.7489, NOW());
 
 -- ==================== NOTIFICATION DATA ====================
@@ -111,7 +97,6 @@ INSERT INTO vehicle_location (vehicle_id, longitude, latitude, time_stamp) VALUE
 -- Keep notifications as-is (no schema conflicts)
 INSERT INTO Notification (notified_id, notification_type, content, time_sent, time_delivered) VALUES
 (6, 'incident_alert', 'Your reported fire incident has been assigned to Fire Truck #2', DATE_SUB(NOW(), INTERVAL 25 MINUTE), DATE_SUB(NOW(), INTERVAL 25 MINUTE)),
-(7, 'incident_alert', 'Medical emergency assigned. Ambulance en route.', DATE_SUB(NOW(), INTERVAL 18 MINUTE), DATE_SUB(NOW(), INTERVAL 18 MINUTE));
 (7, 'incident_alert', 'Medical emergency assigned. Ambulance en route.', DATE_SUB(NOW(), INTERVAL 18 MINUTE), DATE_SUB(NOW(), INTERVAL 18 MINUTE));
 
 -- ==================== ASSIGNMENT DATA ====================

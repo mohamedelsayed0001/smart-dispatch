@@ -33,7 +33,7 @@ public class VehicleDaoImp implements VehicleDao {
         String sql = "SELECT v.*, " +
                 "(SELECT latitude FROM vehicle_location vl WHERE vl.vehicle_id = v.id ORDER BY time_stamp DESC LIMIT 1) AS currentLatitude, " +
                 "(SELECT longitude FROM vehicle_location vl WHERE vl.vehicle_id = v.id ORDER BY time_stamp DESC LIMIT 1) AS currentLongitude " +
-                "FROM Vehicle v WHERE status ='AVAILABLE'";
+                "FROM Vehicle v WHERE status ='Available'";
         return jdbcTemplate.query(sql,VEHICLE_ROW_MAPPER);
     }
 
