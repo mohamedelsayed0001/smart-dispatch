@@ -1,9 +1,15 @@
 package com.smartdispatch.authentication.dao;
 
-import com.smartdispatch.authentication.model.User;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.stereotype.Repository;
+import java.sql.PreparedStatement;
+import java.sql.Statement;
 import java.util.Optional;
+
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
+import org.springframework.stereotype.Repository;
+
+import com.smartdispatch.authentication.model.User;
 
 @Repository
 public class LoginDAO {
@@ -27,15 +33,28 @@ public class LoginDAO {
             WHERE email = ?
             """;
 
-    public int createUser(User user) {
-        return jdbcTemplate.update(
+    public long createUser(User user) {
+
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+
+        jdbcTemplate.update(connection -> {
+            PreparedStatement ps = connection.prepareStatement(
                 INSERT_USER,
-                user.getName(),
-                user.getPassword(),
-                user.getEmail(),
-                user.getRole()
-        );
+                Statement.RETURN_GENERATED_KEYS
+            );
+
+            ps.setString(1, user.getName());
+            ps.setString(2, user.getPassword());
+            ps.setString(3, user.getEmail());
+            ps.setString(4, user.getRole());
+
+            return ps;
+        }, keyHolder);
+
+        // Return generated id
+        return keyHolder.getKey().longValue();
     }
+
 
     public Optional<User> findByEmail(String email) {
         var users = jdbcTemplate.query(GET_USER_BY_EMAIL, this.userRowMapper, email);

@@ -1,16 +1,15 @@
 package com.smartdispatch.authentication.services;
 
+import java.util.Optional;
+
+import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.stereotype.Service;
+
 import com.smartdispatch.authentication.dao.LoginDAO;
 import com.smartdispatch.authentication.dto.LoginRequestDTO;
 import com.smartdispatch.authentication.dto.LoginResponseDTO;
 import com.smartdispatch.authentication.model.User;
 import com.smartdispatch.security.service.JwtService;
-
-import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.stereotype.Service;
-
-import java.util.Optional;
 
 @Service
 public class LoginService {
@@ -81,7 +80,8 @@ public class LoginService {
             return new LoginResponseDTO(0L, "", "", "", "EMAIL_EXISTS");
         }
 
-        loginDAO.createUser(newUser);
+        long generatedId = loginDAO.createUser(newUser);
+        newUser.setId(generatedId);
 
         String token = jwtService.generateToken(
                 newUser.getId(),
