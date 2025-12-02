@@ -159,13 +159,19 @@ public class VehicleDaoImpl implements vechileDao<VehicleEntity> {
             return 0;
         }
     }
-
-    public boolean isopertorCorrect(Long operatorId) {
-       String sql="SELECT COUNT(*) FROM operator WHERE id = ?";
-       int num=jdbcTemplate.queryForObject(sql,Integer.class,operatorId);
-      if(num>0)
+    public boolean isOperatorCorrect(Long operatorId) {
+        if (operatorId == null) {
             return true;
-      return false;
         }
+
+        try {
+            String sql = "SELECT COUNT(*) FROM User WHERE id = ? AND role = 'OPERATOR'";
+            Integer count = jdbcTemplate.queryForObject(sql, Integer.class, operatorId);
+            return count != null && count > 0;
+        } catch (DataAccessException e) {
+            System.err.println("Error checking operator: " + e.getMessage());
+            return false;
+        }
+    }
 }
 

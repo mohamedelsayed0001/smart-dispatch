@@ -3,6 +3,9 @@ import { Plus, Edit, Trash2, X, Search } from 'lucide-react';
 import './styles/Vehicles.css';
 
 const Vehicles = () => {
+  // 🔑 CENTRALIZED TOKEN - Update this one place only
+  const AUTH_TOKEN = "eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiQURNSU4iLCJpZCI6IjE3IiwiZW1haWwiOiJib21iQGdtYWlsLmNvbSIsInVzZXJuYW1lIjoiZmZmIiwic3ViIjoiMTciLCJpYXQiOjE3NjQ2NzI5MjQsImV4cCI6MTc2NDc1OTMyNH0.V_skabqb6SGvHCBYypbz9Jv9cz-WSq4yDeVvir217y0";
+  
   const [vehicles, setVehicles] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [editingVehicle, setEditingVehicle] = useState(null);
@@ -11,7 +14,7 @@ const Vehicles = () => {
     type: 'AMBULANCE',
     status: 'Available',
     capacity: '',
-    operator_id: ''
+    operatorId: ''
   });
 
   useEffect(() => {
@@ -19,37 +22,34 @@ const Vehicles = () => {
   }, []);
 
   const fetchVehicles = async () => {
-  try {
-    const token = "eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiQURNSU4iLCJpZCI6IjE3IiwiZW1haWwiOiJib21iQGdtYWlsLmNvbSIsInVzZXJuYW1lIjoiZmZmIiwic3ViIjoiMTciLCJpYXQiOjE3NjQ2NDMyMzYsImV4cCI6MTc2NDcyOTYzNn0.XlrfIgk7ztsneMfUZKQ3Crc1s1Aja_gOt09aDZmMbbw";
-    const response = await fetch('http://localhost:8080/api/vehicle/getAllVehicles', {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
+    try {
+      const response = await fetch('http://localhost:8080/api/vehicle/getAllVehicles', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${AUTH_TOKEN}`
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        console.log('✅ Vehicles fetched:', data);
+        setVehicles(data);
+      } else {
+        const errorText = await response.text();
+        console.error('❌ Server error:', errorText);
+        alert('Failed to fetch vehicles: ' + errorText);
       }
-    });
-    
-    if (response.ok) {
-      const data = await response.json();
-      console.log('✅ Vehicles fetched:', data);
-      setVehicles(data);
-    } else {
-      const errorText = await response.text(); // Get actual error message
-      console.error('❌ Server error:', errorText);
-      alert('Failed to fetch vehicles: ' + errorText);
+    } catch (error) {
+      console.error('❌ Network error:', error);
+      alert('Failed to fetch vehicles: ' + error.message);
     }
-  } catch (error) {
-    console.error('❌ Network error:', error);
-    alert('Failed to fetch vehicles: ' + error.message);
-  }
-};
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     
     try {
-      const token = "eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiQURNSU4iLCJpZCI6IjE3IiwiZW1haWwiOiJib21iQGdtYWlsLmNvbSIsInVzZXJuYW1lIjoiZmZmIiwic3ViIjoiMTciLCJpYXQiOjE3NjQ1Mzg0MjAsImV4cCI6MTc2NDYyNDgyMH0.EJBoAUTo3SqLFKanRD2ha0_Cp9Q49IJ0UlvSGZKKirQ";
-      
       const url = editingVehicle 
         ? `http://localhost:8080/api/vehicle/edit/${editingVehicle.id}`
         : 'http://localhost:8080/api/vehicle/create';
@@ -58,12 +58,12 @@ const Vehicles = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${AUTH_TOKEN}`
         },
         body: JSON.stringify({
           ...formData,
           capacity: parseInt(formData.capacity),
-          operator_id: formData.operator_id ? parseInt(formData.operator_id) : null
+          operatorId: formData.operatorId ? parseInt(formData.operatorId) : null
         })
       });
 
@@ -88,11 +88,10 @@ const Vehicles = () => {
     }
 
     try {
-      const token = "eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiQURNSU4iLCJpZCI6IjE3IiwiZW1haWwiOiJib21iQGdtYWlsLmNvbSIsInVzZXJuYW1lIjoiZmZmIiwic3ViIjoiMTciLCJpYXQiOjE3NjQ2MzIxNjcsImV4cCI6MTc2NDcxODU2N30.7EjH99TUTlykRzWydW4wQeWDkdVrE1mbzsAs1I2hQwk";
       const response = await fetch(`http://localhost:8080/api/vehicle/delete/${id}`, {
         method: 'DELETE',
         headers: {
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${AUTH_TOKEN}`
         }
       });
 
@@ -115,7 +114,7 @@ const Vehicles = () => {
       type: vehicle.type,
       status: vehicle.status,
       capacity: vehicle.capacity.toString(),
-      operator_id: vehicle.operatorId ? vehicle.operatorId.toString() : ''
+      operatorId: vehicle.operatorId ? vehicle.operatorId.toString() : ''
     });
     setShowModal(true);
   };
@@ -125,7 +124,7 @@ const Vehicles = () => {
       type: 'AMBULANCE',
       status: 'Available',
       capacity: '',
-      operator_id: ''
+      operatorId: ''
     });
     setEditingVehicle(null);
   };
@@ -294,8 +293,8 @@ const Vehicles = () => {
                 <label>Operator ID (Optional)</label>
                 <input
                   type="number"
-                  value={formData.operator_id}
-                  onChange={(e) => setFormData({ ...formData, operator_id: e.target.value })}
+                  value={formData.operatorId}
+                  onChange={(e) => setFormData({ ...formData, operatorId: e.target.value })}
                   placeholder="Leave empty if no operator assigned"
                   min="1"
                 />

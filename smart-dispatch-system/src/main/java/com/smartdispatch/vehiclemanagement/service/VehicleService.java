@@ -28,14 +28,23 @@ public class VehicleService {
     }
 
     public void createService(VehicleDto vehicleDto) throws Exception {
-       if(!vehicleDao.isopertorCorrect(vehicleDto.getOperatorId())){
-           throw new Exception("There is no Operator having that id");
-       }
+        if(!vehicleDao.isOperatorCorrect(vehicleDto.getOperatorId())){
+            throw new Exception("Invalid operator ID: No operator found with ID " + vehicleDto.getOperatorId());
+        }
         VehicleEntity vehicle = dtoMapper.mapFromDto(vehicleDto);
         vehicleDao.save(vehicle);
     }
+    public void editService(long id, VehicleDto vehicleDto) throws Exception {
+        if (!vehicleDao.isOperatorCorrect(vehicleDto.getOperatorId())) {
+            throw new Exception("Invalid operator ID: No operator found with ID " + vehicleDto.getOperatorId());
+        }
 
-    public void editService(long id, VehicleDto vehicleDto) throws SQLException {
+        VehicleEntity existingVehicle = vehicleDao.findById(id);
+        if (existingVehicle == null) {
+            throw new Exception("Vehicle with ID " + id + " not found");
+        }
+
+
         VehicleEntity vehicle = dtoMapper.mapFromDto(vehicleDto);
         vehicleDao.update(id, vehicle);
     }
