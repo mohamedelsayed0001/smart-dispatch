@@ -1,51 +1,36 @@
 package com.smartdispatch.security.config;
-import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.context.annotation.Configuration;
-import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import com.smartdispatch.security.interceptor.WebSocketChannelInterceptor;
 
 @Configuration
-@EnableWebSocketMessageBroker 
+@EnableWebSocketMessageBroker
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
-
-    private static final Logger logger = LoggerFactory.getLogger(WebSocketConfig.class);
-
-    @Autowired
-    private WebSocketChannelInterceptor webSocketChannelInterceptor;
 
     @Override
     public void configureMessageBroker(MessageBrokerRegistry config) {
-        logger.info("Configuring message broker");
-
+        // Enable a simple memory-based message broker to send messages to clients
         config.enableSimpleBroker("/topic");
+
+        // Application destination prefix for messages from client to server
         config.setApplicationDestinationPrefixes("/app");
 
-        logger.info("Message broker configured: /topic broker, /app prefix");
+        System.out.println("✅ Message broker configured - Topics: /topic, App prefix: /app");
     }
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        logger.info("Registering STOMP endpoints");
+        // Register the WebSocket endpoint that clients will connect to
+        registry.addEndpoint("/ws-car-location")
+                .setAllowedOriginPatterns("*")  // Allow all origins for development
+                .withSockJS();  // Enable SockJS fallback for browsers that don't support WebSocket
 
-        registry.addEndpoint("/ws")
-                .setAllowedOriginPatterns("*");
-
-        logger.info("STOMP endpoint registered: /ws");
+        System.out.println("✅ WebSocket endpoint registered: /ws-car-location");
+        System.out.println("   - Allowed origins: *");
+        System.out.println("   - SockJS enabled");
+        System.out.println("   - Full URL: http://localhost:8080/ws-car-location");
     }
-
-    @Override
-    public void configureClientInboundChannel(ChannelRegistration registration) {
-        logger.info("Configuring client inbound channel");
-
-        registration.interceptors(webSocketChannelInterceptor);
-
-        logger.info("Channel interceptor registered");
-    }
-
 }

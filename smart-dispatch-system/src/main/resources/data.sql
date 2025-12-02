@@ -85,40 +85,39 @@ INSERT INTO Incident (type, level, description, latitude, longitude, status, tim
 ('Medical', 'Medium', NULL, 40.7489, -74.0776, 'pending', DATE_SUB(NOW(), INTERVAL 12 MINUTE), NULL, 12);
 
 -- ==================== VEHICLE DATA ====================
--- Edge cases: Various types, all enum statuses, NULL operator_id,
+-- Edge cases: Various types, all statuses, NULL operator_id,
 -- different capacities, vehicles without operators
+-- Update existing records to match ENUM values
+UPDATE Vehicle SET type = 'AMBULANCE' WHERE type IN ('Ambulance', 'ambulance');
+UPDATE Vehicle SET type = 'FIRETRUCK' WHERE type IN ('Fire Truck', 'FireTruck', 'firetruck');
+UPDATE Vehicle SET type = 'POLICE' WHERE type IN ('Police Car', 'Police', 'police');
 
+-- Delete vehicles that don't match any of the three types
+DELETE FROM Vehicle WHERE type NOT IN ('AMBULANCE', 'FIRETRUCK', 'POLICE');
+
+-- Now insert only valid data
 INSERT INTO Vehicle (type, status, capacity, operator_id) VALUES
--- Active vehicles with operators
-('Ambulance', 'AVAILABLE', 2, 1),
-('Fire Truck', 'ON_ROUTE', 6, 2),
-('Police Car', 'AVAILABLE', 4, 3),
-('Ambulance', 'ON_ROUTE', 2, 4),
-('Fire Truck', 'AVAILABLE', 8, 1),
+-- Ambulances
+('AMBULANCE', 'Available', 2, 1),
+('AMBULANCE', 'Available', 2, 4),
+('AMBULANCE', 'Available', 2, NULL),
+('AMBULANCE', 'OnRoute', 2, 4),
+('AMBULANCE', 'OnRoute', 4, 3),
+('AMBULANCE', 'Resolving', 2, 1),
 
--- Vehicles in maintenance (map to AVAILABLE as pool)
-('Ambulance', 'AVAILABLE', 2, NULL),
-('Police Car', 'AVAILABLE', 4, NULL),
+-- Fire Trucks
+('FIRETRUCK', 'Available', 8, 1),
+('FIRETRUCK', 'Available', 6, NULL),
+('FIRETRUCK', 'OnRoute', 6, 2),
+('FIRETRUCK', 'OnRoute', 4, 1),
+('FIRETRUCK', 'Resolving', 6, 1),
 
--- Out of service vehicles (map to RESOLVING or AVAILABLE as appropriate)
-('Fire Truck', 'RESOLVING', 6, NULL),
-
--- Vehicles with various capacities
-('Rescue Boat', 'AVAILABLE', 12, 2),
-('Helicopter', 'AVAILABLE', 4, 3),
-('Motorcycle', 'AVAILABLE', 1, 4), -- Minimum capacity edge case
-
--- Vehicles without assigned operators (available pool)
-('Ambulance', 'AVAILABLE', 2, NULL),
-('Police Car', 'AVAILABLE', 4, NULL),
-('Fire Truck', 'AVAILABLE', 6, NULL),
-
--- Special vehicle types
-('Hazmat Unit', 'ON_ROUTE', 4, 1),
-('K9 Unit', 'AVAILABLE', 2, 2),
-('SWAT Van', 'AVAILABLE', 10, NULL);
-
-
+-- Police Cars
+('POLICE', 'Available', 4, 3),
+('POLICE', 'Available', 4, NULL),
+('POLICE', 'Available', 2, 2),
+('POLICE', 'Available', 10, NULL),
+('POLICE', 'Resolving', 4, 3);
 -- ==================== VEHICLE LOCATION DATA ====================
 -- Edge cases: Multiple locations per vehicle (tracking over time),
 -- extreme coordinates, same location different times
