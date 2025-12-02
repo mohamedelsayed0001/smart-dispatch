@@ -1,10 +1,9 @@
--- Emergency Response System Database - Test Data Population (MySQL Version)
--- This script populates the database with comprehensive edge cases
+-- --------------------
+-- TEST DATA (adjusted)
+-- --------------------
 
--- Disable foreign key checks temporarily for clean data loading
 SET FOREIGN_KEY_CHECKS = 0;
 
--- Clear existing data (if any)
 TRUNCATE TABLE Assignment;
 TRUNCATE TABLE Notification;
 TRUNCATE TABLE vehicle_location;
@@ -15,8 +14,6 @@ TRUNCATE TABLE User;
 SET FOREIGN_KEY_CHECKS = 1;
 
 -- ==================== USER DATA ====================
--- Edge cases: All three roles, special characters in names, various email formats
-
 INSERT INTO User (name, email, password, role) VALUES
 -- Operators
 ('John Smith', 'john.smith@emergency.gov', 'hashed_pass_1', 'OPERATOR'),
@@ -42,234 +39,190 @@ INSERT INTO User (name, email, password, role) VALUES
 
 ('fff', 'bomb@gmail.com', '123', 'ADMIN');
 
--- ==================== INCIDENT DATA ====================
--- Edge cases: All statuses, NULL citizen_id, same location incidents,
--- extreme coordinates, time edge cases, various types
+-- ==================== INCIDENT DATA (Alexandria, EGYPT) ====================
+-- Note: Incident.type limited to ('FIRE','MEDICAL','CRIME') in schema.
+-- I mapped non-supported types to the closest allowed type:
+--   Accident -> MEDICAL, Flood -> MEDICAL, Gas Leak -> FIRE, Other -> MEDICAL
 
 INSERT INTO Incident (type, level, description, latitude, longitude, status, time_reported, time_resolved, citizen_id) VALUES
 -- Pending incidents
-('Fire', 'Critical', 'Large building fire, multiple floors affected', 40.7128, -74.0060, 'pending', DATE_SUB(NOW(), INTERVAL 10 MINUTE), NULL, 6),
-('Medical', 'High', 'Heart attack patient, needs immediate attention', 40.7580, -73.9855, 'pending', DATE_SUB(NOW(), INTERVAL 5 MINUTE), NULL, 7),
-('Accident', 'Medium', 'Vehicle collision at intersection', 40.7489, -73.9680, 'pending', DATE_SUB(NOW(), INTERVAL 15 MINUTE), NULL, 8),
-('Crime', 'High', 'Armed robbery in progress', 40.7614, -73.9776, 'pending', DATE_SUB(NOW(), INTERVAL 2 MINUTE), NULL, NULL), -- Anonymous report
+('FIRE', 'HIGH', 'Large building fire, multiple floors affected', 31.2100, 29.9550, 'PENDING', DATE_SUB(NOW(), INTERVAL 10 MINUTE), NULL, 6),
+('MEDICAL', 'HIGH', 'Heart attack patient, needs immediate attention', 31.2058, 29.9537, 'PENDING', DATE_SUB(NOW(), INTERVAL 5 MINUTE), NULL, 7),
+('MEDICAL', 'MEDIUM', 'Vehicle collision at intersection', 31.2190, 29.9488, 'PENDING', DATE_SUB(NOW(), INTERVAL 15 MINUTE), NULL, 8),
+('CRIME', 'HIGH', 'Armed robbery in progress', 31.2009, 29.9187, 'PENDING', DATE_SUB(NOW(), INTERVAL 2 MINUTE), NULL, NULL), -- Anonymous report
 
 -- Assigned incidents
-('Fire', 'High', 'Apartment fire, 3rd floor', 40.7306, -73.9352, 'assigned', DATE_SUB(NOW(), INTERVAL 30 MINUTE), NULL, 9),
-('Medical', 'Critical', 'Multiple casualty accident', 40.7549, -73.9840, 'assigned', DATE_SUB(NOW(), INTERVAL 20 MINUTE), NULL, 10),
-('Flood', 'Medium', 'Water main break, street flooding', 40.7282, -74.0776, 'assigned', DATE_SUB(NOW(), INTERVAL 45 MINUTE), NULL, 11),
-('Gas Leak', 'High', 'Natural gas odor reported, building evacuated', 40.7589, -73.9851, 'assigned', DATE_SUB(NOW(), INTERVAL 25 MINUTE), NULL, 12),
+('FIRE', 'HIGH', 'Apartment fire, 3rd floor', 31.2360, 29.9760, 'ASSIGNED', DATE_SUB(NOW(), INTERVAL 30 MINUTE), NULL, 9),
+('MEDICAL', 'HIGH', 'Multiple casualty accident', 31.2620, 29.9678, 'ASSIGNED', DATE_SUB(NOW(), INTERVAL 20 MINUTE), NULL, 10),
+('MEDICAL', 'MEDIUM', 'Water main break, street flooding (mapped to MEDICAL for schema)', 31.2410, 29.9660, 'ASSIGNED', DATE_SUB(NOW(), INTERVAL 45 MINUTE), NULL, 11),
+('FIRE', 'HIGH', 'Natural gas odor reported, building evacuated (mapped to FIRE)', 31.2390, 29.9700, 'ASSIGNED', DATE_SUB(NOW(), INTERVAL 25 MINUTE), NULL, 12),
 
 -- Resolved incidents
-('Fire', 'Low', 'Small kitchen fire, extinguished', 40.7480, -73.9862, 'resolved', DATE_SUB(NOW(), INTERVAL 2 HOUR), DATE_SUB(NOW(), INTERVAL 90 MINUTE), 6),
-('Medical', 'Medium', 'Elderly person fallen, minor injuries', 40.7614, -73.9776, 'resolved', DATE_SUB(NOW(), INTERVAL 3 HOUR), DATE_SUB(NOW(), INTERVAL 2 HOUR), 7),
-('Accident', 'Low', 'Minor fender bender', 40.7580, -73.9855, 'resolved', DATE_SUB(NOW(), INTERVAL 5 HOUR), DATE_SUB(NOW(), INTERVAL 4 HOUR), 8),
-('Crime', 'Medium', 'Theft reported at store', 40.7128, -74.0060, 'resolved', DATE_SUB(NOW(), INTERVAL 1 DAY), DATE_SUB(NOW(), INTERVAL 23 HOUR), 11),
+('FIRE', 'LOW', 'Small kitchen fire, extinguished', 31.2149, 29.9258, 'RESOLVED', DATE_SUB(NOW(), INTERVAL 2 HOUR), DATE_SUB(NOW(), INTERVAL 90 MINUTE), 6),
+('MEDICAL', 'MEDIUM', 'Elderly person fallen, minor injuries', 31.2001, 29.9219, 'RESOLVED', DATE_SUB(NOW(), INTERVAL 3 HOUR), DATE_SUB(NOW(), INTERVAL 2 HOUR), 7),
+('MEDICAL', 'LOW', 'Minor fender bender', 31.2190, 29.9488, 'RESOLVED', DATE_SUB(NOW(), INTERVAL 5 HOUR), DATE_SUB(NOW(), INTERVAL 4 HOUR), 8),
+('CRIME', 'MEDIUM', 'Theft reported at store', 31.2050, 29.9480, 'RESOLVED', DATE_SUB(NOW(), INTERVAL 1 DAY), DATE_SUB(NOW(), INTERVAL 23 HOUR), 11),
 
 -- Edge cases: Multiple incidents at same location
-('Medical', 'Low', 'Person feeling faint', 40.7128, -74.0060, 'pending', DATE_SUB(NOW(), INTERVAL 3 MINUTE), NULL, 12),
+('MEDICAL', 'LOW', 'Person feeling faint', 31.2050, 29.9480, 'PENDING', DATE_SUB(NOW(), INTERVAL 3 MINUTE), NULL, 12),
 
--- Edge cases: Extreme coordinates (valid range boundaries)
-('Accident', 'Medium', 'Incident at northern boundary', 89.999999, -180.0, 'pending', DATE_SUB(NOW(), INTERVAL 1 HOUR), NULL, 6),
-('Medical', 'High', 'Incident at southern boundary', -89.999999, 180.0, 'pending', DATE_SUB(NOW(), INTERVAL 30 MINUTE), NULL, 7),
+-- Edge cases: "extreme" coordinates mapped inside Alex bounds
+('MEDICAL', 'MEDIUM', 'Incident near northern Alexandria boundary', 31.30000000, 29.70000000, 'PENDING', DATE_SUB(NOW(), INTERVAL 1 HOUR), NULL, 6),
+('MEDICAL', 'HIGH', 'Incident near southern Alexandria boundary', 31.00000000, 30.00000000, 'PENDING', DATE_SUB(NOW(), INTERVAL 30 MINUTE), NULL, 7),
 
 -- Edge cases: Very old incident (recently resolved)
-('Fire', 'High', 'Historical incident - warehouse fire', 40.7282, -73.9776, 'resolved', DATE_SUB(NOW(), INTERVAL 30 DAY), DATE_SUB(NOW(), INTERVAL 29 DAY), 8),
+('FIRE', 'HIGH', 'Historical incident - warehouse fire', 31.2415, 29.9665, 'RESOLVED', DATE_SUB(NOW(), INTERVAL 30 DAY), DATE_SUB(NOW(), INTERVAL 29 DAY), 8),
 
 -- Edge cases: Long description
-('Other', 'Medium', 'This is an incident with a very long description that goes into extensive detail about the situation. The reporter has provided multiple paragraphs of information including the exact sequence of events, all parties involved, potential hazards, and specific requests for assistance. This tests how the system handles larger text fields and ensures that database character limits are appropriate for real-world usage scenarios.', 40.7589, -73.9680, 'pending', DATE_SUB(NOW(), INTERVAL 8 MINUTE), NULL, 10),
+('MEDICAL', 'MEDIUM', 'This is an incident with a very long description that goes into extensive detail about the situation. The reporter has provided multiple paragraphs of information including the exact sequence of events, all parties involved, potential hazards, and specific requests for assistance. This tests how the system handles larger text fields and ensures that database character limits are appropriate for real-world usage scenarios.', 31.2395, 29.9710, 'PENDING', DATE_SUB(NOW(), INTERVAL 8 MINUTE), NULL, 10),
 
 -- Edge cases: Minimal description
-('Other', 'Low', 'Help', 40.7306, -73.9840, 'resolved', DATE_SUB(NOW(), INTERVAL 6 HOUR), DATE_SUB(NOW(), INTERVAL 345 MINUTE), 11),
+('MEDICAL', 'LOW', 'Help', 31.2360, 29.9760, 'RESOLVED', DATE_SUB(NOW(), INTERVAL 6 HOUR), DATE_SUB(NOW(), INTERVAL 345 MINUTE), 11),
 
 -- Edge cases: NULL description
-('Medical', 'Medium', NULL, 40.7489, -74.0776, 'pending', DATE_SUB(NOW(), INTERVAL 12 MINUTE), NULL, 12);
+('MEDICAL', 'MEDIUM', NULL, 31.2195, 29.9480, 'PENDING', DATE_SUB(NOW(), INTERVAL 12 MINUTE), NULL, 12);
 
 -- ==================== VEHICLE DATA ====================
--- Edge cases: Various types, all statuses, NULL operator_id,
--- different capacities, vehicles without operators
--- Update existing records to match ENUM values
+-- Normalize vehicle type/status values to schema ENUMs (all uppercase where required)
 UPDATE Vehicle SET type = 'AMBULANCE' WHERE type IN ('Ambulance', 'ambulance');
 UPDATE Vehicle SET type = 'FIRETRUCK' WHERE type IN ('Fire Truck', 'FireTruck', 'firetruck');
 UPDATE Vehicle SET type = 'POLICE' WHERE type IN ('Police Car', 'Police', 'police');
 
--- Delete vehicles that don't match any of the three types
 DELETE FROM Vehicle WHERE type NOT IN ('AMBULANCE', 'FIRETRUCK', 'POLICE');
 
--- Now insert only valid data
 INSERT INTO Vehicle (type, status, capacity, operator_id) VALUES
--- Ambulances
-('AMBULANCE', 'Available', 2, 1),
-('AMBULANCE', 'Available', 2, 4),
-('AMBULANCE', 'Available', 2, NULL),
-('AMBULANCE', 'OnRoute', 2, 4),
-('AMBULANCE', 'OnRoute', 4, 3),
-('AMBULANCE', 'Resolving', 2, 1),
+('AMBULANCE', 'AVAILABLE', 2, 1),
+('AMBULANCE', 'AVAILABLE', 2, 4),
+('AMBULANCE', 'AVAILABLE', 2, NULL),
+('AMBULANCE', 'ONROUTE', 2, 4),
+('AMBULANCE', 'ONROUTE', 4, 3),
+('AMBULANCE', 'RESOLVING', 2, 1),
 
--- Fire Trucks
-('FIRETRUCK', 'Available', 8, 1),
-('FIRETRUCK', 'Available', 6, NULL),
-('FIRETRUCK', 'OnRoute', 6, 2),
-('FIRETRUCK', 'OnRoute', 4, 1),
-('FIRETRUCK', 'Resolving', 6, 1),
+('FIRETRUCK', 'AVAILABLE', 8, 1),
+('FIRETRUCK', 'AVAILABLE', 6, NULL),
+('FIRETRUCK', 'ONROUTE', 6, 2),
+('FIRETRUCK', 'ONROUTE', 4, 1),
+('FIRETRUCK', 'RESOLVING', 6, 1),
 
--- Police Cars
-('POLICE', 'Available', 4, 3),
-('POLICE', 'Available', 4, NULL),
-('POLICE', 'Available', 2, 2),
-('POLICE', 'Available', 10, NULL),
-('POLICE', 'Resolving', 4, 3);
--- ==================== VEHICLE LOCATION DATA ====================
--- Edge cases: Multiple locations per vehicle (tracking over time),
--- extreme coordinates, same location different times
+('POLICE', 'AVAILABLE', 4, 3),
+('POLICE', 'AVAILABLE', 4, NULL),
+('POLICE', 'AVAILABLE', 2, 2),
+('POLICE', 'AVAILABLE', 10, NULL),
+('POLICE', 'RESOLVING', 4, 3);
 
+-- ==================== VEHICLE LOCATION DATA (Alexandria) ====================
 INSERT INTO vehicle_location (vehicle_id, longitude, latitude, time_stamp) VALUES
--- Vehicle 1 (Ambulance) tracking history
-(1, -74.0060, 40.7128, DATE_SUB(NOW(), INTERVAL 1 HOUR)),
-(1, -74.0050, 40.7138, DATE_SUB(NOW(), INTERVAL 45 MINUTE)),
-(1, -74.0040, 40.7148, DATE_SUB(NOW(), INTERVAL 30 MINUTE)),
-(1, -74.0030, 40.7158, DATE_SUB(NOW(), INTERVAL 15 MINUTE)),
-(1, -74.0020, 40.7168, NOW()),
+-- Vehicle 1 (Ambulance) tracking history (Downtown / Sidi Gaber area)
+(1, 29.9550, 31.2100, DATE_SUB(NOW(), INTERVAL 1 HOUR)),
+(1, 29.9540, 31.2110, DATE_SUB(NOW(), INTERVAL 45 MINUTE)),
+(1, 29.9530, 31.2120, DATE_SUB(NOW(), INTERVAL 30 MINUTE)),
+(1, 29.9520, 31.2130, DATE_SUB(NOW(), INTERVAL 15 MINUTE)),
+(1, 29.9510, 31.2140, NOW()),
 
--- Vehicle 2 (Fire Truck) tracking - on route to incident
-(2, -73.9855, 40.7580, DATE_SUB(NOW(), INTERVAL 30 MINUTE)),
-(2, -73.9865, 40.7570, DATE_SUB(NOW(), INTERVAL 25 MINUTE)),
-(2, -73.9875, 40.7560, DATE_SUB(NOW(), INTERVAL 20 MINUTE)),
-(2, -73.9352, 40.7306, NOW()), -- At incident location
+-- Vehicle 2 (Fire Truck) tracking - on route to incident (Smouha / Gleem)
+(2, 29.9537, 31.2058, DATE_SUB(NOW(), INTERVAL 30 MINUTE)),
+(2, 29.9527, 31.2048, DATE_SUB(NOW(), INTERVAL 25 MINUTE)),
+(2, 29.9517, 31.2038, DATE_SUB(NOW(), INTERVAL 20 MINUTE)),
+(2, 29.9760, 31.2360, NOW()), -- At incident location (Stanley/Gleem area)
 
--- Vehicle 3 (Police Car) - stationary
-(3, -73.9680, 40.7489, DATE_SUB(NOW(), INTERVAL 2 HOUR)),
-(3, -73.9680, 40.7489, DATE_SUB(NOW(), INTERVAL 1 HOUR)),
-(3, -73.9680, 40.7489, NOW()),
+-- Vehicle 3 (Police Car) - stationary (near Alexandria center)
+(3, 29.9488, 31.2190, DATE_SUB(NOW(), INTERVAL 2 HOUR)),
+(3, 29.9488, 31.2190, DATE_SUB(NOW(), INTERVAL 1 HOUR)),
+(3, 29.9488, 31.2190, NOW()),
 
--- Vehicle 4 (Ambulance) - rapid movement
-(4, -73.9840, 40.7549, DATE_SUB(NOW(), INTERVAL 10 MINUTE)),
-(4, -73.9850, 40.7559, DATE_SUB(NOW(), INTERVAL 8 MINUTE)),
-(4, -73.9860, 40.7569, DATE_SUB(NOW(), INTERVAL 6 MINUTE)),
-(4, -73.9870, 40.7579, DATE_SUB(NOW(), INTERVAL 4 MINUTE)),
-(4, -73.9880, 40.7589, DATE_SUB(NOW(), INTERVAL 2 MINUTE)),
-(4, -73.9851, 40.7589, NOW()),
+-- Vehicle 4 (Ambulance) - rapid movement (Miami / Montaza corridor)
+(4, 29.9678, 31.2620, DATE_SUB(NOW(), INTERVAL 10 MINUTE)),
+(4, 29.9688, 31.2610, DATE_SUB(NOW(), INTERVAL 8 MINUTE)),
+(4, 29.9698, 31.2600, DATE_SUB(NOW(), INTERVAL 6 MINUTE)),
+(4, 29.9708, 31.2590, DATE_SUB(NOW(), INTERVAL 4 MINUTE)),
+(4, 29.9718, 31.2580, DATE_SUB(NOW(), INTERVAL 2 MINUTE)),
+(4, 29.9700, 31.2390, NOW()),
 
--- Vehicles 5-10 - current locations only
-(5, -74.0776, 40.7282, NOW()),
-(6, -73.9862, 40.7480, DATE_SUB(NOW(), INTERVAL 3 DAY)), -- Old location for maintenance vehicle
-(7, -73.9776, 40.7614, DATE_SUB(NOW(), INTERVAL 5 DAY)), -- Old location for maintenance vehicle
-(8, -73.9855, 40.7580, DATE_SUB(NOW(), INTERVAL 10 DAY)), -- Very old location for out_of_service
-(9, -73.9680, 40.7489, NOW()),
-(10, -73.9840, 40.7549, NOW()),
+-- Vehicles 5-10 - current locations only (various neighborhoods)
+(5, 29.9660, 31.2410, NOW()),
+(6, 29.9258, 31.2149, DATE_SUB(NOW(), INTERVAL 3 DAY)), -- Old location for maintenance vehicle
+(7, 29.9765, 31.2354, DATE_SUB(NOW(), INTERVAL 5 DAY)), -- Old location for maintenance vehicle
+(8, 29.9710, 31.2395, DATE_SUB(NOW(), INTERVAL 10 DAY)), -- Very old location for out_of_service
+(9, 29.9488, 31.2190, NOW()),
+(10, 29.9678, 31.2620, NOW()),
 
--- Edge case: Extreme coordinates
-(11, -180.0, 89.999999, NOW()),
-(12, 180.0, -89.999999, NOW()),
+-- Edge case: "extreme" coordinates kept inside Alexandria bounding area
+(11, 29.70000000, 31.30000000, NOW()),
+(12, 30.00000000, 31.00000000, NOW()),
 
--- Multiple vehicles at same location (station)
-(13, -74.0060, 40.7128, NOW()),
-(14, -74.0060, 40.7128, NOW()),
-(15, -74.0060, 40.7128, NOW());
+-- Multiple vehicles at same station (downtown)
+(13, 29.9550, 31.2100, NOW()),
+(14, 29.9550, 31.2100, NOW()),
+(15, 29.9550, 31.2100, NOW());
 
 -- ==================== NOTIFICATION DATA ====================
--- Edge cases: All notification types, NULL time_delivered (unread),
--- various delivery delays, multiple notifications to same user
-
+-- Normalize notification_type values to schema ENUMs (uppercase)
 INSERT INTO Notification (notified_id, notification_type, content, time_sent, time_delivered) VALUES
--- incident_alert notifications
-(6, 'incident_alert', 'Your reported fire incident has been assigned to Fire Truck #2', DATE_SUB(NOW(), INTERVAL 25 MINUTE), DATE_SUB(NOW(), INTERVAL 25 MINUTE)),
-(7, 'incident_alert', 'Medical emergency assigned. Ambulance en route.', DATE_SUB(NOW(), INTERVAL 18 MINUTE), DATE_SUB(NOW(), INTERVAL 18 MINUTE)),
-(8, 'incident_alert', 'Your accident report is being processed', DATE_SUB(NOW(), INTERVAL 12 MINUTE), NULL), -- Undelivered
+(6, 'INCIDENT_ALERT', 'Your reported fire incident has been assigned to Fire Truck #2', DATE_SUB(NOW(), INTERVAL 25 MINUTE), DATE_SUB(NOW(), INTERVAL 25 MINUTE)),
+(7, 'INCIDENT_ALERT', 'Medical emergency assigned. Ambulance en route.', DATE_SUB(NOW(), INTERVAL 18 MINUTE), DATE_SUB(NOW(), INTERVAL 18 MINUTE)),
+(8, 'INCIDENT_ALERT', 'Your accident report is being processed', DATE_SUB(NOW(), INTERVAL 12 MINUTE), NULL), -- Undelivered
 
--- assignment_request notifications
-(1, 'assignment_request', 'New assignment: Fire incident at 40.7306, -73.9352', DATE_SUB(NOW(), INTERVAL 30 MINUTE), DATE_SUB(NOW(), INTERVAL 29 MINUTE)),
-(2, 'assignment_request', 'Emergency medical response needed at intersection', DATE_SUB(NOW(), INTERVAL 20 MINUTE), DATE_SUB(NOW(), INTERVAL 19 MINUTE)),
-(3, 'assignment_request', 'Crime in progress - immediate response required', DATE_SUB(NOW(), INTERVAL 2 MINUTE), NULL), -- Just sent
-(4, 'assignment_request', 'Gas leak emergency - proceed to location', DATE_SUB(NOW(), INTERVAL 25 MINUTE), DATE_SUB(NOW(), INTERVAL 24 MINUTE)),
+(1, 'ASSIGNMENT_REQUEST', 'New assignment: Fire incident at 31.2360, 29.9760', DATE_SUB(NOW(), INTERVAL 30 MINUTE), DATE_SUB(NOW(), INTERVAL 29 MINUTE)),
+(2, 'ASSIGNMENT_REQUEST', 'Emergency medical response needed at intersection', DATE_SUB(NOW(), INTERVAL 20 MINUTE), DATE_SUB(NOW(), INTERVAL 19 MINUTE)),
+(3, 'ASSIGNMENT_REQUEST', 'Crime in progress - immediate response required', DATE_SUB(NOW(), INTERVAL 2 MINUTE), NULL), -- Just sent
+(4, 'ASSIGNMENT_REQUEST', 'Gas leak emergency - proceed to location', DATE_SUB(NOW(), INTERVAL 25 MINUTE), DATE_SUB(NOW(), INTERVAL 24 MINUTE)),
 
--- assignment_response notifications
-(13, 'assignment_response', 'Operator John Smith accepted assignment #1', DATE_SUB(NOW(), INTERVAL 29 MINUTE), DATE_SUB(NOW(), INTERVAL 29 MINUTE)),
-(14, 'assignment_response', 'Assignment #2 completed successfully', DATE_SUB(NOW(), INTERVAL 10 MINUTE), DATE_SUB(NOW(), INTERVAL 10 MINUTE)),
-(15, 'assignment_response', 'Assignment #3 rejected by operator - vehicle unavailable', DATE_SUB(NOW(), INTERVAL 5 MINUTE), DATE_SUB(NOW(), INTERVAL 5 MINUTE)),
+(13, 'ASSIGNMENT_RESPONSE', 'Operator John Smith accepted assignment #1', DATE_SUB(NOW(), INTERVAL 29 MINUTE), DATE_SUB(NOW(), INTERVAL 29 MINUTE)),
+(14, 'ASSIGNMENT_RESPONSE', 'Assignment #2 completed successfully', DATE_SUB(NOW(), INTERVAL 10 MINUTE), DATE_SUB(NOW(), INTERVAL 10 MINUTE)),
+(15, 'ASSIGNMENT_RESPONSE', 'Assignment #3 rejected by operator - vehicle unavailable', DATE_SUB(NOW(), INTERVAL 5 MINUTE), DATE_SUB(NOW(), INTERVAL 5 MINUTE)),
 
--- general notifications
-(1, 'general', 'System maintenance scheduled for tonight at 2 AM', DATE_SUB(NOW(), INTERVAL 5 HOUR), DATE_SUB(NOW(), INTERVAL 4 HOUR)),
-(13, 'general', 'New dispatch protocol effective immediately', DATE_SUB(NOW(), INTERVAL 1 DAY), DATE_SUB(NOW(), INTERVAL 23 HOUR)),
-(14, 'general', 'Training session scheduled for next week', DATE_SUB(NOW(), INTERVAL 2 DAY), NULL), -- Unread
+(1, 'GENERAL', 'System maintenance scheduled for tonight at 2 AM', DATE_SUB(NOW(), INTERVAL 5 HOUR), DATE_SUB(NOW(), INTERVAL 4 HOUR)),
+(13, 'GENERAL', 'New dispatch protocol effective immediately', DATE_SUB(NOW(), INTERVAL 1 DAY), DATE_SUB(NOW(), INTERVAL 23 HOUR)),
+(14, 'GENERAL', 'Training session scheduled for next week', DATE_SUB(NOW(), INTERVAL 2 DAY), NULL), -- Unread
 
--- Edge cases: Long content
-(6, 'general', 'This is a notification with extensive content that provides detailed information about multiple topics. It includes instructions, warnings, procedural updates, and contact information. This tests the system''s ability to handle longer notification messages that might be sent during complex emergency situations or for administrative purposes that require detailed explanations.', DATE_SUB(NOW(), INTERVAL 30 MINUTE), DATE_SUB(NOW(), INTERVAL 25 MINUTE)),
+(6, 'GENERAL', 'This is a notification with extensive content that provides detailed information about multiple topics. It includes instructions, warnings, procedural updates, and contact information. This tests the system''s ability to handle longer notification messages that might be sent during complex emergency situations or for administrative purposes that require detailed explanations.', DATE_SUB(NOW(), INTERVAL 30 MINUTE), DATE_SUB(NOW(), INTERVAL 25 MINUTE)),
 
--- Edge cases: Multiple notifications to same user
-(1, 'assignment_request', 'Additional assignment - backup requested', DATE_SUB(NOW(), INTERVAL 15 MINUTE), DATE_SUB(NOW(), INTERVAL 14 MINUTE)),
-(1, 'assignment_request', 'Priority assignment - update on previous incident', DATE_SUB(NOW(), INTERVAL 10 MINUTE), DATE_SUB(NOW(), INTERVAL 9 MINUTE)),
-(1, 'general', 'Shift change reminder', DATE_SUB(NOW(), INTERVAL 1 HOUR), NULL),
+(1, 'ASSIGNMENT_REQUEST', 'Additional assignment - backup requested', DATE_SUB(NOW(), INTERVAL 15 MINUTE), DATE_SUB(NOW(), INTERVAL 14 MINUTE)),
+(1, 'ASSIGNMENT_REQUEST', 'Priority assignment - update on previous incident', DATE_SUB(NOW(), INTERVAL 10 MINUTE), DATE_SUB(NOW(), INTERVAL 9 MINUTE)),
+(1, 'GENERAL', 'Shift change reminder', DATE_SUB(NOW(), INTERVAL 1 HOUR), NULL),
 
--- Edge cases: Delayed delivery
-(2, 'incident_alert', 'Notification sent but delayed', DATE_SUB(NOW(), INTERVAL 1 HOUR), DATE_SUB(NOW(), INTERVAL 30 MINUTE)), -- 30 min delay
-(3, 'general', 'System alert', DATE_SUB(NOW(), INTERVAL 2 HOUR), DATE_SUB(NOW(), INTERVAL 10 MINUTE)), -- Very delayed
+(2, 'INCIDENT_ALERT', 'Notification sent but delayed', DATE_SUB(NOW(), INTERVAL 1 HOUR), DATE_SUB(NOW(), INTERVAL 30 MINUTE)), -- 30 min delay
+(3, 'GENERAL', 'System alert', DATE_SUB(NOW(), INTERVAL 2 HOUR), DATE_SUB(NOW(), INTERVAL 10 MINUTE)), -- Very delayed
 
--- Edge cases: Rapid succession notifications
-(10, 'incident_alert', 'Incident status update 1', DATE_SUB(NOW(), INTERVAL 5 MINUTE), DATE_SUB(NOW(), INTERVAL 5 MINUTE)),
-(10, 'incident_alert', 'Incident status update 2', DATE_SUB(NOW(), INTERVAL 4 MINUTE), DATE_SUB(NOW(), INTERVAL 4 MINUTE)),
-(10, 'incident_alert', 'Incident status update 3', DATE_SUB(NOW(), INTERVAL 3 MINUTE), DATE_SUB(NOW(), INTERVAL 3 MINUTE));
+(10, 'INCIDENT_ALERT', 'Incident status update 1', DATE_SUB(NOW(), INTERVAL 5 MINUTE), DATE_SUB(NOW(), INTERVAL 5 MINUTE)),
+(10, 'INCIDENT_ALERT', 'Incident status update 2', DATE_SUB(NOW(), INTERVAL 4 MINUTE), DATE_SUB(NOW(), INTERVAL 4 MINUTE)),
+(10, 'INCIDENT_ALERT', 'Incident status update 3', DATE_SUB(NOW(), INTERVAL 3 MINUTE), DATE_SUB(NOW(), INTERVAL 3 MINUTE));
 
 -- ==================== ASSIGNMENT DATA ====================
--- Edge cases: All statuses, multiple assignments per incident,
--- canceled/rejected assignments, completed assignments with time_resolved
-
+-- Normalize assignment.status to schema ENUMs (uppercase)
 INSERT INTO Assignment (dispatcher_id, incident_id, vehicle_id, time_assigned, time_resolved, status) VALUES
--- active assignments
-(13, 5, 2, DATE_SUB(NOW(), INTERVAL 30 MINUTE), NULL, 'active'),
-(14, 6, 4, DATE_SUB(NOW(), INTERVAL 20 MINUTE), NULL, 'active'),
-(15, 7, 9, DATE_SUB(NOW(), INTERVAL 45 MINUTE), NULL, 'active'),
-(16, 8, 15, DATE_SUB(NOW(), INTERVAL 25 MINUTE), NULL, 'active'),
+(13, 5, 2, DATE_SUB(NOW(), INTERVAL 30 MINUTE), NULL, 'ACTIVE'),
+(14, 6, 4, DATE_SUB(NOW(), INTERVAL 20 MINUTE), NULL, 'ACTIVE'),
+(15, 7, 9, DATE_SUB(NOW(), INTERVAL 45 MINUTE), NULL, 'ACTIVE'),
+(16, 8, 15, DATE_SUB(NOW(), INTERVAL 25 MINUTE), NULL, 'ACTIVE'),
 
--- completed assignments
-(13, 9, 1, DATE_SUB(NOW(), INTERVAL 2 HOUR), DATE_SUB(NOW(), INTERVAL 90 MINUTE), 'completed'),
-(14, 10, 3, DATE_SUB(NOW(), INTERVAL 3 HOUR), DATE_SUB(NOW(), INTERVAL 2 HOUR), 'completed'),
-(15, 11, 5, DATE_SUB(NOW(), INTERVAL 5 HOUR), DATE_SUB(NOW(), INTERVAL 4 HOUR), 'completed'),
-(16, 12, 10, DATE_SUB(NOW(), INTERVAL 1 DAY), DATE_SUB(NOW(), INTERVAL 23 HOUR), 'completed'),
+(13, 9, 1, DATE_SUB(NOW(), INTERVAL 2 HOUR), DATE_SUB(NOW(), INTERVAL 90 MINUTE), 'COMPLETED'),
+(14, 10, 3, DATE_SUB(NOW(), INTERVAL 3 HOUR), DATE_SUB(NOW(), INTERVAL 2 HOUR), 'COMPLETED'),
+(15, 11, 5, DATE_SUB(NOW(), INTERVAL 5 HOUR), DATE_SUB(NOW(), INTERVAL 4 HOUR), 'COMPLETED'),
+(16, 12, 10, DATE_SUB(NOW(), INTERVAL 1 DAY), DATE_SUB(NOW(), INTERVAL 23 HOUR), 'COMPLETED'),
 
--- canceled assignments
-(13, 1, 6, DATE_SUB(NOW(), INTERVAL 15 MINUTE), DATE_SUB(NOW(), INTERVAL 10 MINUTE), 'canceled'), -- Vehicle went to maintenance
-(14, 2, 7, DATE_SUB(NOW(), INTERVAL 8 MINUTE), DATE_SUB(NOW(), INTERVAL 5 MINUTE), 'canceled'), -- Incident resolved by others
+(13, 1, 6, DATE_SUB(NOW(), INTERVAL 15 MINUTE), DATE_SUB(NOW(), INTERVAL 10 MINUTE), 'CANCELED'), -- Vehicle went to maintenance
+(14, 2, 7, DATE_SUB(NOW(), INTERVAL 8 MINUTE), DATE_SUB(NOW(), INTERVAL 5 MINUTE), 'CANCELED'), -- Incident resolved by others
 
--- rejected assignments
-(15, 3, 8, DATE_SUB(NOW(), INTERVAL 20 MINUTE), DATE_SUB(NOW(), INTERVAL 18 MINUTE), 'rejected'), -- Operator rejected
-(16, 4, 11, DATE_SUB(NOW(), INTERVAL 3 MINUTE), DATE_SUB(NOW(), INTERVAL 2 MINUTE), 'rejected'), -- Vehicle not suitable
+(15, 3, 8, DATE_SUB(NOW(), INTERVAL 20 MINUTE), DATE_SUB(NOW(), INTERVAL 18 MINUTE), 'REJECTED'), -- Operator rejected
+(16, 4, 11, DATE_SUB(NOW(), INTERVAL 3 MINUTE), DATE_SUB(NOW(), INTERVAL 2 MINUTE), 'REJECTED'), -- Vehicle not suitable
 
--- Edge case: Multiple assignments for same incident (first rejected/canceled, then active)
-(13, 1, 1, DATE_SUB(NOW(), INTERVAL 5 MINUTE), NULL, 'active'), -- Re-assigned after cancellation
+(13, 1, 1, DATE_SUB(NOW(), INTERVAL 5 MINUTE), NULL, 'ACTIVE'), -- Re-assigned after cancellation
 
--- Edge case: Same vehicle multiple assignments over time
-(13, 16, 1, DATE_SUB(NOW(), INTERVAL 6 HOUR), DATE_SUB(NOW(), INTERVAL 345 MINUTE), 'completed'),
+(13, 16, 1, DATE_SUB(NOW(), INTERVAL 6 HOUR), DATE_SUB(NOW(), INTERVAL 345 MINUTE), 'COMPLETED'),
 
--- Edge case: Very quick completion
-(14, 18, 3, DATE_SUB(NOW(), INTERVAL 30 MINUTE), DATE_SUB(NOW(), INTERVAL 28 MINUTE), 'completed'), -- 2 min response
+(14, 18, 3, DATE_SUB(NOW(), INTERVAL 30 MINUTE), DATE_SUB(NOW(), INTERVAL 28 MINUTE), 'COMPLETED'), -- 2 min response
 
--- Edge case: Long-running assignment
-(15, 16, 2, DATE_SUB(NOW(), INTERVAL 30 DAY), DATE_SUB(NOW(), INTERVAL 29 DAY), 'completed'),
+(15, 16, 2, DATE_SUB(NOW(), INTERVAL 30 DAY), DATE_SUB(NOW(), INTERVAL 29 DAY), 'COMPLETED'),
 
--- Edge case: Assignment to vehicle without operator (pool vehicle)
-(16, 13, 12, DATE_SUB(NOW(), INTERVAL 3 MINUTE), NULL, 'active'),
+(16, 13, 12, DATE_SUB(NOW(), INTERVAL 3 MINUTE), NULL, 'ACTIVE'),
 
--- Edge case: Multiple assignments by same dispatcher
-(13, 14, 14, DATE_SUB(NOW(), INTERVAL 1 HOUR), DATE_SUB(NOW(), INTERVAL 59 MINUTE), 'completed'),
-(13, 15, 14, DATE_SUB(NOW(), INTERVAL 2 HOUR), DATE_SUB(NOW(), INTERVAL 90 MINUTE), 'completed');
+(13, 14, 14, DATE_SUB(NOW(), INTERVAL 1 HOUR), DATE_SUB(NOW(), INTERVAL 59 MINUTE), 'COMPLETED'),
+(13, 15, 14, DATE_SUB(NOW(), INTERVAL 2 HOUR), DATE_SUB(NOW(), INTERVAL 90 MINUTE), 'COMPLETED');
 
--- ==================== VERIFICATION QUERIES ====================
--- Uncomment these to verify the data after insertion
-
+-- ==================== VERIFICATION QUERIES (optional) ====================
 -- SELECT role, COUNT(*) as count FROM User GROUP BY role;
 -- SELECT status, COUNT(*) as count FROM Incident GROUP BY status;
 -- SELECT status, COUNT(*) as count FROM Vehicle GROUP BY status;
 -- SELECT notification_type, COUNT(*) as count FROM Notification GROUP BY notification_type;
 -- SELECT status, COUNT(*) as count FROM Assignment GROUP BY status;
-
--- Check for NULL citizen_id incidents
--- SELECT COUNT(*) as anonymous_incidents FROM Incident WHERE citizen_id IS NULL;
-
--- Check for undelivered notifications
--- SELECT COUNT(*) as undelivered FROM Notification WHERE time_delivered IS NULL;
-
--- Verify all enum values are represented
--- SELECT DISTINCT role FROM User ORDER BY role;
--- SELECT DISTINCT status FROM Incident ORDER BY status;
--- SELECT DISTINCT notification_type FROM Notification ORDER BY notification_type;
--- SELECT DISTINCT status FROM Assignment ORDER BY status;

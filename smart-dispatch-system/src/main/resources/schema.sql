@@ -26,12 +26,12 @@ CREATE TABLE User (
 -- Create Incident table
 CREATE TABLE Incident (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    type ENUM('Fire', 'Medical', 'Crime', 'Accident') NOT NULL,
-    level ENUM('High', 'Medium', 'Low', 'Critical') NOT NULL,
+    type ENUM('FIRE', 'MEDICAL', 'CRIME') NOT NULL,
+    level ENUM('HIGH', 'MEDIUM', 'LOW') NOT NULL,
     description TEXT,
     latitude DECIMAL(10, 8) NOT NULL,
     longitude DECIMAL(11, 8) NOT NULL,
-    status ENUM('pending', 'assigned', 'resolved') NOT NULL,
+    status ENUM('PENDING', 'ASSIGNED', 'RESOLVED') NOT NULL,
     time_reported TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     time_resolved TIMESTAMP NULL,
     citizen_id INT NULL,
@@ -48,7 +48,7 @@ CREATE TABLE Incident (
 CREATE TABLE Vehicle (
     id INT AUTO_INCREMENT PRIMARY KEY,
     type ENUM('AMBULANCE', 'FIRETRUCK', 'POLICE')  NOT NULL,
-    status ENUM('Available', 'OnRoute', 'Resolving') NOT NULL,
+    status ENUM('AVAILABLE', 'ONROUTE', 'RESOLVING') NOT NULL,
     capacity INT NOT NULL CHECK (capacity > 0),
     operator_id INT NULL,
     FOREIGN KEY (operator_id) REFERENCES User(id) ON DELETE SET NULL,
@@ -74,7 +74,7 @@ CREATE TABLE vehicle_location (
 CREATE TABLE Notification (
     id INT AUTO_INCREMENT PRIMARY KEY,
     notified_id INT NOT NULL,
-    notification_type ENUM('incident_alert', 'assignment_request', 'assignment_response', 'general') NOT NULL,
+    notification_type ENUM('INCIDENT_ALERT', 'ASSIGNMENT_REQUEST', 'ASSIGNMENT_RESPONSE', 'GENERAL') NOT NULL,
     content TEXT NOT NULL,
     time_sent TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     time_delivered TIMESTAMP NULL,
@@ -93,7 +93,7 @@ CREATE TABLE Assignment (
     vehicle_id INT NOT NULL,
     time_assigned TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     time_resolved TIMESTAMP NULL,
-    status ENUM('active', 'completed', 'canceled', 'rejected') NOT NULL,
+    status ENUM('ACTIVE', 'COMPLETED', 'CANCELED', 'REJECTED') NOT NULL,
     FOREIGN KEY (dispatcher_id) REFERENCES User(id) ON DELETE RESTRICT,
     FOREIGN KEY (incident_id) REFERENCES Incident(id) ON DELETE RESTRICT,
     FOREIGN KEY (vehicle_id) REFERENCES Vehicle(id) ON DELETE RESTRICT,
