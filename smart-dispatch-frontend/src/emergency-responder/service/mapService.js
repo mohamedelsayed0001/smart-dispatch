@@ -266,11 +266,6 @@ class MapService {
     return `https://www.google.com/maps/dir/?api=1&origin=${start.latitude},${start.longitude}&destination=${end.latitude},${end.longitude}&travelmode=driving`;
   }
 
-  // Generate Waze URL for navigation
-  getWazeUrl(end) {
-    return `https://waze.com/ul?ll=${end.latitude},${end.longitude}&navigate=yes`;
-  }
-
   // Destroy map
   destroy() {
     if (this.map) {

@@ -14,7 +14,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/responder")
 @RequiredArgsConstructor
-@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:5173"})
+@CrossOrigin(origins = { "http://localhost:3000", "http://localhost:5173" })
 public class ResponderController {
 
     @Autowired
@@ -99,11 +99,11 @@ public class ResponderController {
     public ResponseEntity<Void> acceptAssignment(
             @PathVariable Integer assignmentId,
             @PathVariable Integer responderId) {
-        
+
         StatusUpdateDTO statusDTO = new StatusUpdateDTO();
         statusDTO.setVehicleStatus("On Route");
         statusDTO.setAssignmentStatus("active");
-        
+
         responderService.updateStatus(assignmentId, responderId, statusDTO);
         return ResponseEntity.ok().build();
     }
@@ -115,10 +115,10 @@ public class ResponderController {
     public ResponseEntity<Void> markArrival(
             @PathVariable Integer assignmentId,
             @PathVariable Integer responderId) {
-        
+
         StatusUpdateDTO statusDTO = new StatusUpdateDTO();
         statusDTO.setVehicleStatus("Resolving");
-        
+
         responderService.updateStatus(assignmentId, responderId, statusDTO);
         return ResponseEntity.ok().build();
     }
@@ -130,11 +130,61 @@ public class ResponderController {
     public ResponseEntity<Void> completeAssignment(
             @PathVariable Integer assignmentId,
             @PathVariable Integer responderId) {
-        
+
         StatusUpdateDTO statusDTO = new StatusUpdateDTO();
         statusDTO.setAssignmentStatus("completed");
-        
+
         responderService.updateStatus(assignmentId, responderId, statusDTO);
         return ResponseEntity.ok().build();
+    }
+
+    /**
+     * Get all assignments (not just active) - paginated
+     */
+    @GetMapping("/assignments/{responderId}")
+    public ResponseEntity<List<AssignmentDTO>> getAllAssignments(
+            @PathVariable Integer responderId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        List<AssignmentDTO> assignments = responderService.getAllAssignments(responderId, page, size);
+        return ResponseEntity.ok(assignments);
+    }
+
+    /**
+     * Get notifications for responder - paginated
+     */
+    @GetMapping("/notifications/{responderId}")
+    public ResponseEntity<List<NotificationDTO>> getNotifications(
+            @PathVariable Integer responderId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        List<NotificationDTO> notifications = responderService.getNotifications(responderId, page, size);
+        return ResponseEntity.ok(notifications);
+    }
+
+    /**
+     * Respond to assignment notification (accept/reject)
+     */
+    @PostMapping("/assignments/{assignmentId}/respond/{responderId}")
+    public ResponseEntity<AssignmentActionResponseDTO> respondToAssignment(
+            @PathVariable Integer assignmentId,
+            @PathVariable Integer responderId,
+            @RequestBody AssignmentResponseDTO responseDTO) {
+        AssignmentActionResponseDTO result = responderService.respondToAssignment(
+                assignmentId,
+                responderId,
+                responseDTO.getResponse());
+        return ResponseEntity.ok(result);
+    }
+
+    /**
+     * Cancel assignment
+     */
+    @PostMapping("/assignments/{assignmentId}/cancel/{responderId}")
+    public ResponseEntity<AssignmentActionResponseDTO> cancelAssignment(
+            @PathVariable Integer assignmentId,
+            @PathVariable Integer responderId) {
+        AssignmentActionResponseDTO result = responderService.cancelAssignment(assignmentId, responderId);
+        return ResponseEntity.ok(result);
     }
 }

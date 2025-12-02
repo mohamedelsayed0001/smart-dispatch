@@ -23,10 +23,6 @@ public class AssignmentDAO {
       +
       "time_resolved, status FROM Assignment WHERE vehicle_id = ? AND status = ?";
 
-  private static final String SELECT_BY_VEHICLE_ORDER_BY_TIME = "SELECT id, dispatcher_id, incident_id, vehicle_id, time_assigned, "
-      +
-      "time_resolved, status FROM Assignment WHERE vehicle_id = ? ORDER BY time_assigned DESC";
-
   private static final String UPDATE_STATUS = "UPDATE Assignment SET status = ?, time_resolved = ? WHERE id = ?";
 
   private final RowMapper<Assignment> assignmentRowMapper = (rs, rowNum) -> {
@@ -64,7 +60,9 @@ public class AssignmentDAO {
   }
 
   public List<Assignment> findByVehicleIdOrderByTimeAssignedDesc(Integer vehicleId) {
-    return jdbcTemplate.query(SELECT_BY_VEHICLE_ORDER_BY_TIME, assignmentRowMapper, vehicleId);
+    String sql = "SELECT * FROM Assignment WHERE vehicle_id = ? " +
+        "ORDER BY time_assigned DESC";
+    return jdbcTemplate.query(sql, assignmentRowMapper, vehicleId);
   }
 
   public List<Assignment> findByDispatcherId(Integer dispatcherId) {

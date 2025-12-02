@@ -41,11 +41,11 @@ INSERT INTO Incident (type, level, description, latitude, longitude, status, tim
 
 -- ==================== VEHICLE DATA ====================
 INSERT INTO Vehicle (type, status, capacity, operator_id) VALUES
-('Ambulance', 'Available', 2, 1),
-('Fire Truck', 'Available', 6, 2),
-('Police Car', 'Available', 4, 3),
-('Ambulance', 'Available', 2, NULL),
-('Fire Truck', 'Available', 8, NULL);
+('Ambulance', 'AVAILABLE', 2, 1),
+('Fire Truck', 'ON_ROUTE', 6, 2),
+('Police Car', 'RESOLVING', 4, 3),
+('Ambulance', 'AVAILABLE', 2, NULL),
+('Fire Truck', 'AVAILABLE', 8, NULL);
 
 -- ==================== VEHICLE LOCATION DATA ====================
 -- Using Cairo coordinates

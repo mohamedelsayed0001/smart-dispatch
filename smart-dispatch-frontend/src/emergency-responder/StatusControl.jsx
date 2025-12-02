@@ -11,16 +11,16 @@ const StatusControl = ({
   const [pendingAction, setPendingAction] = useState(null);
 
   const statusOptions = [
-    { value: 'Available', label: 'Available', color: 'var(--status-available)', icon: '✓' },
-    { value: 'On Route', label: 'En Route', color: 'var(--status-on-route)', icon: '🚗' },
-    { value: 'Resolving', label: 'At Scene', color: 'var(--status-resolving)', icon: '🔧' },
+    { value: 'AVAILABLE', label: 'AVAILABLE', color: 'var(--status-available)', icon: '✓' },
+    { value: 'ON_ROUTE', label: 'En Route', color: 'var(--status-on-route)', icon: '🚗' },
+    { value: 'RESOLVING', label: 'At Scene', color: 'var(--status-resolving)', icon: '🔧' },
   ];
 
   const actions = {
     accept: {
       label: 'Accept Assignment',
       icon: '✓',
-      vehicleStatus: 'On Route',
+      vehicleStatus: 'ON_ROUTE',
       assignmentStatus: 'active',
       color: 'var(--status-available)',
       confirmMessage: 'Accept this assignment and start heading to the incident?',
@@ -28,7 +28,7 @@ const StatusControl = ({
     arrive: {
       label: 'Mark Arrival',
       icon: '📍',
-      vehicleStatus: 'Resolving',
+      vehicleStatus: 'RESOLVING',
       confirmMessage: 'Mark that you have arrived at the scene?',
     },
     complete: {
@@ -47,11 +47,11 @@ const StatusControl = ({
       available.push(actions.accept);
     }
 
-    if (currentStatus === 'On Route' && assignmentStatus === 'active') {
+    if (currentStatus === 'ON_ROUTE' && assignmentStatus === 'active') {
       available.push(actions.arrive);
     }
 
-    if (currentStatus === 'Resolving' && assignmentStatus === 'active') {
+    if (currentStatus === 'RESOLVING' && assignmentStatus === 'active') {
       available.push(actions.complete);
     }
 
