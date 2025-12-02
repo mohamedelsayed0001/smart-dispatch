@@ -21,16 +21,18 @@ import java.util.List;
 public class JwtAuthFilter extends OncePerRequestFilter {
 
     private static final List<String> PUBLIC_URLS = List.of(
-            "/api/user/login",
-            "/api/user/signup",
+            "/api/auth/login",
+            "/api/auth/signup",
             "/api/check/users",
             "/ws"
     );
 
     private final JwtService jwtService;
+    private final boolean securityEnabled;
 
-    JwtAuthFilter(JwtService jwtService) {
+    JwtAuthFilter(JwtService jwtService, @org.springframework.beans.factory.annotation.Value("${app.security.enabled:true}") boolean securityEnabled) {
         this.jwtService = jwtService;
+        this.securityEnabled = securityEnabled;
     }
 
     @Override
@@ -38,6 +40,12 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain)
             throws ServletException, IOException {
+
+        // If security is disabled, skip authentication checks and continue the chain
+        if (!securityEnabled) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
         String path = request.getServletPath();
 

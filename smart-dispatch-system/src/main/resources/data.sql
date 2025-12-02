@@ -15,14 +15,11 @@ SET FOREIGN_KEY_CHECKS = 1;
 
 -- ==================== USER DATA ====================
 INSERT INTO User (name, email, password, role) VALUES
--- Operators
 ('John Smith', 'john.smith@emergency.gov', 'hashed_pass_1', 'OPERATOR'),
 ('María García', 'maria.garcia@emergency.gov', 'hashed_pass_2', 'OPERATOR'),
 ('李明 (Li Ming)', 'li.ming@emergency.gov', 'hashed_pass_3', 'OPERATOR'),
 ('Sarah O''Connor', 'sarah.oconnor@emergency.gov', 'hashed_pass_4', 'OPERATOR'),
 ('Inactive Operator', 'inactive.operator@emergency.gov', 'hashed_pass_5', 'OPERATOR'),
-
--- Citizens
 ('Alice Johnson', 'alice.j@gmail.com', 'hashed_pass_6', 'CITIZEN'),
 ('Bob Brown', 'bob.brown@yahoo.com', 'hashed_pass_7', 'CITIZEN'),
 ('Charlie Davis-Wilson', 'charlie+test@email.com', 'hashed_pass_8', 'CITIZEN'),
@@ -30,13 +27,10 @@ INSERT INTO User (name, email, password, role) VALUES
 ('Anonymous Reporter', 'anon123@protonmail.com', 'hashed_pass_10', 'CITIZEN'),
 ('Test Citizen', 'test.citizen@test.com', 'hashed_pass_11', 'CITIZEN'),
 ('José Hernández', 'jose.hernandez@mail.com', 'hashed_pass_12', 'CITIZEN'),
-
--- Dispatchers
 ('Emma Wilson', 'emma.wilson@dispatch.gov', 'hashed_pass_13', 'DISPATCHER'),
 ('Michael Chen', 'michael.chen@dispatch.gov', 'hashed_pass_14', 'DISPATCHER'),
 ('Rebecca Taylor', 'rebecca.taylor@dispatch.gov', 'hashed_pass_15', 'DISPATCHER'),
 ('David Kim', 'david.kim@dispatch.gov', 'hashed_pass_16', 'DISPATCHER'),
-
 ('fff', 'bomb@gmail.com', '123', 'ADMIN');
 
 -- ==================== INCIDENT DATA (Alexandria, EGYPT) ====================
