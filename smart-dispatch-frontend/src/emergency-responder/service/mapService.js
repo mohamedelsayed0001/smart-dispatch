@@ -9,17 +9,49 @@ class MapService {
     this.currentRoute = null;
   }
 
-  // Initialize map
-  initializeMap(containerId, center = [30.0444, 31.2357], zoom = 13) {
-    this.map = L.map(containerId).setView(center, zoom);
+  // Initialize map - returns a promise that resolves when map is ready
+  async initializeMap(containerId, center = [30.0444, 31.2357], zoom = 13) {
+    // Destroy existing map if any
+    if (this.map) {
+      this.destroy();
+    }
 
-    // Add OpenStreetMap tiles
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap contributors',
-      maxZoom: 19,
-    }).addTo(this.map);
+    try {
+      console.log('Creating Leaflet map instance...');
+      
+      // Create map immediately - Leaflet is synchronous
+      this.map = L.map(containerId, {
+        zoomControl: true,
+        scrollWheelZoom: true,
+        doubleClickZoom: true,
+        touchZoom: true,
+        boxZoom: true,
+      }).setView(center, zoom);
 
-    return this.map;
+      console.log('Map instance created:', this.map);
+
+      // Add OpenStreetMap tiles
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors',
+        maxZoom: 19,
+      }).addTo(this.map);
+
+      console.log('Tiles added to map');
+
+      // Return a promise that resolves after a short delay to ensure everything is ready
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          if (this.map) {
+            this.map.invalidateSize();
+            console.log('Map size invalidated and ready');
+            resolve(this.map);
+          }
+        }, 150);
+      });
+    } catch (error) {
+      console.error('Error initializing map:', error);
+      throw error;
+    }
   }
 
   // Create custom icon
@@ -51,10 +83,16 @@ class MapService {
 
   // Add or update vehicle marker
   updateVehicleMarker(location, vehicleType = 'ambulance') {
-    if (!this.map) return; // <-- ADD THIS SAFETY GUARD
+    if (!this.map) {
+      console.error('Cannot update vehicle marker: Map not initialized');
+      return null;
+    }
+
+    console.log('Updating vehicle marker at:', location);
+
     const color = getComputedStyle(document.documentElement)
       .getPropertyValue('--primary-color')
-      .trim();
+      .trim() || '#3b82f6';
 
     const icon = this.createCustomIcon('vehicle', color);
 
@@ -71,12 +109,18 @@ class MapService {
 
   // Add or update incident marker
   updateIncidentMarker(location, incidentType, severity) {
-    if (!this.map) return; // <-- ADD THIS SAFETY GUARD
+    if (!this.map) {
+      console.error('Cannot update incident marker: Map not initialized');
+      return null;
+    }
+
+    console.log('Updating incident marker at:', location);
+
     const severityColors = {
-      critical: getComputedStyle(document.documentElement).getPropertyValue('--severity-critical').trim(),
-      high: getComputedStyle(document.documentElement).getPropertyValue('--severity-high').trim(),
-      medium: getComputedStyle(document.documentElement).getPropertyValue('--severity-medium').trim(),
-      low: getComputedStyle(document.documentElement).getPropertyValue('--severity-low').trim(),
+      critical: getComputedStyle(document.documentElement).getPropertyValue('--severity-critical').trim() || '#dc2626',
+      high: getComputedStyle(document.documentElement).getPropertyValue('--severity-high').trim() || '#ea580c',
+      medium: getComputedStyle(document.documentElement).getPropertyValue('--severity-medium').trim() || '#ca8a04',
+      low: getComputedStyle(document.documentElement).getPropertyValue('--severity-low').trim() || '#16a34a',
     };
 
     const color = severityColors[severity.toLowerCase()] || severityColors.medium;
@@ -95,7 +139,11 @@ class MapService {
 
   // Fit map to show both markers
   fitBounds() {
-    if (!this.map) return; // <-- ADD THIS SAFETY GUARD
+    if (!this.map) {
+      console.error('Cannot fit bounds: Map not initialized');
+      return;
+    }
+
     if (this.vehicleMarker && this.incidentMarker) {
       const bounds = L.latLngBounds([
         this.vehicleMarker.getLatLng(),
@@ -107,7 +155,11 @@ class MapService {
 
   // Center map on vehicle
   centerOnVehicle() {
-    if (!this.map) return; // <-- ADD THIS SAFETY GUARD
+    if (!this.map) {
+      console.error('Cannot center on vehicle: Map not initialized');
+      return;
+    }
+
     if (this.vehicleMarker) {
       this.map.setView(this.vehicleMarker.getLatLng(), 15);
     }
@@ -141,15 +193,21 @@ class MapService {
 
   // Draw route on map
   drawRoute(route) {
+    if (!this.map) {
+      console.error('Cannot draw route: Map not initialized');
+      return null;
+    }
+
+    console.log('Drawing route on map');
+
     // Remove existing route
-    if (!this.map) return; // <-- ADD THIS SAFETY GUARD
     if (this.routeLayer) {
       this.map.removeLayer(this.routeLayer);
     }
 
     const color = getComputedStyle(document.documentElement)
       .getPropertyValue('--route-color')
-      .trim();
+      .trim() || '#3b82f6';
 
     // Convert coordinates to Leaflet format [lat, lng]
     const latlngs = route.coordinates.map((coord) => [coord[1], coord[0]]);
@@ -165,6 +223,8 @@ class MapService {
 
   // Clear route from map
   clearRoute() {
+    if (!this.map) return;
+    
     if (this.routeLayer) {
       this.map.removeLayer(this.routeLayer);
       this.routeLayer = null;
@@ -214,7 +274,25 @@ class MapService {
   // Destroy map
   destroy() {
     if (this.map) {
-      this.map.remove();
+      console.log('Destroying map instance');
+      try {
+        // Remove layers first
+        if (this.routeLayer) {
+          this.map.removeLayer(this.routeLayer);
+        }
+        if (this.vehicleMarker) {
+          this.map.removeLayer(this.vehicleMarker);
+        }
+        if (this.incidentMarker) {
+          this.map.removeLayer(this.incidentMarker);
+        }
+        
+        // Remove map
+        this.map.remove();
+      } catch (error) {
+        console.error('Error destroying map:', error);
+      }
+      
       this.map = null;
       this.vehicleMarker = null;
       this.incidentMarker = null;

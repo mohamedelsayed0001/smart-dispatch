@@ -3,16 +3,19 @@
   position: relative;
   width: 100%;
   height: 100%;
-  min-height: 100%;
+  min-height: 400px;
   background-color: var(--bg-secondary);
-  display: flex;
-  flex-direction: column;
+  overflow: hidden;
 }
 
 #map {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   width: 100%;
   height: 100%;
-  flex: 1;
   z-index: 1;
 }
 
@@ -113,6 +116,20 @@
   background-color: var(--bg-secondary);
 }
 
+.map-loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--bg-secondary);
+  z-index: 9999;
+}
+
 .map-loading .spinner {
   width: 48px;
   height: 48px;
@@ -123,7 +140,24 @@
   margin-bottom: var(--spacing-md);
 }
 
-.map-loading p {
+.map-loading-overlay .spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid var(--border-light);
+  border-top-color: var(--primary-color);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: var(--spacing-md);
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.map-loading p,
+.map-loading-overlay p {
   color: var(--text-secondary);
   font-size: var(--font-md);
 }
@@ -313,6 +347,42 @@
   box-shadow: var(--shadow-md);
 }
 
+/* Prevent map from breaking container bounds */
+.leaflet-container {
+  width: 100% !important;
+  height: 100% !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+}
+
+.leaflet-pane {
+  z-index: 400;
+}
+
+.leaflet-tile-pane {
+  z-index: 200;
+}
+
+.leaflet-overlay-pane {
+  z-index: 400;
+}
+
+.leaflet-shadow-pane {
+  z-index: 500;
+}
+
+.leaflet-marker-pane {
+  z-index: 600;
+}
+
+.leaflet-tooltip-pane {
+  z-index: 650;
+}
+
+.leaflet-popup-pane {
+  z-index: 700;
+}
+
 /* Responsive Map Styles */
 @media (max-width: 768px) {
   .map-controls {
@@ -350,5 +420,63 @@
 
   .route-value {
     font-size: var(--font-md);
+  }
+}
+
+/* Additional styles for AssignmentDetails layout */
+.assignment-details {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.details-content {
+  display: flex;
+  flex: 1;
+  gap: var(--spacing-md);
+  overflow: hidden;
+  padding: var(--spacing-md);
+}
+
+.details-map-section {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.details-info-section {
+  width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  overflow-y: auto;
+  height: 100%;
+}
+
+/* Ensure map container fills available space */
+.details-map-section .map-container {
+  flex: 1;
+  min-height: 0;
+  height: 100%;
+}
+
+@media (max-width: 1024px) {
+  .details-content {
+    flex-direction: column;
+  }
+
+  .details-map-section {
+    height: 50vh;
+    min-height: 400px;
+  }
+
+  .details-info-section {
+    width: 100%;
+    height: auto;
+    max-height: 50vh;
   }
 }
