@@ -151,13 +151,6 @@
   gap: var(--spacing-md);
 }
 
-.navigation-header h3 {
-  margin: 0;
-  font-size: var(--font-lg);
-  font-weight: var(--font-semibold);
-  color: var(--text-primary);
-}
-
 .route-summary {
   display: flex;
   flex-direction: column;

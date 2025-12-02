@@ -9,20 +9,6 @@ const NavigationPanel = ({ vehicleLocation, incidentLocation, route }) => {
     window.open(url, '_blank');
   };
 
-  const handleOpenWaze = () => {
-    if (!incidentLocation) return;
-    
-    const url = mapService.getWazeUrl(incidentLocation);
-    window.open(url, '_blank');
-  };
-
-  const handleOpenAppleMaps = () => {
-    if (!incidentLocation) return;
-    
-    const url = `http://maps.apple.com/?daddr=${incidentLocation.latitude},${incidentLocation.longitude}`;
-    window.open(url, '_blank');
-  };
-
   if (!vehicleLocation || !incidentLocation) {
     return (
       <div className="navigation-panel">
@@ -35,9 +21,6 @@ const NavigationPanel = ({ vehicleLocation, incidentLocation, route }) => {
 
   return (
     <div className="navigation-panel">
-      <div className="navigation-header">
-        <h3>Navigation</h3>
-      </div>
 
       {route && (
         <div className="route-summary">
@@ -91,26 +74,6 @@ const NavigationPanel = ({ vehicleLocation, incidentLocation, route }) => {
               <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
             </svg>
             <span>Google Maps</span>
-          </button>
-
-          <button 
-            className="nav-app-btn waze" 
-            onClick={handleOpenWaze}
-          >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
-            </svg>
-            <span>Waze</span>
-          </button>
-
-          <button 
-            className="nav-app-btn apple-maps" 
-            onClick={handleOpenAppleMaps}
-          >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
-            </svg>
-            <span>Apple Maps</span>
           </button>
         </div>
       </div>

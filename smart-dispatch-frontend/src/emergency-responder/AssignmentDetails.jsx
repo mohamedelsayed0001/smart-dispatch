@@ -25,7 +25,7 @@ const AssignmentDetails = ({ assignmentId, responderId, onBack }) => {
     abortControllerRef.current = new AbortController();
 
     loadAssignmentDetails(abortControllerRef.current.signal);
-    
+
     if (!trackingStarted.current) {
       startLocationTracking();
       trackingStarted.current = true;
@@ -116,6 +116,16 @@ const AssignmentDetails = ({ assignmentId, responderId, onBack }) => {
     setRoute(routeData);
   };
 
+  const getSeverityClass = (severity) => {
+    const severityMap = {
+      critical: 'badge-critical',
+      high: 'badge-high',
+      medium: 'badge-medium',
+      low: 'badge-low',
+    };
+    return severityMap[severity?.toLowerCase()] || 'badge-medium';
+  };
+
   if (loading) {
     return (
       <div className="assignment-details">
@@ -156,7 +166,7 @@ const AssignmentDetails = ({ assignmentId, responderId, onBack }) => {
           </svg>
           Back
         </button>
-        <h2>Assignment Details</h2>
+        <h2>Assignment {incident.id} Details</h2>
       </div>
 
       {/* Main Content - Two Column Layout */}
@@ -178,24 +188,24 @@ const AssignmentDetails = ({ assignmentId, responderId, onBack }) => {
             <h3>Incident Information</h3>
             <div className="info-content">
               <div className="info-row">
-                <span className="info-label">Type:</span>
+                <span className="info-label">Type :</span>
                 <span className="info-value">{incident.type}</span>
               </div>
               <div className="info-row">
-                <span className="info-label">Severity:</span>
+                <span className="info-label">Severity :</span>
                 <span className={`badge ${getSeverityClass(incident.level)}`}>
                   {incident.level}
                 </span>
               </div>
               <div className="info-row">
-                <span className="info-label">Reported:</span>
+                <span className="info-label">Reported :</span>
                 <span className="info-value">
                   {new Date(incident.timeReported).toLocaleString()}
                 </span>
               </div>
               {incident.description && (
                 <div className="info-row full-width">
-                  <span className="info-label">Description:</span>
+                  <span className="info-label">Description :-</span>
                   <p className="info-description">{incident.description}</p>
                 </div>
               )}
@@ -228,14 +238,5 @@ const AssignmentDetails = ({ assignmentId, responderId, onBack }) => {
   );
 };
 
-const getSeverityClass = (severity) => {
-  const severityMap = {
-    critical: 'badge-critical',
-    high: 'badge-high',
-    medium: 'badge-medium',
-    low: 'badge-low',
-  };
-  return severityMap[severity?.toLowerCase()] || 'badge-medium';
-};
 
 export default AssignmentDetails;

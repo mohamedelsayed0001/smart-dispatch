@@ -246,7 +246,8 @@ const ResponderDashboard = () => {
       {/* Main Content */}
       <div className="dashboard-content">
         <div className="content-header">
-          <h2>Active Assignments</h2>
+          <h2>Your Assignments</h2>
+          {/* <h2>Active Assignments</h2> */}
           <button className="refresh-btn" onClick={loadActiveAssignments}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
               <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z" />
@@ -260,8 +261,10 @@ const ResponderDashboard = () => {
             <svg width="64" height="64" viewBox="0 0 24 24" fill="currentColor" opacity="0.3">
               <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
             </svg>
-            <h3>No Active Assignments</h3>
-            <p>You don't have any active assignments at the moment.</p>
+            <h3>No Assignments</h3>
+            {/* <h3>No Active Assignments</h3> */}
+            <p>You don't have any assignments at the moment.</p>
+            {/* <p>You don't have any active assignments at the moment.</p> */}
           </div>
         ) : (
           <div className="assignments-grid">
