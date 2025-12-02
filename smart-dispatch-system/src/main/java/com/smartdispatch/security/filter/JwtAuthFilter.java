@@ -24,7 +24,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             "/api/auth/login",
             "/api/auth/signup",
             "/api/check/users",
-            "/ws"
+            "/ws",
+            "/api/responder"
     );
 
     private final JwtService jwtService;

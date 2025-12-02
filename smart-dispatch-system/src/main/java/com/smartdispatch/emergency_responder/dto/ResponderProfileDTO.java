@@ -1,0 +1,16 @@
+package com.smartdispatch.emergency_responder.dto;
+
+import lombok.Data;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class ResponderProfileDTO {
+  private Integer id;
+  private String name;
+  private String email;
+  private String role;
+  private VehicleDetailsDTO assignedVehicle;
+}

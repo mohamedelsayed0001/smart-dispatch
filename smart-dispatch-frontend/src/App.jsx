@@ -7,6 +7,7 @@ import DispatcherDashboard from './dispatcher/DispatcherDashboard'
 import ThemeProvider from './dispatcher/ThemeContext'
 import Login from './pages/Login'
 import Signup from './pages/Signup'
+import ResponderDashboard from './emergency-responder/ResponderDashboard'
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
           <Route path="/test" element={<Testing />} />
           <Route path="/admin" element={<AdminPage />} />
           <Route path="/dispatcher/*" element={<DispatcherDashboard />} />
+          <Route path="/responder/*" element={<ResponderDashboard />} />
           <Route path="*" element={<h1>NOT YET</h1>} />
         </Routes>
       </Router>
