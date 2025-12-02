@@ -8,11 +8,11 @@ export default function AssignModal({ incident, onClose, onAssigned }) {
 
   useEffect(() => {
     let mounted = true
-    fetchAvailableVehicles().then((v) => {
+    fetchAvailableVehicles(incident?.type || 'ALL').then((v) => {
       if (mounted) setVehicles(v)
-    })
+    }).catch((e) => console.error('fetchAvailableVehicles failed', e))
     return () => (mounted = false)
-  }, [])
+  }, [incident])
 
   const assign = async () => {
     if (!selected) return
@@ -44,7 +44,6 @@ export default function AssignModal({ incident, onClose, onAssigned }) {
                 <div className="font-medium">{v.name || `Vehicle ${v.id}`}</div>
                 <div className="text-xs text-gray-500">Type: {v.type || 'N/A'} • Status: {v.status}</div>
               </div>
-              <div className="text-sm text-gray-400">Fuel: {v.fuel ?? '–'}</div>
             </label>
           ))}
         </div>

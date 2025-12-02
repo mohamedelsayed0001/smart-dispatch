@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { connect, disconnect } from '../../utils/dispatcherSocket'
 import { fetchAssignments, reassignAssignment, fetchAvailableVehicles } from '../../utils/dispatcherApi'
+import { control } from 'leaflet'
 
 export default function Assignment() {
   const [assignments, setAssignments] = useState([])
@@ -14,11 +15,15 @@ export default function Assignment() {
     let cancelled = false
     fetchAssignments()
       .then((data) => {
-        if (!cancelled && Array.isArray(data)) setAssignments(data)
+        if (!cancelled && Array.isArray(data)){ 
+          setAssignments(data)
+          console.log(data)
+        }
       })
       .catch((e) => console.error('Failed to load assignments', e))
 
     const client = connect({
+      
       onAssignment: (a) => {
         setAssignments((prev) => {
           const idx = prev.findIndex((p) => p.id === a.id)
@@ -28,7 +33,8 @@ export default function Assignment() {
           return copy
         })
       },
-    })
+      
+    },)
     return () => {
       cancelled = true
       disconnect(client)
@@ -48,19 +54,20 @@ export default function Assignment() {
         {assignments.map((a) => (
           <div key={a.id} className="p-3 rounded bg-white shadow flex items-center justify-between">
             <div>
-              <div className="font-medium">#{a.id} — {a.incident?.type || a.type}</div>
-              <div className="text-sm text-gray-500">Vehicle: {a.vehicle?.name || a.vehicleId} • ETA: {a.eta || '–'}</div>
+              <div className="font-medium">#{a.id} — {a.description}</div>
+              <div className="text-sm text-gray-500">Vehicle: {a.vehicle?.name || a.vehicleId} - {a.status}</div>
             </div>
             <div className="flex gap-2">
               <button className="px-3 py-1 bg-white border border-[#E11D2F] text-[#E11D2F] rounded">View on Map</button>
               <button
                 className="px-3 py-1 bg-white border border-[#E11D2F] text-[#E11D2F] rounded"
-                onClick={async () => {
+                  onClick={async () => {
                   setReassigningAssignment(a)
                   setShowReassignModal(true)
                   setLoadingVehicles(true)
                   try {
-                    const list = await fetchAvailableVehicles()
+                    const type = a.vehicle?.type || a.type || 'ALL'
+                    const list = await fetchAvailableVehicles(type)
                     setAvailableVehicles(Array.isArray(list) ? list : [])
                   } catch (e) {
                     console.error('Failed to load available vehicles', e)

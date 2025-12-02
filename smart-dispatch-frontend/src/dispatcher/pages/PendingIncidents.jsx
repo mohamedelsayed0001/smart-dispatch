@@ -7,6 +7,8 @@ export default function PendingIncidents() {
   const [incidents, setIncidents] = useState([])
   const [loading, setLoading] = useState(true)
   const [selected, setSelected] = useState(null)
+  const [typeFilter, setTypeFilter] = useState('ALL')
+  const [levelFilter, setLevelFilter] = useState('ALL')
 
   useEffect(() => {
     let mounted = true
@@ -15,6 +17,25 @@ export default function PendingIncidents() {
     }).finally(() => mounted && setLoading(false))
     return () => (mounted = false)
   }, [])
+
+  // Helpers to extract possible level field from incidents (support multiple naming conventions)
+  const getIncidentLevel = (inc) => {
+    return inc.level ?? inc.severity ?? inc.priority ?? null
+  }
+
+  const types = Array.from(new Set(incidents.map(i => i.type).filter(Boolean)))
+  const levels = Array.from(new Set(incidents.map(i => getIncidentLevel(i)).filter(Boolean)))
+
+  const filteredIncidents = incidents.filter((inc) => {
+    if (typeFilter && typeFilter !== 'ALL') {
+      if ((inc.type || '').toString().toUpperCase() !== typeFilter.toString().toUpperCase()) return false
+    }
+    if (levelFilter && levelFilter !== 'ALL') {
+      const lvl = getIncidentLevel(inc)
+      if (!lvl || lvl.toString().toUpperCase() !== levelFilter.toString().toUpperCase()) return false
+    }
+    return true
+  })
 
   const openAssign = (incident) => setSelected(incident)
 
@@ -31,12 +52,38 @@ export default function PendingIncidents() {
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-semibold">Pending Incidents</h2>
-        <div className="text-sm text-gray-500">{loading ? 'Loading…' : `${incidents.length} unassigned`}</div>
+        <div>
+          <h2 className="text-xl font-semibold">Pending Incidents</h2>
+          <div className="text-sm text-gray-500">{loading ? 'Loading…' : `${filteredIncidents.length} unassigned (showing ${filteredIncidents.length}/${incidents.length})`}</div>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <label className="text-sm text-gray-600">Type</label>
+            <select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)} className="px-3 py-2 rounded border">
+              <option value="ALL">All</option>
+              {types.map((t) => (
+                <option key={t} value={t}>{t}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <label className="text-sm text-gray-600">Level</label>
+            <select value={levelFilter} onChange={(e) => setLevelFilter(e.target.value)} className="px-3 py-2 rounded border">
+              <option value="ALL">All</option>
+              {levels.map((l) => (
+                <option key={l} value={l}>{l}</option>
+              ))}
+            </select>
+          </div>
+
+          <button className="px-3 py-2 bg-white border rounded text-black" onClick={() => { setTypeFilter('ALL'); setLevelFilter('ALL') }}>Clear</button>
+        </div>
       </div>
 
       <div className="grid gap-3">
-        {incidents.map((inc) => (
+        {filteredIncidents.map((inc) => (
           <div key={inc.id} className="p-3 rounded bg-white shadow flex items-start justify-between">
             <div>
               <div className="font-medium">Incident #{inc.id} — {inc.type || inc.status || 'Unknown'}</div>

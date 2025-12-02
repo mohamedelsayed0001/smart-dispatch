@@ -1,11 +1,11 @@
 package com.smartdispatch.dispatcher.domains.dtos;
 
+import java.time.LocalDateTime;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.time.LocalDateTime;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -15,6 +15,7 @@ public class AssignmentDto {
     private Integer dispatcherId;
     private Integer incidentId;
     private Integer vehicleId;
+    private String description;
     private LocalDateTime timeAssigned;
     private LocalDateTime timeResolved;
     private String status;

@@ -26,8 +26,8 @@ CREATE TABLE User (
 -- Create Incident table
 CREATE TABLE Incident (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    type VARCHAR(50) NOT NULL,
-    level VARCHAR(20) NOT NULL,
+    type ENUM('Fire', 'Medical', 'Crime') NOT NULL,
+    level ENUM('High', 'Medium', 'Low') NOT NULL,
     description TEXT,
     latitude DECIMAL(10, 8) NOT NULL,
     longitude DECIMAL(11, 8) NOT NULL,

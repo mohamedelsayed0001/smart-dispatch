@@ -1,19 +1,20 @@
 package com.smartdispatch.dispatcher.daos.imp;
 
-import com.smartdispatch.dispatcher.daos.AssignmentDao;
-import com.smartdispatch.dispatcher.domains.entities.Assignment;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
-import org.springframework.jdbc.support.GeneratedKeyHolder;
-import org.springframework.jdbc.support.KeyHolder;
-import org.springframework.stereotype.Repository;
-
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
 import java.util.Objects;
+
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
+import org.springframework.stereotype.Repository;
+
+import com.smartdispatch.dispatcher.daos.AssignmentDao;
+import com.smartdispatch.dispatcher.domains.entities.Assignment;
 
 @Repository
 public class AssignmentDaoImp implements AssignmentDao {

@@ -1,9 +1,19 @@
 package com.smartdispatch.dispatcher.services.imp;
 
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.smartdispatch.dispatcher.daos.AssignmentDao;
 import com.smartdispatch.dispatcher.daos.IncidentDao;
 import com.smartdispatch.dispatcher.daos.VehicleDao;
-import com.smartdispatch.dispatcher.domains.dtos.*;
+import com.smartdispatch.dispatcher.domains.dtos.AssignmentDto;
+import com.smartdispatch.dispatcher.domains.dtos.AssignmentRequest;
+import com.smartdispatch.dispatcher.domains.dtos.IncidentDto;
+import com.smartdispatch.dispatcher.domains.dtos.ReassignRequest;
+import com.smartdispatch.dispatcher.domains.dtos.VehicleDto;
 import com.smartdispatch.dispatcher.domains.entities.Assignment;
 import com.smartdispatch.dispatcher.domains.entities.Incident;
 import com.smartdispatch.dispatcher.domains.entities.Vehicle;
@@ -11,11 +21,6 @@ import com.smartdispatch.dispatcher.mappers.imp.AssignmentMapper;
 import com.smartdispatch.dispatcher.mappers.imp.IncidentMapper;
 import com.smartdispatch.dispatcher.mappers.imp.VehicleMapper;
 import com.smartdispatch.dispatcher.services.DispatcherService;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 @Service
 public class DispatcherServiceImp implements DispatcherService {
     private IncidentDao incidentDao;
@@ -54,14 +59,18 @@ public class DispatcherServiceImp implements DispatcherService {
     @Override
     public List<AssignmentDto> getAllAssignments() {
         List<Assignment>assignments=  assignmentDao.getAllAssignments();
-        return assignments.stream()
-                .map(assignmentMapper::mapTO)
-                .toList();
+       
+
+        List<AssignmentDto> theReturn = assignments.stream().map(assignmentMapper::mapTO).toList();
+        for(AssignmentDto i : theReturn ){
+            i.setDescription(incidentDao.findById(i.getIncidentId()).getDescription());
+        }
+        return theReturn;
     }
 
     @Override
-    public List<VehicleDto> getAvailableVehicles() {
-        List<Vehicle>vehicles=  vehicleDao.findAvailableVehicles();
+    public List<VehicleDto> getAvailableVehicles(String type) {
+        List<Vehicle>vehicles=  vehicleDao.findAvailableVehiclesByType(type);
         return vehicles.stream()
                 .map(vehicleMapper::mapTO)
                 .toList();

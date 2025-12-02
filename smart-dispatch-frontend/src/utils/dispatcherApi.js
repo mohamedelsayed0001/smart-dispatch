@@ -22,9 +22,11 @@ export const fetchPendingIncidents = async () => {
   }
 }
 
-export const fetchAvailableVehicles = async () => {
+export const fetchAvailableVehicles = async (type) => {
+  if (!type) throw new Error('fetchAvailableVehicles: type parameter is required')
   try {
-    return await getJson(`${API_BASE}/api/dispatcher/vehicles/available`)
+    const url = `${API_BASE}/api/dispatcher/vehicles/available/${encodeURIComponent(type)}`
+    return await getJson(url)
   } catch (e) {
     console.error('[dispatcherApi] fetchAvailableVehicles failed', e)
     return [

@@ -120,7 +120,7 @@ export default function VehicleMap() {
 
   useEffect(() => {
     let mounted = true
-    fetchAvailableVehicles().then((v) => {
+    fetchAvailableVehicles('ALL').then((v) => {
       if (!mounted) return
       try {
         const list = Array.isArray(v) ? v.map(normalizeVehicle) : []

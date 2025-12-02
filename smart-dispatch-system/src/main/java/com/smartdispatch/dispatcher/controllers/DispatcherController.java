@@ -1,18 +1,24 @@
 package com.smartdispatch.dispatcher.controllers;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.smartdispatch.dispatcher.domains.dtos.AssignmentDto;
 import com.smartdispatch.dispatcher.domains.dtos.AssignmentRequest;
 import com.smartdispatch.dispatcher.domains.dtos.IncidentDto;
 import com.smartdispatch.dispatcher.domains.dtos.VehicleDto;
 import com.smartdispatch.dispatcher.services.DispatcherService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/dispatcher")
@@ -30,9 +36,20 @@ public class DispatcherController {
         List<IncidentDto> incidents = dispatcherService.getAllIncidents();
         return ResponseEntity.ok(incidents);
     }
-    @GetMapping("/vehicles/available")
-    public ResponseEntity<List<VehicleDto>> getAvailableVehicles() {
-        List<VehicleDto> vehicles = dispatcherService.getAvailableVehicles();
+    @GetMapping("/vehicles/available/{type}")
+    public ResponseEntity<List<VehicleDto>> getAvailableVehicles(@PathVariable String type) {
+        if (type.equals("Fire")){
+            type = "FIRETRUCK";
+        }
+        else if (type.equals("Medical")){
+            type = "AMBULANCE";
+        }
+        else if (type.equals("Crime")){
+            type = "POLICE";
+        }else {
+            return ResponseEntity.ok(dispatcherService.getAllVehicles());
+        }
+        List<VehicleDto> vehicles = dispatcherService.getAvailableVehicles(type);
         return ResponseEntity.ok(vehicles);
     }
     @GetMapping("/vehicles")

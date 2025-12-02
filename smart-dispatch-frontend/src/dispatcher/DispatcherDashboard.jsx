@@ -1,5 +1,6 @@
 import React from 'react'
-import { Routes, Route, Link, NavLink } from 'react-router-dom'
+import { Routes, Route, Link, NavLink, useNavigate } from 'react-router-dom'
+import { logout } from '../utils/api'
 import VehicleMap from './pages/VehicleMap'
 import PendingIncidents from './pages/PendingIncidents'
 import ActiveAssignments from './pages/ActiveAssignments'
@@ -17,6 +18,17 @@ function TopBar() {
 }
 
 function Sidebar() {
+  const navigate = useNavigate()
+  const handleLogout = () => {
+    try {
+      logout()
+    } catch (e) {
+      console.warn('logout helper failed', e)
+      localStorage.removeItem('jwt_token')
+      localStorage.removeItem('user')
+    }
+    navigate('/login')
+  }
   const items = [
     { to: '/dispatcher/map', label: 'Vehicle Map' },
     { to: '/dispatcher/pending', label: 'Pending Incidents' },
@@ -43,7 +55,7 @@ function Sidebar() {
       </div>
 
       <div className="mt-6">
-        <button className="w-full px-4 py-3 rounded-full bg-white border border-[#E11D2F] text-[#E11D2F] font-semibold shadow">Logout</button>
+        <button onClick={handleLogout} className="w-full px-4 py-3 rounded-full bg-white border border-[#E11D2F] text-[#E11D2F] font-semibold shadow">Logout</button>
         <div className="mt-3 text-xs opacity-80">Employee</div>
       </div>
     </aside>
@@ -52,12 +64,15 @@ function Sidebar() {
 
 export default function DispatcherDashboard() {
   return (
-    <div className="min-h-screen bg-[#f3f6f8] text-gray-900">
+    // make the viewport fixed height so header + content area exactly match screen
+    <div className="h-screen bg-[#f3f6f8] text-gray-900">
       <TopBar />
-      <div className="flex">
+      {/* content area height = viewport height - topbar (TopBar has h-20 = 80px) */}
+      <div className="flex" style={{ height: 'calc(100vh - 80px)' }}>
         <Sidebar />
-        <main className="flex-1 p-6">
-          <div className="p-6 rounded-2xl shadow bg-white">
+        <main className="flex-1 p-6 overflow-auto">
+          {/* make the white content card fill main area and scroll internally */}
+          <div className="p-6 rounded-2xl shadow bg-white h-full overflow-auto">
             <Routes>
               <Route path="/" element={<div className="p-6 rounded shadow bg-white">Welcome to Dispatcher</div>} />
               <Route path="map" element={<VehicleMap />} />

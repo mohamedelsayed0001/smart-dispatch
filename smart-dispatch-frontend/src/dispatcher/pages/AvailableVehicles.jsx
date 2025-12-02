@@ -24,8 +24,8 @@ export default function AvailableVehicles() {
     let mounted = true
     let client = null
 
-    // initial load
-    fetchAvailableVehicles()
+    // initial load (fetch all types)
+    fetchAvailableVehicles('ALL')
       .then((v) => {
         if (!mounted) return
         const list = Array.isArray(v) ? v.map(normalize) : []
@@ -67,7 +67,7 @@ export default function AvailableVehicles() {
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-semibold">Available Vehicles</h2>
+        <h2 className="text-xl font-semibold">Vehicles</h2>
         <div className="text-sm text-gray-500">{loading ? 'Loading…' : `${vehicles.length} available`}</div>
       </div>
 
