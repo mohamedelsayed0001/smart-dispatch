@@ -2,6 +2,8 @@ import React from 'react'
 import { Routes, Route, Link, NavLink, useNavigate } from 'react-router-dom'
 import { logout } from '../utils/api'
 import VehicleMap from './pages/VehicleMap'
+import DashboardOverview from './pages/DashboardOverview'
+import './styles/Dispatcher.css'
 import PendingIncidents from './pages/PendingIncidents'
 import ActiveAssignments from './pages/ActiveAssignments'
 import AvailableVehicles from './pages/AvailableVehicles'
@@ -31,12 +33,12 @@ function Sidebar() {
   }
   const items = [
     { to: '/dispatcher/map', label: 'Vehicle Map' },
-    { to: '/dispatcher/pending', label: 'Pending Incidents' },
+    { to: '/dispatcher/pending', label: 'Incidents' },
     { to: '/dispatcher/active', label: 'Assignments' },
     { to: '/dispatcher/vehicles', label: 'Vehicles' },
   ]
   return (
-    <aside className="w-72 text-white h-[calc(100vh-64px)] p-6 flex flex-col justify-between rounded-tl-3xl rounded-bl-3xl" style={{backgroundColor: '#E11D2F'}}>
+    <aside className="dispatcher-sidebar w-72 text-white h-[calc(100vh-64px)] p-6 flex flex-col justify-between rounded-tl-3xl rounded-bl-3xl" style={{backgroundColor: '#E11D2F'}}>
       <div>
         <div className="flex items-center gap-3 mb-6">
           <div className="w-10 h-10 rounded bg-white/20 flex items-center justify-center font-bold">D</div>
@@ -74,7 +76,7 @@ export default function DispatcherDashboard() {
           {/* make the white content card fill main area and scroll internally */}
           <div className="p-6 rounded-2xl shadow bg-white h-full overflow-auto">
             <Routes>
-              <Route path="/" element={<div className="p-6 rounded shadow bg-white">Welcome to Dispatcher</div>} />
+              <Route path="/" element={<DashboardOverview />} />
               <Route path="map" element={<VehicleMap />} />
               <Route path="pending" element={<PendingIncidents />} />
               <Route path="active" element={<ActiveAssignments />} />

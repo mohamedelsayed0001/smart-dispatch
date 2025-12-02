@@ -27,7 +27,7 @@ function FitBounds({ coords }) {
   return null
 }
 
-export default function VehicleMap() {
+export default function VehicleMap({ height = '100vh' }) {
   const [vehicles, setVehicles] = useState([])
   const [incidents, setIncidents] = useState([])
   const mapRef = useRef(null)
@@ -159,7 +159,7 @@ export default function VehicleMap() {
     <div>
       <h2 className="text-xl font-semibold mb-4">Vehicle Map</h2>
       <div className="grid grid-cols-1 gap-4">
-        <div className="bg-white rounded-2xl shadow p-4 flex flex-col overflow-hidden" style={{ height: '100vh' }}>
+          <div className="bg-white rounded-2xl shadow p-4 flex flex-col overflow-hidden" style={{ height }}>
           <div className="flex-1 rounded-lg overflow-hidden relative">
             {/* Search control and legend above the map */}
             <div className="mb-4">
