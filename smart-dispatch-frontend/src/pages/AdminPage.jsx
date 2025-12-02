@@ -3,6 +3,7 @@ import AdminSidebar from '../components/admin/AdminSidebar';
 import Dashboard from '../components/admin/Dashboard';
 import SystemUsers from '../components/admin/SystemUsers';
 import Vehicles from '../components/admin/Vehicles';
+import VehicleLocations from '../components/admin/VehicleLocations'; // Add this
 import Reports from '../components/admin/Reports';
 import Analysis from '../components/admin/Analysis';
 import { fetchDashboardData, fetchUsers, fetchReports } from '../utils/api';
@@ -62,6 +63,14 @@ const AdminPage = () => {
             />
           )}
           {activeMenu === 'vehicles' && <Vehicles />}
+          {activeMenu === 'locations' && <VehicleLocations />}  {
+                  <div 
+                    className={`menu-item ${activeMenu === 'locations' ? 'active' : ''}`}
+                    onClick={() => setActiveMenu('locations')}
+                  >
+                    <span className="menu-icon">📍</span>
+                    <span>Vehicle Locations</span>
+                  </div>}
           {activeMenu === 'reports' && (
             <Reports
               reports={reports}

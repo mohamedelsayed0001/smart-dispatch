@@ -28,7 +28,7 @@ public class VehicleDaoImpl implements vechileDao<VehicleEntity> {
 
                 jdbcTemplate.update(
                         sql,
-                        vehicle.getType(),
+                        vehicle.getType().name(),
                         vehicle.getStatus().name(),
                         vehicle.getCapacity(),
                         vehicle.getOperatorId()
@@ -66,7 +66,7 @@ public class VehicleDaoImpl implements vechileDao<VehicleEntity> {
 
             int rowsAffected = jdbcTemplate.update(
                     sql,
-                    vehicle.getType(),
+                    vehicle.getType().name(),
                     vehicle.getStatus().name(),
                     vehicle.getCapacity(),
                     vehicle.getOperatorId(),
@@ -152,12 +152,20 @@ public class VehicleDaoImpl implements vechileDao<VehicleEntity> {
 
     public int isVehicleInUse(long id) {
         try {
-            String sql = "SELECT COUNT(*) FROM dispatch WHERE vehicle_id = ? AND status = 'active'";
+            String sql = "SELECT COUNT(*) FROM Assignment WHERE vehicle_id = ? AND status = 'active'";
             Integer count = jdbcTemplate.queryForObject(sql, Integer.class, id);
             return count != null ? count : 0;
         } catch (DataAccessException e) {
             return 0;
         }
     }
-    }
+
+    public boolean isopertorCorrect(Long operatorId) {
+       String sql="SELECT COUNT(*) FROM operator WHERE id = ?";
+       int num=jdbcTemplate.queryForObject(sql,Integer.class,operatorId);
+      if(num>0)
+            return true;
+      return false;
+        }
+}
 

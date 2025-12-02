@@ -1,6 +1,7 @@
 package com.smartdispatch.vehiclemanagement.rowmapper;
 
 import com.smartdispatch.vehiclemanagement.Enum.Status;
+import com.smartdispatch.vehiclemanagement.Enum.Type;
 import com.smartdispatch.vehiclemanagement.model.VehicleEntity;
 
 import org.springframework.jdbc.core.RowMapper;
@@ -17,12 +18,14 @@ public class VehicleMapper implements RowMapper<VehicleEntity>{
     VehicleEntity vehicle = new VehicleEntity();
 
     vehicle.setId(rs.getLong("id"));
-    vehicle.setType(rs.getString("type"));
 
+    String typeStr = rs.getString("type");
+    vehicle.setType(Type.valueOf(typeStr));
+
+    // Map ENUM status - handle as String from database
     String statusStr = rs.getString("status");
-    if (statusStr != null) {
-        vehicle.setStatus(Status.valueOf(statusStr));
-    }
+    vehicle.setStatus(Status.valueOf(statusStr));
+
 
     vehicle.setCapacity(rs.getInt("capacity"));
     vehicle.setOperatorId(rs.getLong("operator_id"));

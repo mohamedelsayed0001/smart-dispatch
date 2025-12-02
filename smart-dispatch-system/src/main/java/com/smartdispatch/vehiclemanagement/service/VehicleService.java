@@ -27,7 +27,10 @@ public class VehicleService {
         this.vehicleDao = vehicleDao;
     }
 
-    public void createService(VehicleDto vehicleDto) throws SQLException {
+    public void createService(VehicleDto vehicleDto) throws Exception {
+       if(!vehicleDao.isopertorCorrect(vehicleDto.getOperatorId())){
+           throw new Exception("There is no Operator having that id");
+       }
         VehicleEntity vehicle = dtoMapper.mapFromDto(vehicleDto);
         vehicleDao.save(vehicle);
     }

@@ -34,6 +34,21 @@ public class SecurityConfig {
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(auth -> auth
+                        // WebSocket endpoints - NO authentication required
+                        .requestMatchers("/ws-car-location/**").permitAll()
+                        .requestMatchers("/topic/**").permitAll()
+                        .requestMatchers("/app/**").permitAll()
+
+                        // Location tracking API endpoints - NO authentication required
+                        .requestMatchers("/api/location/**").permitAll()
+
+                        // Vehicle API endpoints - NO authentication required
+                        .requestMatchers("/api/vehicle/**").permitAll()
+
+                        // Auth endpoints
+                        .requestMatchers("/api/auth/**").permitAll()
+
+                        // All other requests
                         .anyRequest().permitAll()
                 )
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
@@ -45,7 +60,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowedOriginPatterns(List.of("*"));
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS","PATCH"));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);
 
@@ -54,4 +69,3 @@ public class SecurityConfig {
         return source;
     }
 }
-

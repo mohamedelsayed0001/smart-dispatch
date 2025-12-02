@@ -1,6 +1,7 @@
 package com.smartdispatch.vehiclemanagement.Dto;
 
 import com.smartdispatch.vehiclemanagement.Enum.Status;
+import com.smartdispatch.vehiclemanagement.Enum.Type;
 import lombok.*;
 
 @Getter
@@ -11,7 +12,7 @@ import lombok.*;
 
 public class VehicleDto {
     private Long id;
-    private String type;
+    private Type type;
     private Status status;
     private Integer capacity;
     private Long operatorId;

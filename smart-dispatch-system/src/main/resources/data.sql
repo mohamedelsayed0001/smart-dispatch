@@ -87,31 +87,37 @@ INSERT INTO Incident (type, level, description, latitude, longitude, status, tim
 -- ==================== VEHICLE DATA ====================
 -- Edge cases: Various types, all statuses, NULL operator_id,
 -- different capacities, vehicles without operators
+-- Update existing records to match ENUM values
+UPDATE Vehicle SET type = 'AMBULANCE' WHERE type IN ('Ambulance', 'ambulance');
+UPDATE Vehicle SET type = 'FIRETRUCK' WHERE type IN ('Fire Truck', 'FireTruck', 'firetruck');
+UPDATE Vehicle SET type = 'POLICE' WHERE type IN ('Police Car', 'Police', 'police');
+
+-- Delete vehicles that don't match any of the three types
+DELETE FROM Vehicle WHERE type NOT IN ('AMBULANCE', 'FIRETRUCK', 'POLICE');
+
+-- Now insert only valid data
 INSERT INTO Vehicle (type, status, capacity, operator_id) VALUES
--- Vehicles ready for assignment
-('Ambulance', 'Available', 2, 1),
-('Fire Truck', 'Available', 8, 1),
-('Police Car', 'Available', 4, 3),
-('Ambulance', 'Available', 2, 4),
-('Rescue Boat', 'Available', 12, 2),
-('Motorcycle', 'Available', 1, 4),  -- Minimum capacity edge case
-('Ambulance', 'Available', 2, NULL),
-('Police Car', 'Available', 4, NULL),
-('Fire Truck', 'Available', 6, NULL),
-('K9 Unit', 'Available', 2, 2),
-('SWAT Van', 'Available', 10, NULL),
+-- Ambulances
+('AMBULANCE', 'Available', 2, 1),
+('AMBULANCE', 'Available', 2, 4),
+('AMBULANCE', 'Available', 2, NULL),
+('AMBULANCE', 'OnRoute', 2, 4),
+('AMBULANCE', 'OnRoute', 4, 3),
+('AMBULANCE', 'Resolving', 2, 1),
 
--- Vehicles currently responding
-('Fire Truck', 'OnRoute', 6, 2),
-('Ambulance', 'OnRoute', 2, 4),
-('Helicopter', 'OnRoute', 4, 3),
-('Hazmat Unit', 'OnRoute', 4, 1),
+-- Fire Trucks
+('FIRETRUCK', 'Available', 8, 1),
+('FIRETRUCK', 'Available', 6, NULL),
+('FIRETRUCK', 'OnRoute', 6, 2),
+('FIRETRUCK', 'OnRoute', 4, 1),
+('FIRETRUCK', 'Resolving', 6, 1),
 
--- Vehicles actively resolving incidents
-('Ambulance', 'Resolving', 2, 1),
-('Police Car', 'Resolving', 4, 3),
-('Fire Truck', 'Resolving', 6, 1);
-
+-- Police Cars
+('POLICE', 'Available', 4, 3),
+('POLICE', 'Available', 4, NULL),
+('POLICE', 'Available', 2, 2),
+('POLICE', 'Available', 10, NULL),
+('POLICE', 'Resolving', 4, 3);
 -- ==================== VEHICLE LOCATION DATA ====================
 -- Edge cases: Multiple locations per vehicle (tracking over time),
 -- extreme coordinates, same location different times

@@ -8,7 +8,7 @@ const Vehicles = () => {
   const [editingVehicle, setEditingVehicle] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [formData, setFormData] = useState({
-    type: '',
+    type: 'AMBULANCE',
     status: 'Available',
     capacity: '',
     operator_id: ''
@@ -19,29 +19,30 @@ const Vehicles = () => {
   }, []);
 
   const fetchVehicles = async () => {
-    try {
-      const token = "eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiQURNSU4iLCJpZCI6IjE3IiwiZW1haWwiOiJib21iQGdtYWlsLmNvbSIsInVzZXJuYW1lIjoiZmZmIiwic3ViIjoiMTciLCJpYXQiOjE3NjQ1Mzg0MjAsImV4cCI6MTc2NDYyNDgyMH0.EJBoAUTo3SqLFKanRD2ha0_Cp9Q49IJ0UlvSGZKKirQ";
-      
-      const response = await fetch('http://localhost:8080/api/vehicle/getAllVehicles', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        setVehicles(data);
-      } else {
-        console.error('Failed to fetch vehicles:', response.status);
-        alert('Failed to fetch vehicles');
+  try {
+    const token = "eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiQURNSU4iLCJpZCI6IjE3IiwiZW1haWwiOiJib21iQGdtYWlsLmNvbSIsInVzZXJuYW1lIjoiZmZmIiwic3ViIjoiMTciLCJpYXQiOjE3NjQ2NDMyMzYsImV4cCI6MTc2NDcyOTYzNn0.XlrfIgk7ztsneMfUZKQ3Crc1s1Aja_gOt09aDZmMbbw";
+    const response = await fetch('http://localhost:8080/api/vehicle/getAllVehicles', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
       }
-    } catch (error) {
-      console.error('Error fetching vehicles:', error);
-      alert('Failed to fetch vehicles: ' + error.message);
+    });
+    
+    if (response.ok) {
+      const data = await response.json();
+      console.log('✅ Vehicles fetched:', data);
+      setVehicles(data);
+    } else {
+      const errorText = await response.text(); // Get actual error message
+      console.error('❌ Server error:', errorText);
+      alert('Failed to fetch vehicles: ' + errorText);
     }
-  };
+  } catch (error) {
+    console.error('❌ Network error:', error);
+    alert('Failed to fetch vehicles: ' + error.message);
+  }
+};
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -62,7 +63,7 @@ const Vehicles = () => {
         body: JSON.stringify({
           ...formData,
           capacity: parseInt(formData.capacity),
-          operator_id: parseInt(formData.operator_id)
+          operator_id: formData.operator_id ? parseInt(formData.operator_id) : null
         })
       });
 
@@ -87,8 +88,7 @@ const Vehicles = () => {
     }
 
     try {
-      const token = "eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiQURNSU4iLCJpZCI6IjE3IiwiZW1haWwiOiJib21iQGdtYWlsLmNvbSIsInVzZXJuYW1lIjoiZmZmIiwic3ViIjoiMTciLCJpYXQiOjE3NjQ1Mzg0MjAsImV4cCI6MTc2NDYyNDgyMH0.EJBoAUTo3SqLFKanRD2ha0_Cp9Q49IJ0UlvSGZKKirQ";
-      
+      const token = "eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiQURNSU4iLCJpZCI6IjE3IiwiZW1haWwiOiJib21iQGdtYWlsLmNvbSIsInVzZXJuYW1lIjoiZmZmIiwic3ViIjoiMTciLCJpYXQiOjE3NjQ2MzIxNjcsImV4cCI6MTc2NDcxODU2N30.7EjH99TUTlykRzWydW4wQeWDkdVrE1mbzsAs1I2hQwk";
       const response = await fetch(`http://localhost:8080/api/vehicle/delete/${id}`, {
         method: 'DELETE',
         headers: {
@@ -115,14 +115,14 @@ const Vehicles = () => {
       type: vehicle.type,
       status: vehicle.status,
       capacity: vehicle.capacity.toString(),
-      operator_id: vehicle.operatorId.toString()
+      operator_id: vehicle.operatorId ? vehicle.operatorId.toString() : ''
     });
     setShowModal(true);
   };
 
   const resetForm = () => {
     setFormData({
-      type: '',
+      type: 'AMBULANCE',
       status: 'Available',
       capacity: '',
       operator_id: ''
@@ -153,6 +153,15 @@ const Vehicles = () => {
       case 'Resolving': return 'status-resolving';
       default: return '';
     }
+  };
+
+  const getVehicleTypeDisplay = (type) => {
+    const typeMap = {
+      'AMBULANCE': '🚑 Ambulance',
+      'FIRETRUCK': '🚒 Fire Truck',
+      'POLICE': '🚓 Police Car'
+    };
+    return typeMap[type] || type;
   };
 
   return (
@@ -198,14 +207,14 @@ const Vehicles = () => {
               vehiclesWithDisplayId.map((vehicle) => (
                 <tr key={vehicle.id}>
                   <td>{vehicle.displayId}</td>
-                  <td>{vehicle.type}</td>
+                  <td>{getVehicleTypeDisplay(vehicle.type)}</td>
                   <td>
                     <span className={`status-badge ${getStatusColor(vehicle.status)}`}>
                       {vehicle.status}
                     </span>
                   </td>
                   <td>{vehicle.capacity}</td>
-                  <td>{vehicle.operatorId}</td>
+                  <td>{vehicle.operatorId || 'N/A'}</td>
                   <td>
                     <div className="action-buttons">
                       <button 
@@ -244,13 +253,15 @@ const Vehicles = () => {
             <form onSubmit={handleSubmit}>
               <div className="form-group">
                 <label>Vehicle Type *</label>
-                <input
-                  type="text"
+                <select
                   value={formData.type}
                   onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                  placeholder="e.g., Ambulance, Fire Truck"
                   required
-                />
+                >
+                  <option value="AMBULANCE">🚑 Ambulance</option>
+                  <option value="FIRETRUCK">🚒 Fire Truck</option>
+                  <option value="POLICE">🚓 Police Car</option>
+                </select>
               </div>
 
               <div className="form-group">
@@ -261,7 +272,7 @@ const Vehicles = () => {
                   required
                 >
                   <option value="Available">Available</option>
-                  <option value="OnRoute">OnRoute</option>
+                  <option value="OnRoute">On Route</option>
                   <option value="Resolving">Resolving</option>
                 </select>
               </div>
@@ -274,19 +285,19 @@ const Vehicles = () => {
                   onChange={(e) => setFormData({ ...formData, capacity: e.target.value })}
                   placeholder="e.g., 4"
                   min="1"
+                  max="20"
                   required
                 />
               </div>
 
               <div className="form-group">
-                <label>Operator ID *</label>
+                <label>Operator ID (Optional)</label>
                 <input
                   type="number"
                   value={formData.operator_id}
                   onChange={(e) => setFormData({ ...formData, operator_id: e.target.value })}
-                  placeholder="e.g., 1"
+                  placeholder="Leave empty if no operator assigned"
                   min="1"
-                  required
                 />
               </div>
 
