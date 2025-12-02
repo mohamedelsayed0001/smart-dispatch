@@ -8,7 +8,7 @@ import com.smartdispatch.vehiclemanagement.Dao.VehicleDaoImpl;
 import com.smartdispatch.vehiclemanagement.Dto.VehicleDto;
 import com.smartdispatch.vehiclemanagement.model.VehicleEntity;
 import com.smartdispatch.vehiclemanagement.rowmapper.DtoMapper;
-import com.smartdispatch.vehiclemanagement.rowmapper.VehicleMapper;
+import com.smartdispatch.vehiclemanagement.rowmapper.AdminVehicleMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

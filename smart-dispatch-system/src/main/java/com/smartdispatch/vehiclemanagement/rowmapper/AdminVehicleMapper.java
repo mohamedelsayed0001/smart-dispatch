@@ -11,7 +11,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 @Component
 
-public class VehicleMapper implements RowMapper<VehicleEntity>{
+public class AdminVehicleMapper implements RowMapper<VehicleEntity>{
 
 @Override
     public VehicleEntity mapRow(ResultSet rs, int rowNum) throws SQLException {

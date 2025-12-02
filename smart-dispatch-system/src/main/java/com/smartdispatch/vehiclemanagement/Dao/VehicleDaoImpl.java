@@ -2,7 +2,7 @@ package com.smartdispatch.vehiclemanagement.Dao;
 
 import com.smartdispatch.vehiclemanagement.Interface.vechileDao;
 import com.smartdispatch.vehiclemanagement.model.VehicleEntity;
-import com.smartdispatch.vehiclemanagement.rowmapper.VehicleMapper;
+import com.smartdispatch.vehiclemanagement.rowmapper.AdminVehicleMapper;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -86,7 +86,7 @@ public class VehicleDaoImpl implements vechileDao<VehicleEntity> {
         try {
             String sql = "SELECT id, type, status, capacity, operator_id " +
                     "FROM vehicle WHERE id = ?";
-            return jdbcTemplate.queryForObject(sql, new VehicleMapper(), id);
+            return jdbcTemplate.queryForObject(sql, new AdminVehicleMapper(), id);
         } catch (EmptyResultDataAccessException e) {
             return null;
         } catch (DataAccessException e) {
@@ -99,7 +99,7 @@ public class VehicleDaoImpl implements vechileDao<VehicleEntity> {
             try {
                 String sql = "SELECT id, type, status, capacity, operator_id " +
                         "FROM vehicle";
-                return jdbcTemplate.query(sql, new VehicleMapper());
+                return jdbcTemplate.query(sql, new AdminVehicleMapper());
             } catch (DataAccessException e) {
                 throw new SQLException("Failed to fetch vehicles: " + e.getMessage(), e);
             }
@@ -142,7 +142,7 @@ public class VehicleDaoImpl implements vechileDao<VehicleEntity> {
             try {
                 String sql = "SELECT id, type, status, capacity, operator_id " +
                         "FROM vehicle WHERE id = ?";
-                return jdbcTemplate.queryForObject(sql, new VehicleMapper(), id);
+                return jdbcTemplate.queryForObject(sql, new AdminVehicleMapper(), id);
             } catch (EmptyResultDataAccessException e) {
                 return null;
             } catch (DataAccessException e) {
