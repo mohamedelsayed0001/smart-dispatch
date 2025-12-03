@@ -17,7 +17,7 @@ public class AdminUserDAO {
         int offset = (page - 1) * pageSize;
         
         StringBuilder sql = new StringBuilder(
-            "SELECT id, name, email, password, role, 'active' as status, DATE_FORMAT(created_at, '%Y-%m-%d') as joinedDate " +
+            "SELECT id, name, email, password, role, DATE_FORMAT(created_at, '%Y-%m-%d') as joinedDate " +
             "FROM User WHERE 1=1"
         );
         
@@ -53,7 +53,6 @@ public class AdminUserDAO {
                 user.setName(rs.getString("name"));
                 user.setEmail(rs.getString("email"));
                 user.setRole(rs.getString("role"));
-                user.setStatus(rs.getString("status"));
                 user.setJoinedDate(rs.getString("joinedDate"));
                 return user;
             }
@@ -93,7 +92,7 @@ public class AdminUserDAO {
      * Get user by ID
      */
     public User getUserById(Long id) {
-        String sql = "SELECT id, name, email, password, role, 'active' as status, DATE_FORMAT(created_at, '%Y-%m-%d') as joinedDate " +
+        String sql = "SELECT id, name, email, password, role, DATE_FORMAT(created_at, '%Y-%m-%d') as joinedDate " +
                      "FROM User WHERE id = ?";
         
         List<User> users = jdbcTemplate.query(
@@ -105,7 +104,6 @@ public class AdminUserDAO {
                 user.setName(rs.getString("name"));
                 user.setEmail(rs.getString("email"));
                 user.setRole(rs.getString("role"));
-                user.setStatus(rs.getString("status"));
                 user.setJoinedDate(rs.getString("joinedDate"));
                 return user;
             }

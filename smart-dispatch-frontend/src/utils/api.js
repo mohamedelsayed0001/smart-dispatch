@@ -61,19 +61,40 @@ export const fetchUsers = async (page = 1, filter = 'all', search = '') => {
 };
 
 export const fetchReports = async (page = 1) => {
-    const reports = [
-        { id: 1, title: 'System Performance Report', date: '2024-10-15', type: 'Performance', status: 'completed' },
-        { id: 2, title: 'Emergency Response Times', date: '2024-10-20', type: 'Analytics', status: 'completed' },
-        { id: 3, title: 'Monthly Dispatch Summary', date: '2024-10-28', type: 'Summary', status: 'pending' },
-        { id: 4, title: 'User Activity Log', date: '2024-11-01', type: 'Activity', status: 'completed' },
-        { id: 5, title: 'Equipment Maintenance', date: '2024-11-05', type: 'Maintenance', status: 'completed' },
-    ];
+    try {
+        const token = localStorage.getItem('jwt_token');
+        const res = await fetch(`http://localhost:8080/api/admin/reports`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
 
-    return {
-        reports: reports.slice((page - 1) * 6, page * 6),
-        total: reports.length,
-        pages: Math.ceil(reports.length / 6)
-    };
+        if (!res.ok) throw new Error('Failed to fetch reports');
+
+        const data = await res.json();
+        // backend returns an array of AdminIncidentReportDto
+        return {
+            reports: data || [],
+            total: (data && data.length) || 0,
+            pages: 1
+        };
+    } catch (error) {
+        console.error('[API] Error fetching reports, falling back to mock:', error);
+        const reports = [
+            { id: 1, title: 'System Performance Report', date: '2024-10-15', type: 'Performance', status: 'completed' },
+            { id: 2, title: 'Emergency Response Times', date: '2024-10-20', type: 'Analytics', status: 'completed' },
+            { id: 3, title: 'Monthly Dispatch Summary', date: '2024-10-28', type: 'Summary', status: 'pending' },
+            { id: 4, title: 'User Activity Log', date: '2024-11-01', type: 'Activity', status: 'completed' },
+            { id: 5, title: 'Equipment Maintenance', date: '2024-11-05', type: 'Maintenance', status: 'completed' },
+        ];
+
+        return {
+            reports: reports.slice((page - 1) * 6, page * 6),
+            total: reports.length,
+            pages: Math.ceil(reports.length / 6)
+        };
+    }
 };
 
 export const updateUserRole = async (userId, newRole) => {
