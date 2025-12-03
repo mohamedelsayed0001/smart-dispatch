@@ -10,7 +10,7 @@ const Vehicles = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [formData, setFormData] = useState({
     type: 'AMBULANCE',
-    status: 'Available',
+    status: 'AVAILABLE',
     capacity: '',
     operatorId: ''
   });
@@ -18,14 +18,16 @@ const Vehicles = () => {
   useEffect(() => {
     fetchVehicles();
   }, []);
-
+  
+  const token = localStorage.getItem('jwt_token');
+  
   const fetchVehicles = async () => {
     try {
       const response = await fetch('http://localhost:8080/api/vehicle/getAllVehicles', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem("authToken")}`
+          'Authorization': `Bearer ${token}`
         }
       });
       
@@ -56,7 +58,7 @@ const Vehicles = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem("authToken")}`
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
           ...formData,
@@ -89,7 +91,7 @@ const Vehicles = () => {
       const response = await fetch(`http://localhost:8080/api/vehicle/delete/${id}`, {
         method: 'DELETE',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem("authToken")}`
+          'Authorization': `Bearer ${token}`
         }
       });
 
@@ -120,7 +122,7 @@ const Vehicles = () => {
   const resetForm = () => {
     setFormData({
       type: 'AMBULANCE',
-      status: 'Available',
+      status: 'AVAILABLE',
       capacity: '',
       operatorId: ''
     });
@@ -145,9 +147,9 @@ const Vehicles = () => {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'Available': return 'status-available';
-      case 'OnRoute': return 'status-onroute';
-      case 'Resolving': return 'status-resolving';
+      case 'AVAILABLE': return 'status-available';
+      case 'ONROUTE': return 'status-onroute';
+      case 'RESOLVING': return 'status-resolving';
       default: return '';
     }
   };
@@ -159,6 +161,15 @@ const Vehicles = () => {
       'POLICE': '🚓 Police Car'
     };
     return typeMap[type] || type;
+  };
+
+  const getStatusDisplay = (status) => {
+    const statusMap = {
+      'AVAILABLE': 'Available',
+      'ONROUTE': 'On Route',
+      'RESOLVING': 'Resolving'
+    };
+    return statusMap[status] || status;
   };
 
   return (
@@ -207,7 +218,7 @@ const Vehicles = () => {
                   <td>{getVehicleTypeDisplay(vehicle.type)}</td>
                   <td>
                     <span className={`status-badge ${getStatusColor(vehicle.status)}`}>
-                      {vehicle.status}
+                      {getStatusDisplay(vehicle.status)}
                     </span>
                   </td>
                   <td>{vehicle.capacity}</td>
@@ -268,9 +279,9 @@ const Vehicles = () => {
                   onChange={(e) => setFormData({ ...formData, status: e.target.value })}
                   required
                 >
-                  <option value="Available">Available</option>
-                  <option value="OnRoute">On Route</option>
-                  <option value="Resolving">Resolving</option>
+                  <option value="AVAILABLE">Available</option>
+                  <option value="ONROUTE">On Route</option>
+                  <option value="RESOLVING">Resolving</option>
                 </select>
               </div>
 
