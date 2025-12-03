@@ -30,7 +30,7 @@ public class ResponderService {
     User responder = userDAO.findById(responderId)
         .orElseThrow(() -> new RuntimeException("Responder not found"));
 
-    if (!"operator".equals(responder.getRole())) {
+    if (!"operator".equals(responder.getRole().toLowerCase())) {
       throw new RuntimeException("User is not a responder");
     }
 
@@ -290,7 +290,8 @@ public class ResponderService {
     List<Notification> notifications = notificationDAO.findPendingByNotifiedId(
         responderId,
         size,
-        page * size);
+        page * size
+      );
 
     return notifications.stream()
         .map(this::convertNotificationToDTO)
