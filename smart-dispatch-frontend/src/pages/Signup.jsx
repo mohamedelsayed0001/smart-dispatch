@@ -24,8 +24,12 @@ export default function Signup() {
         return
       }
       // apiSignup stores token and user already
-      setLoading(false)
+      
+      localStorage.setItem("authToken", resp.token)
+      localStorage.setItem("jwt_token", resp.token)
+      
       navigate('/reportform')
+      setLoading(false)
     } catch (err) {
       console.error('Signup error', err)
       setError(err.message || 'Network error')

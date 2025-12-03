@@ -70,6 +70,8 @@ function Sidebar() {
 export default function DispatcherDashboard() {
   const [wsConnected, setWsConnected] = useState(false)
   const [toast, setToast] = useState(null)
+  const [assignments, setAssignments] = useState([])
+  const [vehicles, setVehicles] = useState([])
 
   const showToast = (message, type = 'info') => {
     setToast({ message, type, id: Date.now() })
@@ -104,6 +106,24 @@ export default function DispatcherDashboard() {
           `Vehicle ${vehicle.id} status: ${vehicle.status}`
         showToast(message, 'info')
 
+        setVehicles(prev => {
+          const idx = prev.findIndex(p => p.id === vehicle.vehicleId)
+
+          if (idx === -1) return prev
+
+          const updated = [...prev]
+          updated[idx] = {
+            ...updated[idx],
+            status: vehicle.newStatus, 
+            currentLongitude: vehicle.longitude, 
+            currentLatitude: vehicle.latitude,
+            lng: vehicle.longitude, 
+            lat: vehicle.latitude
+          }
+
+          return updated
+        })
+
       },
       onAssignment: (assignment) => {
         console.log('[DispatcherDashboard] Received assignment update:', assignment)
@@ -128,6 +148,20 @@ export default function DispatcherDashboard() {
         }[assignment.respone?.toUpperCase()] || 'info'
 
         showToast(message, toastType)
+
+        setAssignments(prev => {
+          const idx = prev.findIndex(p => p.id === assignment.assignmentId)
+
+          if (idx === -1) return prev
+
+          const updated = [...prev]
+          updated[idx] = {
+            ...updated[idx],
+            status: assignment.response
+          }
+
+          return updated
+        })
       },
       onIncident: (incident) => {
         console.log('[DispatcherDashboard] Received incident update:', incident)
@@ -194,8 +228,8 @@ export default function DispatcherDashboard() {
             } />
             <Route path="map" element={<VehicleMap />} />
             <Route path="pending" element={<PendingIncidents />} />
-            <Route path="active" element={<ActiveAssignments />} />
-            <Route path="vehicles" element={<AvailableVehicles />} />
+            <Route path="active" element={<ActiveAssignments assignments={assignments} setAssignments={setAssignments} />} />
+            <Route path="vehicles" element={<AvailableVehicles vehicles={vehicles} setVehicles={setVehicles}/>} />
           </Routes>
         </div>
       </div>

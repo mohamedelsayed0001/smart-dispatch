@@ -3,8 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import { fetchAvailableVehicles } from '../../utils/dispatcherApi'
 import { connect, disconnect } from '../../utils/dispatcherSocket'
 
-export default function AvailableVehicles() {
-  const [vehicles, setVehicles] = useState([])
+export default function AvailableVehicles({vehicles, setVehicles}) {
+  // const [vehicles, setVehicles] = useState([])
   const [loading, setLoading] = useState(true)
   const navigate = useNavigate()
 

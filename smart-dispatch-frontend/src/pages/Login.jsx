@@ -22,9 +22,20 @@ export default function Login() {
 
     try {
       const data = await apiLogin(email, password)
-      // apiLogin stores token and user already
+      
+      if(data.role == 'OPERATOR') {
+        navigate('/responder')
+      } else if (data.role == 'DISPATCHER') {
+        navigate('/dispatcher')
+      } else if (data.role == 'CITIZEN') {
+        navigate('/reportform')
+      } else if (data.role == 'ADMIN') {
+        navigate('/admin')
+      } else {
+        navigate('*')
+      }
+      
       setLoading(false)
-      navigate(`/${data.role}`)
     } catch (err) {
       console.error('Login error', err)
       setError(err.message || 'Network error')

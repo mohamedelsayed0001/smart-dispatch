@@ -135,6 +135,9 @@ public class ResponderService {
         vehicle.getId(),
         locationDTO.getLatitude(),
         locationDTO.getLongitude());
+
+    // notificationService.
+
   }
 
   @Transactional
@@ -184,13 +187,17 @@ public class ResponderService {
     User dispatcher = userDAO.findById(assignment.getDispatcherId())
         .orElse(null);
 
+    VehicleLocation location = vehicleLocationDAO.findTopByVehicleIdOrderByTimeStampDesc(vehicle.getId()).get();
+
     if (dispatcher != null) {
       notificationService.notifyChannel(
           "vehicle/status",
           java.util.Map.of(
               "dispatcherId", dispatcher.getId(),
               "vehicleId", vehicle.getId(),
-              "newStatus", statusDTO.getVehicleStatus()));
+              "newStatus", statusDTO.getVehicleStatus(),
+              "latitude", location.getLatitude(),
+              "longitude", location.getLongitude()));
     }
   }
 
@@ -224,7 +231,7 @@ public class ResponderService {
           java.util.Map.of(
               "responderId", responderId,
               "assignmentId", assignmentId,
-              "response", "ACCEPTED"));
+              "response", "ACTIVE"));
 
       return new AssignmentActionResponseDTO(
           true,
