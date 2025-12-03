@@ -61,7 +61,7 @@ const SystemUsers = ({ users, totalPages, currentPage, setCurrentPage, userFilte
               <th>Name</th>
               <th>Email</th>
               <th>Role</th>
-              <th>Status</th>
+              {/* <th>Status</th> */}
               <th>Joined</th>
               <th>Actions</th>
             </tr>
@@ -81,11 +81,11 @@ const SystemUsers = ({ users, totalPages, currentPage, setCurrentPage, userFilte
                     {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
                   </span>
                 </td>
-                <td>
+                {/* <td>
                   <span className="badge badge-status">
                     {user.status}
                   </span>
-                </td>
+                </td> */}
                 <td>{user.joinedDate}</td>
                 <td>
                   <div className="action-menu">

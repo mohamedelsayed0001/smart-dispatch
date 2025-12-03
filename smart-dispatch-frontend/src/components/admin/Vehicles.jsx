@@ -3,8 +3,6 @@ import { Plus, Edit, Trash2, X, Search } from 'lucide-react';
 import './styles/Vehicles.css';
 
 const Vehicles = () => {
-  // 🔑 CENTRALIZED TOKEN - Update this one place only
-  const AUTH_TOKEN = "eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiQURNSU4iLCJpZCI6IjE3IiwiZW1haWwiOiJib21iQGdtYWlsLmNvbSIsInVzZXJuYW1lIjoiZmZmIiwic3ViIjoiMTciLCJpYXQiOjE3NjQ2NzI5MjQsImV4cCI6MTc2NDc1OTMyNH0.V_skabqb6SGvHCBYypbz9Jv9cz-WSq4yDeVvir217y0";
   
   const [vehicles, setVehicles] = useState([]);
   const [showModal, setShowModal] = useState(false);
@@ -27,7 +25,7 @@ const Vehicles = () => {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${AUTH_TOKEN}`
+          'Authorization': `Bearer ${localStorage.getItem("authToken")}`
         }
       });
       
@@ -58,7 +56,7 @@ const Vehicles = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${AUTH_TOKEN}`
+          'Authorization': `Bearer ${localStorage.getItem("authToken")}`
         },
         body: JSON.stringify({
           ...formData,
@@ -91,7 +89,7 @@ const Vehicles = () => {
       const response = await fetch(`http://localhost:8080/api/vehicle/delete/${id}`, {
         method: 'DELETE',
         headers: {
-          'Authorization': `Bearer ${AUTH_TOKEN}`
+          'Authorization': `Bearer ${localStorage.getItem("authToken")}`
         }
       });
 

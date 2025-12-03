@@ -1,31 +1,92 @@
 package com.smartdispatch.report.dao;
 
+import java.sql.PreparedStatement;
+import java.sql.Statement;
+import java.sql.Timestamp;
+import java.util.List;
+
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
 import com.smartdispatch.report.dto.ReportedIncidentDto;
+import com.smartdispatch.report.dto.AdminIncidentReportDto;
 
 @Repository
 public class ReportedIncidentDao {
 
-    JdbcTemplate jdbctTemplate;
+    private final JdbcTemplate jdbcTemplate;
 
-    ReportedIncidentDao(JdbcTemplate jdbcTemplate) {
-        this.jdbctTemplate = jdbcTemplate;
+    public ReportedIncidentDao(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
     }
-    
-    public void addIncident(ReportedIncidentDto dto, int userId) {
-        String sql = "INSERT INTO incident (type, level, description, latitude, longitude, status, citizen_id) VALUES (?, ?, ?, ?, ?, ?, ?)";
-        jdbctTemplate.update(
-            sql,
-            dto.getType(),
-            dto.getLevel(),
-            dto.getDescription(),
-            dto.getLatitude(),
-            dto.getLongitude(),
-            "PENDING",
-            userId
-        );
+
+    /**
+     * Inserts a new incident and returns the generated id.
+     */
+    public int addIncident(ReportedIncidentDto dto, int userId) {
+        final String sql = "INSERT INTO Incident (type, level, description, latitude, longitude, status, citizen_id) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+
+        jdbcTemplate.update(connection -> {
+            PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            ps.setString(1, dto.getType());
+            ps.setString(2, dto.getLevel());
+            ps.setString(3, dto.getDescription());
+            ps.setDouble(4, dto.getLatitude());
+            ps.setDouble(5, dto.getLongitude());
+            ps.setString(6, "PENDING");
+            ps.setInt(7, userId);
+            return ps;
+        }, keyHolder);
+
+        Number key = keyHolder.getKey();
+        return key != null ? key.intValue() : -1;
+    }
+
+    public AdminIncidentReportDto getIncidentById(int id) {
+        final String sql = "SELECT i.id, i.type, i.level, i.description, i.latitude, i.longitude, i.status, i.time_reported, i.time_resolved, u.name AS reporter_name "
+                + "FROM Incident i LEFT JOIN `User` u ON i.citizen_id = u.id WHERE i.id = ?";
+
+        return jdbcTemplate.queryForObject(sql, new Object[] { id }, (rs, rowNum) -> {
+            AdminIncidentReportDto dto = new AdminIncidentReportDto();
+            dto.setId(rs.getInt("id"));
+            dto.setType(rs.getString("type"));
+            dto.setLevel(rs.getString("level"));
+            dto.setDescription(rs.getString("description"));
+            dto.setLatitude(rs.getDouble("latitude"));
+            dto.setLongitude(rs.getDouble("longitude"));
+            dto.setStatus(rs.getString("status"));
+            Timestamp tReported = rs.getTimestamp("time_reported");
+            if (tReported != null) dto.setTimeReported(tReported.toLocalDateTime());
+            Timestamp tResolved = rs.getTimestamp("time_resolved");
+            if (tResolved != null) dto.setTimeResolved(tResolved.toLocalDateTime());
+            dto.setReporterName(rs.getString("reporter_name"));
+            return dto;
+        });
+    }
+
+    public List<AdminIncidentReportDto> getAllIncidents() {
+        final String sql = "SELECT i.id, i.type, i.level, i.description, i.latitude, i.longitude, i.status, i.time_reported, i.time_resolved, u.name AS reporter_name "
+                + "FROM Incident i LEFT JOIN `User` u ON i.citizen_id = u.id ORDER BY i.time_reported DESC";
+
+        return jdbcTemplate.query(sql, (rs, rowNum) -> {
+            AdminIncidentReportDto dto = new AdminIncidentReportDto();
+            dto.setId(rs.getInt("id"));
+            dto.setType(rs.getString("type"));
+            dto.setLevel(rs.getString("level"));
+            dto.setDescription(rs.getString("description"));
+            dto.setLatitude(rs.getDouble("latitude"));
+            dto.setLongitude(rs.getDouble("longitude"));
+            dto.setStatus(rs.getString("status"));
+            Timestamp tReported = rs.getTimestamp("time_reported");
+            if (tReported != null) dto.setTimeReported(tReported.toLocalDateTime());
+            Timestamp tResolved = rs.getTimestamp("time_resolved");
+            if (tResolved != null) dto.setTimeResolved(tResolved.toLocalDateTime());
+            dto.setReporterName(rs.getString("reporter_name"));
+            return dto;
+        });
     }
 
 }

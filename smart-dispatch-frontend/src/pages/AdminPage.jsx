@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import AdminSidebar from '../components/admin/AdminSidebar';
 import Dashboard from '../components/admin/Dashboard';
 import SystemUsers from '../components/admin/SystemUsers';
@@ -7,6 +7,8 @@ import VehicleLocations from '../components/admin/VehicleLocations'; // Add this
 import Reports from '../components/admin/Reports';
 import Analysis from '../components/admin/Analysis';
 import { fetchDashboardData, fetchUsers, fetchReports } from '../utils/api';
+import { Client } from '@stomp/stompjs';
+import SockJS from 'sockjs-client';
 import './styles/AdminPage.css';
 
 const AdminPage = () => {
@@ -18,6 +20,7 @@ const AdminPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const stompClientRef = useRef(null);
 
   useEffect(() => {
     if (activeMenu === 'dashboard') {
@@ -32,8 +35,39 @@ const AdminPage = () => {
         setReports(data.reports);
         setTotalPages(data.pages);
       });
+      // subscribe to websocket topic for live reports
+      if (!stompClientRef.current) {
+        const token = localStorage.getItem('jwt_token');
+        const client = new Client({
+          webSocketFactory: () => new SockJS('http://localhost:8080/ws'),
+          connectHeaders: token ? { Authorization: `Bearer ${token}` } : {},
+          onConnect: () => {
+            client.subscribe('/topic/reports', (message) => {
+              try {
+                const body = JSON.parse(message.body);
+                // prepend new report
+                setReports(prev => [body, ...(prev || [])]);
+              } catch (e) {
+                console.error('Failed to parse report message', e);
+              }
+            });
+          }
+        });
+        client.activate();
+        stompClientRef.current = client;
+      }
     }
   }, [activeMenu, currentPage, userFilter, searchQuery]);
+
+  // cleanup websocket on unmount
+  useEffect(() => {
+    return () => {
+      if (stompClientRef.current) {
+        try { stompClientRef.current.deactivate(); } catch (e) { }
+        stompClientRef.current = null;
+      }
+    };
+  }, []);
 
   const handleRefreshUsers = () => {
     fetchUsers(currentPage, userFilter, searchQuery).then(data => {
