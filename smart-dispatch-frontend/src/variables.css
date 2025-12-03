@@ -119,7 +119,7 @@
   box-sizing: border-box;
 }
 
-body {
+/* body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
@@ -127,7 +127,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
   color: var(--text-primary);
   background-color: var(--bg-secondary);
-}
+} */
 
 /* Utility Classes */
 .container {

@@ -16,7 +16,7 @@ class WebSocketService {
     this.isConnecting = false;
   }
 
-  connect(userId,onConnected, onError) {
+  connect(userId, onConnected, onError) {
     if (this.isConnecting || this.connected) {
       console.log('WebSocket already connecting or connected');
       return Promise.resolve();
@@ -108,10 +108,8 @@ class WebSocketService {
 
   subscribeToNotifications(userId) {
     if (!this.client || !this.connected) return;
-
-    // Spring automatically maps /user/queue/... to the authenticated user from JWT
-    // const destination = `user ${localStorage.getItem('userId')}/notifications`.replace(/ /g, '');
-    const destination = `user/${userId}/assignment`;
+    
+    const destination = `/user/assignment`;
 
     try {
       const subscription = this.client.subscribe(destination, (message) => {

@@ -23,9 +23,9 @@ public class NotificationService {
     }
 
     public void notifyUser(String userId, String destination, Object messagePayload) {
-        // The framework automatically prepends "/user/{userId}" to the destination.
-        // E.g., for user 'alex', destination '/queue/updates' -> '/user/alex/queue/updates'
+
         System.out.println("Sending message to user " + userId + " at destination " + destination);
+        
         messagingTemplate.convertAndSendToUser(
             userId,
             destination,
