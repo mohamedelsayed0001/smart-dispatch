@@ -216,10 +216,12 @@ const ResponderDashboard = () => {
   // Show assignment details view
   if (selectedAssignment) {
     return (
-      <AssignmentDetails
-        assignmentId={selectedAssignment.id}
-        onBack={handleBackToDashboard}
-      />
+      <div className="responder-dashboard">
+        <AssignmentDetails
+          assignmentId={selectedAssignment.id}
+          onBack={handleBackToDashboard}
+        />
+      </div>
     );
   }
 
