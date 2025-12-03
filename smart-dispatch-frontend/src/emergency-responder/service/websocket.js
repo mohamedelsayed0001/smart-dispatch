@@ -24,13 +24,10 @@ class WebSocketService {
 
     this.isConnecting = true;
 
-    const token = typeof window !== 'undefined' ? localStorage.getItem('jwt_token') : null;
-
     return new Promise((resolve, reject) => {
       this.client = new Client({
         webSocketFactory: () => new SockJS(WS_URL),
 
-        // ⭐ SEND JWT TOKEN IN CONNECT HEADERS
         connectHeaders: {
           Authorization: `Bearer ${localStorage.getItem('authToken')}`
         },
@@ -40,7 +37,6 @@ class WebSocketService {
         },
 
         reconnectDelay: 5000,
-        connectHeaders: token ? { Authorization: `Bearer ${token}` } : {},
         heartbeatIncoming: 4000,
         heartbeatOutgoing: 4000,
 
@@ -51,9 +47,6 @@ class WebSocketService {
 
           // ⭐ SUBSCRIBE TO USER QUEUE
           this.subscribeToNotifications(userId);
-
-          // // ⭐ SERVER WILL KNOW THE USER FROM JWT
-          // this.send(CONNECT_URL, {});
 
           if (onConnected) onConnected();
           resolve();
@@ -82,10 +75,6 @@ class WebSocketService {
     if (!this.client) return;
 
     try {
-      if (this.connected) {
-        // this.send(DISCONNECT_URL, {});
-      }
-
       // Unsubscribe
       this.subscriptions.forEach((subscription) => {
         try {
@@ -155,22 +144,6 @@ class WebSocketService {
 
     if (index !== -1) handlers.splice(index, 1);
   }
-
-  // send(destination, body) {
-  //   if (!this.client || !this.connected) {
-  //     console.warn('WebSocket not connected. Cannot send message.');
-  //     return;
-  //   }
-
-  //   try {
-  //     this.client.publish({
-  //       destination,
-  //       body: JSON.stringify(body),
-  //     });
-  //   } catch (err) {
-  //     console.error('Error sending message:', err);
-  //   }
-  // }
 
   isConnected() {
     return this.connected;
