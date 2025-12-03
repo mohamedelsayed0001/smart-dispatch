@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import './App.css'
 import './index.css'
 import Testing from './testing/Testing'
@@ -8,6 +8,7 @@ import ThemeProvider from './dispatcher/ThemeContext'
 import Login from './pages/Login'
 import Signup from './pages/Signup'
 import EmergencyReportForm from './pages/Report'
+import ResponderDashboard from './emergency-responder/ResponderDashboard'
 
 function App() {
   return (
@@ -20,7 +21,9 @@ function App() {
           <Route path="/admin" element={<AdminPage />} />
           <Route path="/dispatcher/*" element={<DispatcherDashboard />} />
           <Route path="/reportform" element={<EmergencyReportForm />} />
-          <Route path="*" element={<h1>NOT YET</h1>} />
+          <Route path="/" element={<Navigate to="/login" replace />} />
+          <Route path="/responder/*" element={<ResponderDashboard />} />
+          <Route path="*" element={<h1>Are you lost?</h1>} />
         </Routes>
       </Router>
     </ThemeProvider>

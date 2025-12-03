@@ -13,6 +13,13 @@ export default function Login() {
     e.preventDefault()
     setLoading(true)
     setError('')
+
+    if (!email.includes('@')) {
+      setError('Please enter a valid email address')
+      setLoading(false)
+      return
+    }
+
     try {
       const data = await apiLogin(email, password)
       // apiLogin stores token and user already

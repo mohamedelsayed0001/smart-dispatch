@@ -2,7 +2,6 @@ package com.smartdispatch.security.filter;
 
 import java.io.IOException;
 
-import com.smartdispatch.security.model.AppUserDetails;
 import com.smartdispatch.security.service.JwtService;
 
 import jakarta.servlet.FilterChain;
@@ -21,18 +20,16 @@ import java.util.List;
 public class JwtAuthFilter extends OncePerRequestFilter {
 
     private static final List<String> PUBLIC_URLS = List.of(
-            "/api/auth/login",
-            "/api/auth/signup",
+            "/api/auth", // Allow all auth endpoints (login, signup)
             "/api/check/users",
-            "/ws"
+            "/ws",
+            "/error"
     );
 
     private final JwtService jwtService;
-    private final boolean securityEnabled;
 
-    JwtAuthFilter(JwtService jwtService, @org.springframework.beans.factory.annotation.Value("${app.security.enabled:true}") boolean securityEnabled) {
+    JwtAuthFilter(JwtService jwtService) {
         this.jwtService = jwtService;
-        this.securityEnabled = securityEnabled;
     }
 
     @Override
@@ -41,8 +38,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                                     FilterChain filterChain)
             throws ServletException, IOException {
 
-        // If security is disabled, skip authentication checks and continue the chain
-        if (!securityEnabled) {
+        // Allow OPTIONS requests for CORS preflight
+        if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -63,13 +60,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             }
         }
         System.out.println("JwtAuthFilter: Secured path accessed: " + path);
-        for (String prefix : PUBLIC_URLS) {
-            if (path.startsWith(prefix)) {
-                filterChain.doFilter(request, response);
-                return;
-            }
-        }
-
+        
         String authHeader = request.getHeader("Authorization");
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
@@ -94,6 +85,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             } catch (IOException e) {
                 System.err.println("IOException trying to write response for invalid token: " + e.getMessage());
             }
+            return; // Add return here to stop processing
         }
 
         UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(

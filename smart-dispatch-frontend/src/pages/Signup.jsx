@@ -6,7 +6,7 @@ export default function Signup() {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [role, setRole] = useState('OPERATOR')
+  const [role, setRole] = useState('CITIZEN')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
@@ -67,12 +67,7 @@ export default function Signup() {
             required
           />
 
-          <label className="text-sm text-gray-600">Role</label>
-          <select value={role} onChange={(e) => setRole(e.target.value)} className="px-3 py-2 rounded-lg border">
-            <option value="OPERATOR">Operator</option>
-            <option value="DISPATCHER">Dispatcher</option>
-            <option value="ADMIN">Admin</option>
-          </select>
+
 
           {error && <div className="text-sm text-red-600">{error}</div>}
 

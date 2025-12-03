@@ -10,24 +10,19 @@ function FitBounds({ coords }) {
   useEffect(() => {
     if (!coords || coords.length === 0) return
     try {
-      // coords already comes in [lat, lng] pairs. Handle single-point and multi-point cases.
       if (coords.length === 1) {
-        // center on the single point with a reasonable zoom
         map.setView(coords[0], 14)
       } else {
         map.fitBounds(coords, { padding: [60, 60], maxZoom: 14 })
       }
     } catch (e) {
-      // Log error to help debugging if fit/center fails
-      // (do not throw — keep UI resilient)
-      // eslint-disable-next-line no-console
       console.error('FitBounds error', e)
     }
   }, [coords, map])
   return null
 }
 
-export default function VehicleMap() {
+export default function VehicleMap({ height = '100vh' }) {
   const [vehicles, setVehicles] = useState([])
   const [incidents, setIncidents] = useState([])
   const mapRef = useRef(null)
@@ -89,7 +84,6 @@ export default function VehicleMap() {
     }
   }
 
-  // Normalize vehicle objects from backend into { id, name, lat, lng, status, ... }
   const normalizeVehicle = (v) => {
     const out = { ...v }
     let lat = null
@@ -131,7 +125,7 @@ export default function VehicleMap() {
       }
     }).catch((e) => { console.error('fetchAvailableVehicles failed', e); setVehicles([]) })
 
-    fetchPendingIncidents().then((data) => { if (mounted) setIncidents(data) }).catch(() => {})
+    fetchPendingIncidents().then((data) => { if (mounted) setIncidents(data) }).catch(() => { })
     return () => (mounted = false)
   }, [])
 
@@ -140,7 +134,6 @@ export default function VehicleMap() {
     const lat = parseFloat(params.get('lat'))
     const lng = parseFloat(params.get('lng'))
     if (!Number.isNaN(lat) && !Number.isNaN(lng)) {
-      // if map already exists, fly now, else wait a tick
       const tryFly = () => { if (mapRef.current) mapRef.current.flyTo([lat, lng], 14) }
       if (mapRef.current) tryFly()
       else {
@@ -149,111 +142,120 @@ export default function VehicleMap() {
     }
   }, [location.search])
 
-  // Only build a route polyline from vehicles that are actually "on route".
-  // Previously we used all vehicles which could create a line connecting every vehicle.
   const routeCoords = vehicles
     .filter(v => (v.status || '').toString().toUpperCase() === 'ON_ROUTE' && Number.isFinite(v.lat) && Number.isFinite(v.lng))
     .map(v => [v.lat, v.lng])
 
   return (
-    <div>
+    <div className="view-container">
       <h2 className="text-xl font-semibold mb-4">Vehicle Map</h2>
-      <div className="grid grid-cols-1 gap-4">
-        <div className="bg-white rounded-2xl shadow p-4 flex flex-col overflow-hidden" style={{ height: '100vh' }}>
-          <div className="flex-1 rounded-lg overflow-hidden relative">
-            {/* Search control and legend above the map */}
-            <div className="mb-4">
-              <div className="flex items-center justify-between gap-4">
-                <div className="flex items-center gap-2">
-                  <input
-                    type="search"
-                    value={searchQuery}
-                    onChange={(e) => { setSearchQuery(e.target.value); fetchSuggestions(e.target.value) }}
-                    onKeyDown={(e) => { if (e.key === 'Enter') handleSearch() }}
-                    placeholder="Search place, address or vehicle"
-                    className="px-3 py-2 border border-gray-200 rounded w-80 text-sm"
-                  />
-                  <button onClick={() => handleSearch()} className="px-3 py-2 bg-gray-900 text-white rounded text-sm">Search</button>
-                </div>
 
-                <div className="flex items-center gap-4 text-sm">
-                  <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full" style={{ background: '#3cc919ff' }} /> <span>Available </span></div>
-                  <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full" style={{ background: '#f59e0b' }} /> <span>On route </span></div>
-                  <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full" style={{ background: '#ef4444' }} /> <span>Resolving</span></div>
-                </div>
+      <div className="bg-white rounded-t-2xl shadow p-4 z-10 relative">
+        <div className="flex items-center justify-between gap-4 flex-wrap">
+          <div className="flex items-center gap-2 relative">
+            <input
+              type="search"
+              value={searchQuery}
+              onChange={(e) => { setSearchQuery(e.target.value); fetchSuggestions(e.target.value) }}
+              onKeyDown={(e) => { if (e.key === 'Enter') handleSearch() }}
+              placeholder="Search place, address or vehicle"
+              className="px-3 py-2 border border-gray-200 rounded w-80 text-sm focus:outline-none focus:border-blue-500"
+            />
+            <button onClick={() => handleSearch()} className="px-3 py-2 bg-gray-900 text-white rounded text-sm hover:bg-gray-800 transition-colors">Search</button>
+
+            {suggestions.length > 0 && (
+              <div className="absolute top-full left-0 mt-1 w-full bg-white rounded shadow-lg z-50 overflow-hidden border border-gray-100">
+                <ul className="max-h-64 overflow-auto">
+                  {suggestions.map((s) => (
+                    <li key={s.place_id} className="px-3 py-2 hover:bg-gray-50 cursor-pointer text-sm border-b border-gray-50 last:border-0" onMouseDown={() => handleSelectSuggestion(s)}>
+                      <div className="font-medium truncate">{s.display_name}</div>
+                    </li>
+                  ))}
+                </ul>
               </div>
-
-              {suggestions.length > 0 && (
-                <div className="mt-2 w-96 bg-white rounded shadow z-50 overflow-hidden">
-                  <ul className="max-h-48 overflow-auto">
-                    {suggestions.map((s) => (
-                      <li key={s.place_id} className="px-3 py-2 hover:bg-gray-100 cursor-pointer text-sm" onMouseDown={() => handleSelectSuggestion(s)}>
-                        <div className="font-medium truncate">{s.display_name}</div>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </div>
-
-            {/* Centered on Egypt (approximate centroid) */}
-            <MapContainer whenCreated={(m) => (mapRef.current = m)} center={[26.8206, 30.8025]} zoom={6} style={{ height: '100%', width: '100%' }}>
-              <TileLayer
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              />
-
-              {vehicles.map((v) => {
-                if (!Number.isFinite(v.lat) || !Number.isFinite(v.lng)) return null
-                const st = (v.status || '').toUpperCase()
-                let color = '#6b7280' // default: offline/unknown
-                if (st === 'AVAILABLE') color = '#10b981'
-                else if (st === 'ON_ROUTE') color = '#f59e0b'
-                else if (st === 'RESOLVING') color = '#ef4444'
-                return (
-                  <CircleMarker
-                    key={v.id}
-                    center={[v.lat, v.lng]}
-                    radius={8}
-                    pathOptions={{ color, fillColor: color, fillOpacity: 1, weight: 2 }}
-                  >
-                    <Popup>
-                      <div className="font-medium">{v.name || `Vehicle ${v.id}`}</div>
-                      <div className="text-xs text-gray-500">{v.status} • {v.type || '—'}</div>
-                    </Popup>
-                  </CircleMarker>
-                )
-              })}
-
-              {incidents.map((inc) => (
-                inc.lat && inc.lng ? (
-                  <CircleMarker
-                    key={`inc-${inc.id}`}
-                    center={[inc.lat, inc.lng]}
-                    radius={8}
-                    pathOptions={{ color: '#ef4444', fillColor: '#ef4444', fillOpacity: 1, weight: 2 }}
-                  >
-                    <Popup>
-                      <div className="font-medium">Incident #{inc.id}</div>
-                      <div className="text-xs text-gray-500">{inc.address || inc.description}</div>
-                    </Popup>
-                  </CircleMarker>
-                ) : null
-              ))}
-
-              {routeCoords.length > 1 && (
-                <Polyline positions={routeCoords} pathOptions={{ color: '#ff7a18', weight: 5, opacity: 0.95 }} />
-              )}
-
-              <FitBounds coords={routeCoords} />
-            </MapContainer>
+            )}
           </div>
 
-
-          {/* Vehicles table removed: map-only view keeps search and legend */}
+          <div className="flex items-center gap-6 text-sm">
+            <div className="flex items-center gap-2">
+              <span className="flex items-center justify-center w-6 h-6 rounded-full bg-green-100 text-green-600">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg>
+              </span>
+              <span>Available</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="flex items-center justify-center w-6 h-6 rounded-full bg-amber-100 text-amber-600">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
+              </span>
+              <span>On route</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="flex items-center justify-center w-6 h-6 rounded-full bg-red-100 text-red-600">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>
+              </span>
+              <span>Resolving</span>
+            </div>
+          </div>
         </div>
+      </div>
 
-     
+      <div className="flex-1 bg-white rounded-b-2xl shadow overflow-hidden relative z-0" style={{ minHeight: '500px' }}>
+        <MapContainer
+          whenCreated={(m) => (mapRef.current = m)}
+          center={[26.8206, 30.8025]}
+          zoom={6}
+          scrollWheelZoom={true}
+          style={{ height: '100%', width: '100%' }}
+        >
+          <TileLayer
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          />
+
+          {vehicles.map((v) => {
+            if (!Number.isFinite(v.lat) || !Number.isFinite(v.lng)) return null
+            const st = (v.status || '').toUpperCase()
+            let color = '#6b7280'
+            if (st === 'AVAILABLE') color = '#10b981'
+            else if (st === 'ON_ROUTE') color = '#f59e0b'
+            else if (st === 'RESOLVING') color = '#ef4444'
+            return (
+              <CircleMarker
+                key={v.id}
+                center={[v.lat, v.lng]}
+                radius={8}
+                pathOptions={{ color, fillColor: color, fillOpacity: 0.8, weight: 2 }}
+              >
+                <Popup>
+                  <div className="font-medium">{v.name || `Vehicle ${v.id}`}</div>
+                  <div className="text-xs text-gray-500">{v.status} • {v.type || '—'}</div>
+                </Popup>
+              </CircleMarker>
+            )
+          })}
+
+          {incidents.map((inc) => (
+            inc.lat && inc.lng ? (
+              <CircleMarker
+                key={`inc-${inc.id}`}
+                center={[inc.lat, inc.lng]}
+                radius={8}
+                pathOptions={{ color: '#ef4444', fillColor: '#ef4444', fillOpacity: 0.8, weight: 2 }}
+              >
+                <Popup>
+                  <div className="font-medium">Incident #{inc.id}</div>
+                  <div className="text-xs text-gray-500">{inc.address || inc.description}</div>
+                </Popup>
+              </CircleMarker>
+            ) : null
+          ))}
+
+          {routeCoords.length > 1 && (
+            <Polyline positions={routeCoords} pathOptions={{ color: '#ff7a18', weight: 5, opacity: 0.95 }} />
+          )}
+
+          <FitBounds coords={routeCoords} />
+        </MapContainer>
       </div>
     </div>
   )
