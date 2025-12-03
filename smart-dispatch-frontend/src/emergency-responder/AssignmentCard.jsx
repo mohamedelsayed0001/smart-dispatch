@@ -1,13 +1,12 @@
 import './css/responder.css';
 
-const AssignmentCard = ({ assignment, onClick }) => {
+const AssignmentCard = ({ assignment, onClick, onAccept, onReject }) => {
   if (!assignment) return null;
 
   const { incident, vehicle } = assignment;
 
   const getSeverityClass = (severity) => {
     const severityMap = {
-      critical: 'badge-critical',
       high: 'badge-high',
       medium: 'badge-medium',
       low: 'badge-low',
@@ -18,6 +17,7 @@ const AssignmentCard = ({ assignment, onClick }) => {
   const getStatusClass = (status) => {
     const statusMap = {
       active: 'status-active',
+      pending: 'status-pending',
       completed: 'status-completed',
       canceled: 'status-canceled',
       rejected: 'status-rejected',
@@ -29,7 +29,7 @@ const AssignmentCard = ({ assignment, onClick }) => {
     const icons = {
       medical: '🚑',
       fire: '🚒',
-      police: '🚓',
+      crime: '🚓',
     };
     return icons[type?.toLowerCase()] || '🚨';
   };
@@ -57,15 +57,30 @@ const AssignmentCard = ({ assignment, onClick }) => {
     return `${days}d ago`;
   };
 
-  const isClickable = assignment.status === 'active';
+  const isClickable = assignment.status === 'ACTIVE';
+  const isPending = assignment.status === 'PENDING';
+
+  const handleAcceptClick = (e) => {
+    e.stopPropagation();
+    if (onAccept) {
+      onAccept(assignment);
+    }
+  };
+
+  const handleRejectClick = (e) => {
+    e.stopPropagation();
+    if (onReject) {
+      onReject(assignment);
+    }
+  };
 
   return (
     <div
       className={`assignment-card ${getStatusClass(assignment.status)} ${
-        !isClickable ? 'disabled' : ''
+        !isClickable && !isPending ? 'disabled' : ''
       }`}
       onClick={isClickable ? onClick : undefined}
-      style={{ cursor: isClickable ? 'pointer' : 'not-allowed' }}
+      style={{ cursor: isClickable ? 'pointer' : isPending ? 'default' : 'not-allowed' }}
     >
       <div className="assignment-card-header">
         <div className="assignment-type">
@@ -114,7 +129,31 @@ const AssignmentCard = ({ assignment, onClick }) => {
         <span className={`status-badge ${getStatusClass(assignment.status)}`}>
           {assignment.status}
         </span>
-        {isClickable ? (
+        
+        {isPending ? (
+          <div className="pending-actions">
+            <button 
+              className="btn-accept" 
+              onClick={handleAcceptClick}
+              title="Accept Assignment"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+              </svg>
+              Accept
+            </button>
+            <button 
+              className="btn-reject" 
+              onClick={handleRejectClick}
+              title="Reject Assignment"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+              </svg>
+              Reject
+            </button>
+          </div>
+        ) : isClickable ? (
           <button className="view-details-btn">
             View Details
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">

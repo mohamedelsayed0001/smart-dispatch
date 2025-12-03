@@ -98,14 +98,6 @@
   overflow: hidden;
 }
 
-.responder-dashboard .dashboard-notifications {
-  width: 400px;
-  background-color: var(--bg-primary);
-  border-right: 1px solid var(--border-light);
-  overflow-y: auto;
-  flex-shrink: 0;
-}
-
 .responder-dashboard .dashboard-assignments {
   flex: 1;
   padding: var(--spacing-xl);
@@ -426,6 +418,11 @@
   color: var(--text-inverse);
 }
 
+.responder-dashboard .status-badge.status-pending {
+  background-color: #f39c12;
+  color: var(--text-inverse);
+}
+
 .responder-dashboard .status-badge.status-completed {
   background-color: var(--status-available);
   color: var(--text-inverse);
@@ -435,6 +432,52 @@
 .responder-dashboard .status-badge.status-rejected {
   background-color: var(--status-offline);
   color: var(--text-inverse);
+}
+
+/* Pending Assignment Actions */
+.responder-dashboard .pending-actions {
+  display: flex;
+  gap: var(--spacing-xs);
+}
+
+.responder-dashboard .btn-accept,
+.responder-dashboard .btn-reject {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: var(--font-xs);
+  font-weight: var(--font-semibold);
+  cursor: pointer;
+  transition: all var(--transition-normal);
+}
+
+.responder-dashboard .btn-accept {
+  background-color: var(--status-available);
+  color: var(--text-inverse);
+}
+
+.responder-dashboard .btn-accept:hover {
+  background-color: #27ae60;
+  transform: translateY(-1px);
+}
+
+.responder-dashboard .btn-reject {
+  background-color: var(--severity-critical);
+  color: var(--text-inverse);
+}
+
+.responder-dashboard .btn-reject:hover {
+  background-color: #c0392b;
+  transform: translateY(-1px);
+}
+
+.responder-dashboard .btn-accept svg,
+.responder-dashboard .btn-reject svg {
+  width: 14px;
+  height: 14px;
 }
 
 .responder-dashboard .view-details-btn {
@@ -814,19 +857,12 @@
   font-size: var(--font-lg);
 }
 
-/* Responsive Design */
-@media (max-width: 1200px) {
-  .responder-dashboard .dashboard-notifications {
-      width: 350px;
-  }
-}
-
 @media (max-width: 1024px) {
   .responder-dashboard .dashboard-main {
       flex-direction: column;
   }
 
-  .responder-dashboard .dashboard-notifications {
+  .responder-dashboard {
       width: 100%;
       max-height: 40vh;
       border-right: none;

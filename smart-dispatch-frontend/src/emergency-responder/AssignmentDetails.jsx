@@ -117,23 +117,11 @@ const AssignmentDetails = ({ assignmentId, onBack }) => {
     try {
       setCancelLoading(true);
 
-      // Cancel the assignment - this should:
-      // 1. Set assignment status to 'canceled'
-      // 2. Set vehicle status to 'AVAILABLE'
-      // 3. Set incident status to 'pending'
       await responderAPI.cancelAssignment(assignmentId);
 
       setCancelLoading(false);
       setShowCancelConfirm(false);
 
-      // Show success message
-      if ('Notification' in window && Notification.permission === 'granted') {
-        new Notification('Assignment Cancelled', {
-          body: 'The assignment has been cancelled successfully',
-        });
-      }
-
-      // Go back to dashboard
       onBack();
     } catch (err) {
       if (err.name === 'CanceledError' || err.code === 'ECONNABORTED') {
@@ -153,7 +141,6 @@ const AssignmentDetails = ({ assignmentId, onBack }) => {
 
   const getSeverityClass = (severity) => {
     const severityMap = {
-      critical: 'badge-critical',
       high: 'badge-high',
       medium: 'badge-medium',
       low: 'badge-low',

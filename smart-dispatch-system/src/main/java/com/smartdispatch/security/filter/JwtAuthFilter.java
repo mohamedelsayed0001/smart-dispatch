@@ -24,8 +24,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             "/api/auth/login",
             "/api/auth/signup",
             "/api/check/users",
-            "/ws",
-            "/api/responder"
+            "/ws"
     );
 
     private final JwtService jwtService;
@@ -76,6 +75,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         System.out.println("JwtAuthFilter: Secured path accessed: " + path);
 
         String authHeader = request.getHeader("Authorization");
+
+        // System.out.println("Incoming Token: " + authHeader);
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);

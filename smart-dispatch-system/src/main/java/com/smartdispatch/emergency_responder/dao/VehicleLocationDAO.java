@@ -21,11 +21,6 @@ public class VehicleLocationDAO {
       "FROM vehicle_location WHERE vehicle_id = ? " +
       "ORDER BY time_stamp DESC LIMIT 1";
 
-  private static final String SELECT_BY_VEHICLE_ORDER_BY_TIME = "SELECT id, vehicle_id, longitude, latitude, time_stamp "
-      +
-      "FROM vehicle_location WHERE vehicle_id = ? " +
-      "ORDER BY time_stamp DESC";
-
   private static final String INSERT_LOCATION = "INSERT INTO vehicle_location (vehicle_id, longitude, latitude, time_stamp) "
       +
       "VALUES (?, ?, ?, ?)";
@@ -57,34 +52,6 @@ public class VehicleLocationDAO {
     }
   }
 
-  public List<VehicleLocation> findByVehicleIdOrderByTimeStampDesc(Integer vehicleId) {
-    return jdbcTemplate.query(SELECT_BY_VEHICLE_ORDER_BY_TIME, locationRowMapper, vehicleId);
-  }
-
-  public List<VehicleLocation> findByVehicleIdWithLimit(Integer vehicleId, int limit) {
-    String sql = "SELECT id, vehicle_id, longitude, latitude, time_stamp " +
-        "FROM vehicle_location WHERE vehicle_id = ? " +
-        "ORDER BY time_stamp DESC LIMIT ?";
-    return jdbcTemplate.query(sql, locationRowMapper, vehicleId, limit);
-  }
-
-  public List<VehicleLocation> findAll() {
-    String sql = "SELECT id, vehicle_id, longitude, latitude, time_stamp FROM vehicle_location";
-    return jdbcTemplate.query(sql, locationRowMapper);
-  }
-
-  public int save(VehicleLocation location) {
-    Timestamp timestamp = location.getTimeStamp() != null ? Timestamp.valueOf(location.getTimeStamp())
-        : new Timestamp(System.currentTimeMillis());
-
-    return jdbcTemplate.update(
-        INSERT_LOCATION,
-        location.getVehicleId(),
-        location.getLongitude(),
-        location.getLatitude(),
-        timestamp);
-  }
-
   public int saveWithCoordinates(Integer vehicleId, Double latitude, Double longitude) {
     return jdbcTemplate.update(
         INSERT_LOCATION,
@@ -92,27 +59,5 @@ public class VehicleLocationDAO {
         longitude,
         latitude,
         new Timestamp(System.currentTimeMillis()));
-  }
-
-  public int deleteById(Integer id) {
-    String sql = "DELETE FROM vehicle_location WHERE id = ?";
-    return jdbcTemplate.update(sql, id);
-  }
-
-  public int deleteByVehicleId(Integer vehicleId) {
-    String sql = "DELETE FROM vehicle_location WHERE vehicle_id = ?";
-    return jdbcTemplate.update(sql, vehicleId);
-  }
-
-  public int deleteOldLocations(Integer vehicleId, int keepCount) {
-    String sql = "DELETE FROM vehicle_location " +
-        "WHERE vehicle_id = ? AND id NOT IN ( " +
-        "  SELECT id FROM ( " +
-        "    SELECT id FROM vehicle_location " +
-        "    WHERE vehicle_id = ? " +
-        "    ORDER BY time_stamp DESC LIMIT ? " +
-        "  ) AS recent " +
-        ")";
-    return jdbcTemplate.update(sql, vehicleId, vehicleId, keepCount);
   }
 }

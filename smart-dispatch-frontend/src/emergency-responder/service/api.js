@@ -13,6 +13,13 @@ const api = axios.create({
 
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('authToken');
+
+  console.log("📌 Axios Request:", {
+    url: config.url,
+    method: config.method,
+    token: token ? token : "NO TOKEN FOUND",
+  });
+
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -54,16 +61,9 @@ export const responderAPI = {
   getAssignmentLocations: (assignmentId, signal) =>
     api.get(`/responder/assignments/${assignmentId}/locations`, { signal }),
 
-  // Get notifications for responder - paginated
-  getNotifications: (page = 0, size = 20, signal) =>
-    api.get(`/responder/notifications`, {
-      params: { page, size },
-      signal
-    }),
-
   // Respond to assignment notification (accept/reject)
-  respondToAssignment: (assignment, signal) =>
-    api.post(`/responder/assignments/${assignment.id}/respond`, responseData, { signal }),
+  respondToAssignment: (assignment, response, signal) =>
+    api.post(`/responder/assignments/${assignment.id}/respond`, { response }, { signal }),
 
   // Update vehicle location
   updateLocation: (locationData, signal) =>

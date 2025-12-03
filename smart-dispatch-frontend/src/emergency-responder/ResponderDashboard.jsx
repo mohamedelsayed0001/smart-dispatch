@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from 'react';
 import { responderAPI } from './service/api';
 import locationService from './service/locationService';
 import webSocketService from './service/websocket';
-import NotificationPanel from './NotificationPanel';
 import AssignmentCard from './AssignmentCard';
 import AssignmentDetails from './AssignmentDetails';
 import './css/responder.css';
@@ -12,10 +11,8 @@ const ResponderDashboard = () => {
   
   const [profile, setProfile] = useState(null);
   const [assignments, setAssignments] = useState([]);
-  const [newAssignments, setNewAssignments] = useState([]);
   const [selectedAssignment, setSelectedAssignment] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [notificationLoading, setNotificationLoading] = useState(false);
   const [wsConnected, setWsConnected] = useState(false);
   const [error, setError] = useState(null);
   
@@ -49,10 +46,9 @@ const ResponderDashboard = () => {
       setLoading(true);
       setError(null);
 
-      const [profileRes, assignmentsRes, notificationsRes] = await Promise.all([
+      const [profileRes, assignmentsRes] = await Promise.all([
         responderAPI.getProfile(signal),
-        responderAPI.getAllAssignments(0, MAX_ITEMS, signal),
-        responderAPI.getNotifications(0, MAX_ITEMS, signal),
+        responderAPI.getAllAssignments(0, MAX_ITEMS, signal)
       ]);
 
       // Check if request was aborted
@@ -60,9 +56,8 @@ const ResponderDashboard = () => {
 
       setProfile(profileRes.data);
       setAssignments(assignmentsRes.data);
-      setNewAssignments(notificationsRes.data);
 
-      // locationService.handleInitialLocation();
+      locationService.handleInitialLocation();
       
       // Connect to WebSocket
       if (!isConnecting.current) {
@@ -111,7 +106,7 @@ const ResponderDashboard = () => {
   const handleNewAssignment = (message) => {
     console.log('New assignment notification received:', message);
 
-    setNewAssignments(prev => [message.data, ...prev].slice(0, MAX_ITEMS));
+    // add at start of assignments
 
     if ('vibrate' in navigator) {
       navigator.vibrate([200, 100, 200]);
@@ -120,49 +115,35 @@ const ResponderDashboard = () => {
 
   const handleAcceptAssignment = async (assignment) => {
     try {
-      setNotificationLoading(true);
 
-      assignment.status = "ACTIVE";
-      await responderAPI.respondToAssignment(assignment);
-
-      setNewAssignments(prev => 
-        prev.filter(n => n.id !== assignment.id)
-      );
+      // assignment.status = "ACTIVE";
+      await responderAPI.respondToAssignment(assignment, "ACCEPTED");
 
       await loadAssignments();
 
-      setNotificationLoading(false);
     } catch (error) {
       if (error.name === 'CanceledError' || error.code === 'ECONNABORTED') {
         return;
       }
       console.error('Error accepting assignment:', error);
       alert('Failed to accept assignment. Please try again.');
-      setNotificationLoading(false);
     }
   };
 
   const handleRejectAssignment = async (assignment) => {
     try {
-      setNotificationLoading(true);
 
-      // Send rejection response
-      assignment.status = "REJECTED";
-      await responderAPI.respondToAssignment(assignment);
+      // assignment.status = "REJECTED";
+      await responderAPI.respondToAssignment(assignment, "REJECTED");
 
-      // Remove from notifications
-      setNewAssignments(prev => 
-        prev.filter(n => n.id !== assignment.id)
-      );
+      await loadAssignments();
 
-      setNotificationLoading(false);
     } catch (error) {
       if (error.name === 'CanceledError' || error.code === 'ECONNABORTED') {
         return;
       }
       console.error('Error rejecting assignment:', error);
       alert('Failed to reject assignment. Please try again.');
-      setNotificationLoading(false);
     }
   };
 
@@ -262,16 +243,6 @@ const ResponderDashboard = () => {
 
       {/* Main Content - Split into notifications and assignments */}
       <div className="dashboard-main">
-        {/* Left Side - Notifications */}
-        <div className="dashboard-notifications">
-          <NotificationPanel
-            newAssignments={newAssignments}
-            onAccept={handleAcceptAssignment}
-            onReject={handleRejectAssignment}
-            loading={notificationLoading}
-          />
-        </div>
-
         {/* Right Side - Assignments */}
         <div className="dashboard-assignments">
           <div className="content-header">
@@ -299,6 +270,8 @@ const ResponderDashboard = () => {
                   key={assignment.id}
                   assignment={assignment}
                   onClick={() => handleAssignmentClick(assignment)}
+                  onAccept={handleAcceptAssignment}
+                  onReject={handleRejectAssignment}
                 />
               ))}
             </div>

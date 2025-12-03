@@ -12,6 +12,7 @@ import com.smartdispatch.security.model.AppUserDetails;
 
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/responder")
@@ -22,23 +23,15 @@ public class ResponderController {
     @Autowired
     private final ResponderService responderService;
 
-    /* ----------------------------------------------------------
-        PROFILE
-    ----------------------------------------------------------- */
-
     @GetMapping("/info")
-    public ResponseEntity<ResponderProfileDTO> getProfile(
+    public ResponseEntity<Map<String, Object>> getProfile(
             @AuthenticationPrincipal AppUserDetails userDetails) {
 
         Integer responderId = userDetails.getId().intValue();
-        ResponderProfileDTO profile = responderService.getResponderProfile(responderId);
+        Map<String, Object> profile = responderService.getResponderProfile(responderId);
 
         return ResponseEntity.ok(profile);
     }
-
-    /* ----------------------------------------------------------
-        ASSIGNMENT DETAILS
-    ----------------------------------------------------------- */
 
     @GetMapping("/assignments/{assignmentId}")
     public ResponseEntity<AssignmentDTO> getAssignmentDetails(
@@ -51,10 +44,6 @@ public class ResponderController {
         return ResponseEntity.ok(assignment);
     }
 
-    /* ----------------------------------------------------------
-        LOCATIONS (VEHICLE + INCIDENT)
-    ----------------------------------------------------------- */
-
     @GetMapping("/assignments/{assignmentId}/locations")
     public ResponseEntity<LocationsResponseDTO> getAssignmentLocations(
             @AuthenticationPrincipal AppUserDetails userDetails,
@@ -65,10 +54,6 @@ public class ResponderController {
 
         return ResponseEntity.ok(locations);
     }
-
-    /* ----------------------------------------------------------
-        UPDATE LOCATION
-    ----------------------------------------------------------- */
 
     @PostMapping("/location")
     public ResponseEntity<Void> updateLocation(
@@ -81,10 +66,6 @@ public class ResponderController {
         return ResponseEntity.ok().build();
     }
 
-    /* ----------------------------------------------------------
-        UPDATE STATUS
-    ----------------------------------------------------------- */
-
     @PutMapping("/assignments/{assignmentId}/status")
     public ResponseEntity<Void> updateStatus(
             @AuthenticationPrincipal AppUserDetails userDetails,
@@ -96,10 +77,6 @@ public class ResponderController {
 
         return ResponseEntity.ok().build();
     }
-
-    /* ----------------------------------------------------------
-        ARRIVE
-    ----------------------------------------------------------- */
 
     @PostMapping("/assignments/{assignmentId}/arrive")
     public ResponseEntity<Void> markArrival(
@@ -116,10 +93,6 @@ public class ResponderController {
         return ResponseEntity.ok().build();
     }
 
-    /* ----------------------------------------------------------
-        COMPLETE ASSIGNMENT
-    ----------------------------------------------------------- */
-
     @PostMapping("/assignments/{assignmentId}/complete")
     public ResponseEntity<Void> completeAssignment(
             @AuthenticationPrincipal AppUserDetails userDetails,
@@ -135,10 +108,6 @@ public class ResponderController {
         return ResponseEntity.ok().build();
     }
 
-    /* ----------------------------------------------------------
-        GET ALL ASSIGNMENTS (PAGINATED)
-    ----------------------------------------------------------- */
-
     @GetMapping("/assignments")
     public ResponseEntity<List<AssignmentDTO>> getAllAssignments(
             @AuthenticationPrincipal AppUserDetails userDetails,
@@ -150,26 +119,6 @@ public class ResponderController {
 
         return ResponseEntity.ok(assignments);
     }
-
-    /* ----------------------------------------------------------
-        GET NOTIFICATIONS
-    ----------------------------------------------------------- */
-
-    @GetMapping("/notifications")
-    public ResponseEntity<List<NotificationDTO>> getNotifications(
-            @AuthenticationPrincipal AppUserDetails userDetails,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
-
-        Integer responderId = userDetails.getId().intValue();
-
-        List<NotificationDTO> notifications = responderService.getNotifications(responderId, page, size);
-        return ResponseEntity.ok(notifications);
-    }
-
-    /* ----------------------------------------------------------
-        RESPOND TO ASSIGNMENT (ACCEPT / REJECT)
-    ----------------------------------------------------------- */
 
     @PostMapping("/assignments/{assignmentId}/respond")
     public ResponseEntity<AssignmentActionResponseDTO> respondToAssignment(
@@ -184,10 +133,6 @@ public class ResponderController {
 
         return ResponseEntity.ok(response);
     }
-
-    /* ----------------------------------------------------------
-        CANCEL ASSIGNMENT
-    ----------------------------------------------------------- */
 
     @PostMapping("/assignments/{assignmentId}/cancel")
     public ResponseEntity<AssignmentActionResponseDTO> cancelAssignment(

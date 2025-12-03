@@ -57,40 +57,8 @@ public class VehicleDAO {
     }
   }
 
-  public List<Vehicle> findByStatus(String status) {
-    return jdbcTemplate.query(SELECT_BY_STATUS, vehicleRowMapper, status);
-  }
-
-  public List<Vehicle> findAll() {
-    String sql = "SELECT id, type, status, capacity, operator_id FROM Vehicle";
-    return jdbcTemplate.query(sql, vehicleRowMapper);
-  }
-
   public int updateStatus(Integer vehicleId, String status) {
     return jdbcTemplate.update(UPDATE_STATUS, status, vehicleId);
   }
 
-  public int save(Vehicle vehicle) {
-    String sql = "INSERT INTO Vehicle (type, status, capacity, operator_id) VALUES (?, ?, ?, ?)";
-    return jdbcTemplate.update(sql,
-        vehicle.getType(),
-        vehicle.getStatus(),
-        vehicle.getCapacity(),
-        vehicle.getOperatorId());
-  }
-
-  public int update(Vehicle vehicle) {
-    String sql = "UPDATE Vehicle SET type = ?, status = ?, capacity = ?, operator_id = ? WHERE id = ?";
-    return jdbcTemplate.update(sql,
-        vehicle.getType(),
-        vehicle.getStatus(),
-        vehicle.getCapacity(),
-        vehicle.getOperatorId(),
-        vehicle.getId());
-  }
-
-  public int deleteById(Integer id) {
-    String sql = "DELETE FROM Vehicle WHERE id = ?";
-    return jdbcTemplate.update(sql, id);
-  }
 }
