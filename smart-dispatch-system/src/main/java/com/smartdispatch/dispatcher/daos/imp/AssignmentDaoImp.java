@@ -28,7 +28,7 @@ public class AssignmentDaoImp implements AssignmentDao {
     @Override
     public List<Assignment> getAllAssignments() {
         String sql = "SELECT * FROM Assignment ";
-        return jdbcTemplate.query(sql,ASSIGNMENT_ROW_MAPPER);
+        return jdbcTemplate.query(sql, ASSIGNMENT_ROW_MAPPER);
     }
 
     public Integer createAssignment(Assignment assignment) {
@@ -64,11 +64,10 @@ public class AssignmentDaoImp implements AssignmentDao {
 
     @Override
     public boolean updateVehicle(Integer assignmentId, Integer vehicleId) {
-        String sql = "UPDATE Assignment SET vehicle_id = ?, time_assigned = CURRENT_TIMESTAMP WHERE id = ?";
+        String sql = "UPDATE Assignment SET vehicle_id = ?, time_assigned = CURRENT_TIMESTAMP, time_resolved = NULL WHERE id = ?";
         int updatedRows = jdbcTemplate.update(sql, vehicleId, assignmentId);
         return updatedRows > 0;
     }
-
 
     private static class RowMapperAssignment implements RowMapper<Assignment> {
 

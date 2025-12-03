@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 public class AssignmentDto {
+    private String incidentType;
     private Integer id;
     private Integer dispatcherId;
     private Integer incidentId;

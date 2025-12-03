@@ -1,7 +1,9 @@
 import { Client } from '@stomp/stompjs'
+import SockJS from 'sockjs-client'
 
 const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8080'
-const WS_URL = (API_BASE.replace(/^http/, 'ws')) + '/ws'
+// SockJS requires an http(s) URL (not ws://). Use API_BASE (http/https) for SockJS endpoint.
+const WS_URL = API_BASE.replace(/\/$/, '') + '/ws'
 
 let client = null
 
@@ -11,7 +13,8 @@ export function connect({ onMessage, onVehicle, onIncident, onAssignment, onNoti
   const token = typeof window !== 'undefined' ? localStorage.getItem('jwt_token') : null
 
   client = new Client({
-    brokerURL: WS_URL,
+    // use SockJS to match the server's sockjs endpoint
+    webSocketFactory: () => new SockJS(WS_URL),
     reconnectDelay: 5000,
     connectHeaders: token ? { Authorization: `Bearer ${token}` } : {},
     debug: (m) => console.debug('[stomp]', m),

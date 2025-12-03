@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { connect, disconnect } from '../../utils/dispatcherSocket'
-import { fetchAssignments, reassignAssignment, fetchAvailableVehicles } from '../../utils/dispatcherApi'
+import { fetchAssignments, reassignAssignment, fetchAvailableVehicles, getCurrentDispatcherId } from '../../utils/dispatcherApi'
 
 export default function Assignment() {
   const navigate = useNavigate()
@@ -137,10 +137,12 @@ export default function Assignment() {
                     className="px-3 py-1 bg-white border border-[#E11D2F] text-[#E11D2F] rounded hover:bg-[#E11D2F] hover:text-white transition-colors"
                     onClick={async () => {
                       setReassigningAssignment(a)
+                      console.log("")
                       setShowReassignModal(true)
                       setLoadingVehicles(true)
                       try {
-                        const type = a.vehicle?.type || a.type || 'ALL'
+
+                        const type = a.incidentType ? a.incidentType : 'ALL'
                         const list = await fetchAvailableVehicles(type)
                         setAvailableVehicles(Array.isArray(list) ? list : [])
                       } catch (e) {
@@ -184,7 +186,8 @@ export default function Assignment() {
                         className="px-3 py-1 rounded bg-gray-900 text-white text-sm hover:bg-gray-800 transition-colors"
                         onClick={async () => {
                           try {
-                            const updated = await reassignAssignment(reassigningAssignment.id, v.id)
+                            const dispatcherId = getCurrentDispatcherId()
+                            const updated = await reassignAssignment(reassigningAssignment.id, v.id, dispatcherId)
                             setAssignments((prev) => prev.map((p) => (p.id === updated.id ? updated : p)))
                             setShowReassignModal(false)
                           } catch (e) {

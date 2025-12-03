@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react'
-import { MapContainer, TileLayer, CircleMarker, Popup, Polyline, useMap } from 'react-leaflet'
+import { MapContainer, TileLayer, CircleMarker, Popup, Polyline, useMap, Marker } from 'react-leaflet'
 import { useLocation } from 'react-router-dom'
+import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 
 import { fetchAvailableVehicles, fetchPendingIncidents } from '../../utils/dispatcherApi'
@@ -20,6 +21,51 @@ function FitBounds({ coords }) {
     }
   }, [coords, map])
   return null
+}
+
+// Pulsing highlight marker for targeted locations
+function HighlightMarker({ position }) {
+  const [pulse, setPulse] = useState(true)
+  useEffect(() => {
+    const timer = setTimeout(() => setPulse(false), 3000)
+    return () => clearTimeout(timer)
+  }, [])
+
+  if (!pulse) return null
+
+  return (
+    <CircleMarker
+      center={position}
+      radius={20}
+      pathOptions={{
+        color: '#3b82f6',
+        fillColor: '#3b82f6',
+        fillOpacity: 0.2,
+        weight: 3,
+        className: 'pulse-marker'
+      }}
+    />
+  )
+}
+
+// Create custom car icons for different vehicle types
+const createCarIcon = (type, status) => {
+  let icon = '\ud83d\ude97' // default car
+  if (type === 'AMBULANCE') icon = '\ud83d\ude91'
+  else if (type === 'FIRETRUCK') icon = '\ud83d\ude92'
+  else if (type === 'POLICE') icon = '\ud83d\ude93'
+
+  let bgColor = '#6b7280' // default gray
+  if (status === 'AVAILABLE') bgColor = '#10b981' // green
+  else if (status === 'ONROUTE' || status === 'ON_ROUTE') bgColor = '#f59e0b' // amber
+  else if (status === 'RESOLVING') bgColor = '#ef4444' // red
+
+  return L.divIcon({
+    html: `<div style=\"font-size: 24px; text-align: center; text-shadow: 0 0 3px ${bgColor}, 0 0 6px ${bgColor};\">${icon}</div>`,
+    className: 'custom-car-icon',
+    iconSize: [30, 30],
+    iconAnchor: [15, 15],
+  })
 }
 
 export default function VehicleMap({ height = '100vh' }) {
@@ -47,7 +93,8 @@ export default function VehicleMap({ height = '100vh' }) {
       const latNum = parseFloat(lat)
       const lonNum = parseFloat(lon)
       if (mapRef.current && !Number.isNaN(latNum) && !Number.isNaN(lonNum)) {
-        mapRef.current.flyTo([latNum, lonNum], 12)
+        setHighlightPosition([latNum, lonNum])
+        mapRef.current.flyTo([latNum, lonNum], 16)
       }
     } catch (e) {
       console.error('Search error', e)
@@ -80,7 +127,8 @@ export default function VehicleMap({ height = '100vh' }) {
     const latNum = parseFloat(item.lat)
     const lonNum = parseFloat(item.lon)
     if (mapRef.current && !Number.isNaN(latNum) && !Number.isNaN(lonNum)) {
-      mapRef.current.flyTo([latNum, lonNum], 12)
+      setHighlightPosition([latNum, lonNum])
+      mapRef.current.flyTo([latNum, lonNum], 16)
     }
   }
 
@@ -129,16 +177,21 @@ export default function VehicleMap({ height = '100vh' }) {
     return () => (mounted = false)
   }, [])
 
+  const [highlightPosition, setHighlightPosition] = useState(null)
+
   useEffect(() => {
     const params = new URLSearchParams(location.search)
     const lat = parseFloat(params.get('lat'))
     const lng = parseFloat(params.get('lng'))
     if (!Number.isNaN(lat) && !Number.isNaN(lng)) {
-      const tryFly = () => { if (mapRef.current) mapRef.current.flyTo([lat, lng], 14) }
+      setHighlightPosition([lat, lng])
+      const tryFly = () => { if (mapRef.current) mapRef.current.flyTo([lat, lng], 16) }
       if (mapRef.current) tryFly()
       else {
         const id = setInterval(() => { if (mapRef.current) { tryFly(); clearInterval(id) } }, 200)
       }
+    } else {
+      setHighlightPosition(null)
     }
   }, [location.search])
 
@@ -215,22 +268,18 @@ export default function VehicleMap({ height = '100vh' }) {
           {vehicles.map((v) => {
             if (!Number.isFinite(v.lat) || !Number.isFinite(v.lng)) return null
             const st = (v.status || '').toUpperCase()
-            let color = '#6b7280'
-            if (st === 'AVAILABLE') color = '#10b981'
-            else if (st === 'ON_ROUTE') color = '#f59e0b'
-            else if (st === 'RESOLVING') color = '#ef4444'
+            const icon = createCarIcon(v.type, st)
             return (
-              <CircleMarker
+              <Marker
                 key={v.id}
-                center={[v.lat, v.lng]}
-                radius={8}
-                pathOptions={{ color, fillColor: color, fillOpacity: 0.8, weight: 2 }}
+                position={[v.lat, v.lng]}
+                icon={icon}
               >
                 <Popup>
                   <div className="font-medium">{v.name || `Vehicle ${v.id}`}</div>
                   <div className="text-xs text-gray-500">{v.status} • {v.type || '—'}</div>
                 </Popup>
-              </CircleMarker>
+              </Marker>
             )
           })}
 
@@ -253,6 +302,8 @@ export default function VehicleMap({ height = '100vh' }) {
           {routeCoords.length > 1 && (
             <Polyline positions={routeCoords} pathOptions={{ color: '#ff7a18', weight: 5, opacity: 0.95 }} />
           )}
+
+          {highlightPosition && <HighlightMarker position={highlightPosition} />}
 
           <FitBounds coords={routeCoords} />
         </MapContainer>

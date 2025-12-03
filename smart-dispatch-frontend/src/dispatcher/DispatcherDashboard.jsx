@@ -50,7 +50,7 @@ function Sidebar() {
 
       <div className="dispatcher-menu">
         <MenuItem icon={Map} label="Vehicle Map" to="/dispatcher/map" />
-        <MenuItem icon={AlertCircle} label="Pending Incidents" to="/dispatcher/pending" />
+        <MenuItem icon={AlertCircle} label="Incidents" to="/dispatcher/pending" />
         <MenuItem icon={CheckCircle} label="Assignments" to="/dispatcher/active" />
         <MenuItem icon={Truck} label="Vehicles" to="/dispatcher/vehicles" />
       </div>

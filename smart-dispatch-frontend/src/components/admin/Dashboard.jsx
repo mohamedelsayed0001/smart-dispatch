@@ -73,6 +73,7 @@ const Dashboard = () => {
   useEffect(() => {
     const socket = new SockJS('http://localhost:8080/ws-car-location');
     const stompClient = Stomp.over(socket);
+    const token = typeof window !== 'undefined' ? localStorage.getItem('jwt_token') : null;
     stompClient.debug = () => {};
 
     const onConnect = () => {
@@ -103,11 +104,11 @@ const Dashboard = () => {
       console.error('❌ WebSocket error:', err);
       setIsConnected(false);
       setTimeout(() => {
-        if (stompClient) stompClient.connect({}, onConnect, onError);
+        if (stompClient) stompClient.connect({ Authorization: token ? `Bearer ${token}` : '' }, onConnect, onError);
       }, 5000);
     };
 
-    stompClient.connect({}, onConnect, onError);
+    stompClient.connect({ Authorization: token ? `Bearer ${token}` : '' }, onConnect, onError);
 
     return () => {
       if (stompClient && stompClient.connected) {

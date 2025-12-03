@@ -13,4 +13,5 @@ public class ReassignRequest {
     private Integer assignmentId;
     private Integer newVehicleId;
     private Integer dispatcherId;
+
 }

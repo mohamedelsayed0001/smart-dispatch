@@ -103,6 +103,7 @@ const VehicleLocationsMap = () => {
     const socket = new SockJS('http://localhost:8080/ws-car-location');
     const stompClient = Stomp.over(socket);
     stompClient.debug = () => {}; // disable logs
+    const token = typeof window !== 'undefined' ? localStorage.getItem('jwt_token') : null;
 
     const onConnect = () => {
       console.log('✅ Connected to WebSocket');
@@ -134,11 +135,11 @@ const VehicleLocationsMap = () => {
 
       // reconnect after 5 seconds
       setTimeout(() => {
-        if (stompClient) stompClient.connect({}, onConnect, onError);
+        if (stompClient) stompClient.connect({ Authorization: token ? `Bearer ${token}` : '' }, onConnect, onError);
       }, 5000);
     };
 
-    stompClient.connect({}, onConnect, onError);
+    stompClient.connect({ Authorization: token ? `Bearer ${token}` : '' }, onConnect, onError);
 
     return () => {
       if (stompClient && stompClient.connected) {

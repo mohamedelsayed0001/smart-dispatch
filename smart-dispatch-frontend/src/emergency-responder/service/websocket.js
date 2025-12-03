@@ -24,6 +24,8 @@ class WebSocketService {
 
     this.isConnecting = true;
 
+    const token = typeof window !== 'undefined' ? localStorage.getItem('jwt_token') : null;
+
     return new Promise((resolve, reject) => {
       this.client = new Client({
         webSocketFactory: () => new SockJS(WS_URL),
@@ -38,6 +40,7 @@ class WebSocketService {
         },
 
         reconnectDelay: 5000,
+        connectHeaders: token ? { Authorization: `Bearer ${token}` } : {},
         heartbeatIncoming: 4000,
         heartbeatOutgoing: 4000,
 

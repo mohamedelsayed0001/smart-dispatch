@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.smartdispatch.dispatcher.domains.dtos.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,54 +15,54 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.smartdispatch.dispatcher.domains.dtos.AssignmentDto;
-import com.smartdispatch.dispatcher.domains.dtos.AssignmentRequest;
-import com.smartdispatch.dispatcher.domains.dtos.IncidentDto;
-import com.smartdispatch.dispatcher.domains.dtos.VehicleDto;
 import com.smartdispatch.dispatcher.services.DispatcherService;
 
 @RestController
 @RequestMapping("/api/dispatcher")
-//@CrossOrigin(origins = "*")
+// @CrossOrigin(origins = "*")
 public class DispatcherController {
     @Autowired
     private DispatcherService dispatcherService;
+
     @GetMapping("/incidents/pending")
     public ResponseEntity<List<IncidentDto>> getPendingIncidents() {
         List<IncidentDto> incidents = dispatcherService.getPendingIncidents();
         return ResponseEntity.ok(incidents);
     }
+
     @GetMapping("/incidents")
     public ResponseEntity<List<IncidentDto>> getAllIncidents() {
         List<IncidentDto> incidents = dispatcherService.getAllIncidents();
         return ResponseEntity.ok(incidents);
     }
+
     @GetMapping("/vehicles/available/{type}")
     public ResponseEntity<List<VehicleDto>> getAvailableVehicles(@PathVariable String type) {
-        if (type.equals("Fire")){
+        if (type.equals("FIRE")) {
             type = "FIRETRUCK";
-        }
-        else if (type.equals("Medical")){
+        } else if (type.equals("MEDICAL")) {
             type = "AMBULANCE";
-        }
-        else if (type.equals("Crime")){
+        } else if (type.equals("CRIME")) {
             type = "POLICE";
-        }else {
+        } else {
             return ResponseEntity.ok(dispatcherService.getAllVehicles());
         }
         List<VehicleDto> vehicles = dispatcherService.getAvailableVehicles(type);
         return ResponseEntity.ok(vehicles);
     }
+
     @GetMapping("/vehicles")
     public ResponseEntity<List<VehicleDto>> getAllVehicles() {
         List<VehicleDto> vehicles = dispatcherService.getAllVehicles();
         return ResponseEntity.ok(vehicles);
     }
+
     @GetMapping("/assignments")
     public ResponseEntity<List<AssignmentDto>> getAllAssignments() {
         List<AssignmentDto> assignments = dispatcherService.getAllAssignments();
         return ResponseEntity.ok(assignments);
     }
+
     @PostMapping("/assignments/create")
     public ResponseEntity<?> createAssignment(@RequestBody AssignmentRequest request) {
         try {
@@ -77,8 +78,9 @@ public class DispatcherController {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
         }
     }
+
     @PostMapping("/assignments/reassign")
-    public ResponseEntity<?> reassignAssignment(@RequestBody com.smartdispatch.dispatcher.domains.dtos.ReassignRequest request) {
+    public ResponseEntity<?> reassignAssignment(@RequestBody ReassignRequest request) {
         try {
             AssignmentDto assignmentDto = dispatcherService.reassignAssignment(request);
             return ResponseEntity.ok(assignmentDto);
@@ -90,6 +92,12 @@ public class DispatcherController {
             Map<String, String> error = new HashMap<>();
             error.put("error", e.getMessage());
             return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
+        } catch (Exception e) {
+            System.err.println("ERROR in reassignAssignment: " + e.getClass().getName() + ": " + e.getMessage());
+            e.printStackTrace();
+            Map<String, String> error = new HashMap<>();
+            error.put("error", e.getClass().getSimpleName() + ": " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
         }
     }
 }

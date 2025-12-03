@@ -3,7 +3,7 @@
 .kpi-card {
   background: #ffffff;
   border-radius: 12px;
-  box-shadow: 0 6px 18px rgba(12,18,40,0.06);
+  box-shadow: 0 6px 18px rgba(12, 18, 40, 0.06);
 }
 
 .kpi-card .text-sm {
@@ -16,12 +16,12 @@
   padding: 6px 10px;
   font-size: 12px;
   border-radius: 999px;
-  border: 1px solid rgba(16,185,129,0.08);
+  border: 1px solid rgba(16, 185, 129, 0.08);
 }
 
 /* Slightly soften the sidebar red on hover and ensure contrast */
 .dispatcher-sidebar a:hover {
-  background: rgba(255,255,255,0.06);
+  background: rgba(255, 255, 255, 0.06);
 }
 
 /* Ensure map card fills its container without overflowing */

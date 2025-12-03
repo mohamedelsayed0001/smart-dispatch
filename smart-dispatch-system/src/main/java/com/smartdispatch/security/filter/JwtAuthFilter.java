@@ -3,6 +3,7 @@ package com.smartdispatch.security.filter;
 import java.io.IOException;
 
 import com.smartdispatch.security.service.JwtService;
+import org.springframework.core.env.Environment;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -20,16 +21,19 @@ import java.util.List;
 public class JwtAuthFilter extends OncePerRequestFilter {
 
     private static final List<String> PUBLIC_URLS = List.of(
-            "/api/auth", // Allow all auth endpoints (login, signup)
+            "/api/auth/login",
+            "/api/auth/signup",
             "/api/check/users",
             "/ws",
-            "/error"
+            "/api/responder"
     );
 
     private final JwtService jwtService;
+    private final Environment env;
 
-    JwtAuthFilter(JwtService jwtService) {
+    JwtAuthFilter(JwtService jwtService, Environment env) {
         this.jwtService = jwtService;
+        this.env = env;
     }
 
     @Override
@@ -38,8 +42,21 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                                     FilterChain filterChain)
             throws ServletException, IOException {
 
+<<<<<<< HEAD
         // Allow OPTIONS requests for CORS preflight
         if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
+=======
+        // Read the security flag from the environment at runtime so changes in properties take effect
+        boolean securityEnabled = true;
+        try {
+            securityEnabled = Boolean.parseBoolean(env.getProperty("app.security.enabled", "true"));
+        } catch (Exception e) {
+            System.err.println("JwtAuthFilter: Failed to read app.security.enabled, defaulting to true: " + e.getMessage());
+        }
+
+        // If security is disabled, skip authentication checks and continue the chain
+        if (!securityEnabled) {
+>>>>>>> e80bbd1 (reassign)
             filterChain.doFilter(request, response);
             return;
         }
@@ -60,7 +77,13 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             }
         }
         System.out.println("JwtAuthFilter: Secured path accessed: " + path);
-        
+        for (String prefix : PUBLIC_URLS) {
+            if (path.startsWith(prefix)) {
+                filterChain.doFilter(request, response);
+                return;
+            }
+        }
+
         String authHeader = request.getHeader("Authorization");
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
@@ -85,7 +108,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             } catch (IOException e) {
                 System.err.println("IOException trying to write response for invalid token: " + e.getMessage());
             }
-            return; // Add return here to stop processing
         }
 
         UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { fetchAvailableVehicles, createAssignment } from '../../utils/dispatcherApi'
+import { fetchAvailableVehicles, createAssignment, getCurrentDispatcherId } from '../../utils/dispatcherApi'
 
 export default function AssignModal({ incident, onClose, onAssigned }) {
   const [vehicles, setVehicles] = useState([])
@@ -18,8 +18,9 @@ export default function AssignModal({ incident, onClose, onAssigned }) {
     if (!selected) return
     setLoading(true)
     try {
-      // Temporary: set dispatcherId = 1 until backend authentication wiring is available
-      await createAssignment({ incidentId: incident.id, vehicleId: selected.id, dispatcherId: 1 })
+      // include current dispatcher id (decoded from JWT); fallback to 1 if missing
+      const dispatcherId = getCurrentDispatcherId() || 1
+      await createAssignment({ incidentId: incident.id, vehicleId: selected.id, dispatcherId })
       onAssigned && onAssigned({ incidentId: incident.id, vehicleId: selected.id })
     } catch (e) {
       console.error('assign failed', e)
