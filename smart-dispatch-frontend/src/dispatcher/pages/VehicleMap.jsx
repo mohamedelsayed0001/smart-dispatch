@@ -22,7 +22,7 @@ function FitBounds({ coords }) {
   return null
 }
 
-export default function VehicleMap() {
+export default function VehicleMap({ height = '100vh' }) {
   const [vehicles, setVehicles] = useState([])
   const [incidents, setIncidents] = useState([])
   const mapRef = useRef(null)
