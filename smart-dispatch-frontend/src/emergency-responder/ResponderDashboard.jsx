@@ -54,14 +54,14 @@ const ResponderDashboard = () => {
       // Check if request was aborted
       if (signal.aborted) return;
 
-      setProfile(profileRes.data);
-      setAssignments(assignmentsRes.data);
+       setProfile(profileRes.data);
+       setAssignments(assignmentsRes.data);
 
       locationService.handleInitialLocation();
       
       // Connect to WebSocket
       if (!isConnecting.current) {
-        await connectWebSocket();
+        await connectWebSocket(profileRes.data);
       }
 
       setLoading(false);
@@ -78,12 +78,13 @@ const ResponderDashboard = () => {
     }
   };
 
-  const connectWebSocket = async () => {
+  const connectWebSocket = async (profile) => {
     if (isConnecting.current) return;
     isConnecting.current = true;
 
     try {
-      await webSocketService.connect(
+      console.log(profile);
+      await webSocketService.connect(profile.id,
         () => {
           console.log('WebSocket connected');
           setWsConnected(true);

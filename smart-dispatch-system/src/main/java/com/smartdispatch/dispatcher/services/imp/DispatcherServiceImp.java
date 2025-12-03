@@ -126,7 +126,7 @@ public class DispatcherServiceImp implements DispatcherService {
         
         notificationService.notifyUser(
                 String.valueOf(vehicle.getOperatorId()),
-                "/vehicle/assignment",
+                "/assignment",
                 assignmentDto
         );
 

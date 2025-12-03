@@ -194,8 +194,8 @@ export default function DispatcherDashboard() {
             } />
             <Route path="map" element={<VehicleMap />} />
             <Route path="pending" element={<PendingIncidents />} />
-            <Route path="active" element={<ActiveAssignments showToast={showToast} />} />
-            <Route path="vehicles" element={<AvailableVehicles showToast={showToast} />} />
+            <Route path="active" element={<ActiveAssignments />} />
+            <Route path="vehicles" element={<AvailableVehicles />} />
           </Routes>
         </div>
       </div>
