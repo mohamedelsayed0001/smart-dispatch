@@ -17,12 +17,12 @@ public class IncidentDAO {
 
     private final JdbcTemplate jdbcTemplate;
 
-    private static final String SELECT_BY_ID = 
-        "SELECT id, type, level, description, latitude, longitude, status, " +
-        "time_reported, time_resolved, citizen_id FROM Incident WHERE id = ?";
-    
-    private static final String UPDATE_STATUS = 
-        "UPDATE Incident SET status = ?, time_resolved = ? WHERE id = ?";
+    private static final String SELECT_BY_ID = "SELECT id, type, level, description, latitude, longitude, status, " +
+            "time_reported, time_resolved, citizen_id FROM Incident WHERE id = ?";
+
+    private static final String UPDATE_STATUS = "UPDATE Incident SET status = ?, time_resolved = ? WHERE id = ?";
+
+    private static final String UPDATE_STATUS_WITH_CURRENT_TIME = "UPDATE Incident SET status = ?, time_resolved = CURRENT_TIMESTAMP WHERE id = ?";
 
     private final RowMapper<Incident> incidentRowMapper = (rs, rowNum) -> {
         Incident incident = new Incident();
@@ -33,22 +33,22 @@ public class IncidentDAO {
         incident.setLatitude(rs.getDouble("latitude"));
         incident.setLongitude(rs.getDouble("longitude"));
         incident.setStatus(rs.getString("status"));
-        
+
         Timestamp timeReported = rs.getTimestamp("time_reported");
         if (timeReported != null) {
             incident.setTimeReported(timeReported.toLocalDateTime());
         }
-        
+
         Timestamp timeResolved = rs.getTimestamp("time_resolved");
         if (timeResolved != null) {
             incident.setTimeResolved(timeResolved.toLocalDateTime());
         }
-        
+
         int citizenId = rs.getInt("citizen_id");
         if (!rs.wasNull()) {
             incident.setCitizenId(citizenId);
         }
-        
+
         return incident;
     };
 
@@ -63,5 +63,9 @@ public class IncidentDAO {
 
     public int updateStatus(Integer incidentId, String status, Timestamp timeResolved) {
         return jdbcTemplate.update(UPDATE_STATUS, status, timeResolved, incidentId);
+    }
+
+    public int updateTimeResolved(Integer incidentId, String status) {
+        return jdbcTemplate.update(UPDATE_STATUS_WITH_CURRENT_TIME, status, incidentId);
     }
 }

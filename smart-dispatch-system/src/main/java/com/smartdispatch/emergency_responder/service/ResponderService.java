@@ -13,6 +13,7 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -136,8 +137,13 @@ public class ResponderService {
         locationDTO.getLatitude(),
         locationDTO.getLongitude());
 
-    // notificationService.
-
+    notificationService.notifyChannel(
+        "vehicle/status",
+        java.util.Map.of(
+            "vehicleId", vehicle.getId(),
+            "newStatus", vehicle.getStatus(),
+            "latitude", locationDTO.getLatitude(),
+            "longitude", locationDTO.getLongitude()));
   }
 
   @Transactional
@@ -162,42 +168,46 @@ public class ResponderService {
 
     // Update assignment status
     if (statusDTO.getAssignmentStatus() != null) {
-      Timestamp timeResolved = null;
 
       if ("COMPLETED".equals(statusDTO.getAssignmentStatus())) {
-        timeResolved = Timestamp.valueOf(LocalDateTime.now());
 
-        // Update incident status
-        incidentDAO.updateStatus(
-            assignment.getIncidentId(),
-            "RESOLVED",
-            timeResolved);
+        incidentDAO.updateTimeResolved(assignment.getIncidentId(), "RESOLVED");
 
         // Return vehicle to available
         vehicleDAO.updateStatus(vehicle.getId(), "AVAILABLE");
       }
 
-      assignmentDAO.updateStatus(
-          assignmentId,
-          statusDTO.getAssignmentStatus(),
-          timeResolved);
+      assignmentDAO.updateStatusWithCurrentTime(assignmentId, statusDTO.getAssignmentStatus());
     }
 
     // Notify dispatcher
     User dispatcher = userDAO.findById(assignment.getDispatcherId())
         .orElse(null);
 
-    VehicleLocation location = vehicleLocationDAO.findTopByVehicleIdOrderByTimeStampDesc(vehicle.getId()).get();
+    if (dispatcher != null && statusDTO.getVehicleStatus() != null) {
+      // Get location - handle case where it might not exist
+      Optional<VehicleLocation> locationOpt = vehicleLocationDAO
+          .findTopByVehicleIdOrderByTimeStampDesc(vehicle.getId());
 
-    if (dispatcher != null) {
-      notificationService.notifyChannel(
-          "vehicle/status",
-          java.util.Map.of(
-              "dispatcherId", dispatcher.getId(),
-              "vehicleId", vehicle.getId(),
-              "newStatus", statusDTO.getVehicleStatus(),
-              "latitude", location.getLatitude(),
-              "longitude", location.getLongitude()));
+      if (locationOpt.isPresent()) {
+        VehicleLocation location = locationOpt.get();
+        notificationService.notifyChannel(
+            "vehicle/status",
+            java.util.Map.of(
+                "dispatcherId", dispatcher.getId(),
+                "vehicleId", vehicle.getId(),
+                "newStatus", statusDTO.getVehicleStatus(),
+                "latitude", location.getLatitude(),
+                "longitude", location.getLongitude()));
+      } else {
+        // Send notification without location if location data is unavailable
+        notificationService.notifyChannel(
+            "vehicle/status",
+            java.util.Map.of(
+                "dispatcherId", dispatcher.getId(),
+                "vehicleId", vehicle.getId(),
+                "newStatus", statusDTO.getVehicleStatus()));
+      }
     }
   }
 
