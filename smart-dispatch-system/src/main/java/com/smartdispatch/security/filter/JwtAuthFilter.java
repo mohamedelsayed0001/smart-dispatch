@@ -41,11 +41,12 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain)
             throws ServletException, IOException {
-
-<<<<<<< HEAD
         // Allow OPTIONS requests for CORS preflight
         if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
-=======
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         // Read the security flag from the environment at runtime so changes in properties take effect
         boolean securityEnabled = true;
         try {
@@ -56,7 +57,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         // If security is disabled, skip authentication checks and continue the chain
         if (!securityEnabled) {
->>>>>>> e80bbd1 (reassign)
             filterChain.doFilter(request, response);
             return;
         }
@@ -65,24 +65,15 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         System.out.println("JwtAuthFilter: Processing request for path: " + path);
 
+        // Allow public URLs (including SockJS endpoints)
         for (String p : PUBLIC_URLS) {
             if (path.startsWith(p)) {
-                try {
-                    filterChain.doFilter(request, response);
-                } catch (ServletException | IOException e) {
-                    System.err.println("Exception thrown during filterChain.doFilter for public path: " + e.getMessage());
-                    throw e;
-                }
-                return;
-            }
-        }
-        System.out.println("JwtAuthFilter: Secured path accessed: " + path);
-        for (String prefix : PUBLIC_URLS) {
-            if (path.startsWith(prefix)) {
                 filterChain.doFilter(request, response);
                 return;
             }
         }
+
+        System.out.println("JwtAuthFilter: Secured path accessed: " + path);
 
         String authHeader = request.getHeader("Authorization");
 
@@ -108,6 +99,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             } catch (IOException e) {
                 System.err.println("IOException trying to write response for invalid token: " + e.getMessage());
             }
+            return;
         }
 
         UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
@@ -118,12 +110,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        try {
-            filterChain.doFilter(request, response);
-        } catch (ServletException | IOException e) {
-            System.err.println("Exception thrown during filterChain.doFilter after successful authentication: " + e.getMessage());
-            throw e;
-        }
+        filterChain.doFilter(request, response);
     }
 
     @Override
