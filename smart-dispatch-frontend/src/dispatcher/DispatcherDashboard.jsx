@@ -1,24 +1,16 @@
 import React from 'react'
-import { Routes, Route, Link, NavLink, useNavigate } from 'react-router-dom'
+import { Routes, Route, NavLink, useNavigate } from 'react-router-dom'
+import { Map, AlertCircle, CheckCircle, Truck } from 'lucide-react'
 import { logout } from '../utils/api'
 import VehicleMap from './pages/VehicleMap'
 import PendingIncidents from './pages/PendingIncidents'
 import ActiveAssignments from './pages/ActiveAssignments'
 import AvailableVehicles from './pages/AvailableVehicles'
-
-function TopBar() {
-  return (
-    <div className="flex items-center justify-between px-6 h-20 bg-transparent">
-      <div className="flex items-center gap-4">
-        <Link to="/dispatcher" className="text-2xl font-bold">Dispatcher</Link>
-        <div className="text-sm text-gray-500">Control Center</div>
-      </div>
-    </div>
-  )
-}
+import './styles/DispatcherDashboard.css'
 
 function Sidebar() {
   const navigate = useNavigate()
+
   const handleLogout = () => {
     try {
       logout()
@@ -29,59 +21,68 @@ function Sidebar() {
     }
     navigate('/login')
   }
-  const items = [
-    { to: '/dispatcher/map', label: 'Vehicle Map' },
-    { to: '/dispatcher/pending', label: 'Pending Incidents' },
-    { to: '/dispatcher/active', label: 'Assignments' },
-    { to: '/dispatcher/vehicles', label: 'Vehicles' },
-  ]
+
+  const MenuItem = ({ icon: Icon, label, to }) => (
+    <NavLink
+      to={to}
+      className={({ isActive }) =>
+        isActive
+          ? 'dispatcher-menu-item dispatcher-menu-item-active'
+          : 'dispatcher-menu-item'
+      }
+    >
+      <Icon size={20} />
+      <span>{label}</span>
+    </NavLink>
+  )
+
   return (
-    <aside className="w-72 text-white h-[calc(100vh-64px)] p-6 flex flex-col justify-between rounded-tl-3xl rounded-bl-3xl" style={{backgroundColor: '#E11D2F'}}>
-      <div>
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 rounded bg-white/20 flex items-center justify-center font-bold">D</div>
-          <div>
-            <div className="font-semibold">Dispatcher</div>
-            <div className="text-xs opacity-80">Control</div>
-          </div>
+    <div className="dispatcher-sidebar">
+      <div className="dispatcher-brand">
+        <div className="dispatcher-avatar">DS</div>
+        <div>
+          <h2>Dispatcher</h2>
+          <p>Control Center</p>
         </div>
-        <nav className="flex flex-col gap-2">
-          {items.map((it) => (
-            <NavLink key={it.to} to={it.to} className={({ isActive }) => `px-4 py-3 rounded-lg hover:bg-white/10 transition-colors ${isActive ? 'bg-white/20' : ''}`}>
-              <span className="text-white">{it.label}</span>
-            </NavLink>
-          ))}
-        </nav>
       </div>
 
-      <div className="mt-6">
-        <button onClick={handleLogout} className="w-full px-4 py-3 rounded-full bg-white border border-[#E11D2F] text-[#E11D2F] font-semibold shadow">Logout</button>
-        <div className="mt-3 text-xs opacity-80">Employee</div>
+      <div className="dispatcher-menu">
+        <MenuItem icon={Map} label="Vehicle Map" to="/dispatcher/map" />
+        <MenuItem icon={AlertCircle} label="Pending Incidents" to="/dispatcher/pending" />
+        <MenuItem icon={CheckCircle} label="Assignments" to="/dispatcher/active" />
+        <MenuItem icon={Truck} label="Vehicles" to="/dispatcher/vehicles" />
       </div>
-    </aside>
+
+      <div className="dispatcher-logout">
+        <button onClick={handleLogout} className="dispatcher-logout-btn">
+          Logout
+        </button>
+        <div className="dispatcher-user-info">Dispatcher</div>
+      </div>
+    </div>
   )
 }
 
 export default function DispatcherDashboard() {
   return (
-    // make the viewport fixed height so header + content area exactly match screen
-    <div className="h-screen bg-[#f3f6f8] text-gray-900">
-      <TopBar />
-      {/* content area height = viewport height - topbar (TopBar has h-20 = 80px) */}
-      <div className="flex" style={{ height: 'calc(100vh - 80px)' }}>
-        <Sidebar />
-        <main className="flex-1 p-6 overflow-auto">
-          {/* make the white content card fill main area and scroll internally */}
-          <div className="p-6 rounded-2xl shadow bg-white h-full overflow-auto">
-            <Routes>
-              <Route path="/" element={<div className="p-6 rounded shadow bg-white">Welcome to Dispatcher</div>} />
-              <Route path="map" element={<VehicleMap />} />
-              <Route path="pending" element={<PendingIncidents />} />
-              <Route path="active" element={<ActiveAssignments />} />
-              <Route path="vehicles" element={<AvailableVehicles />} />
-            </Routes>
-          </div>
-        </main>
+    <div className="dispatcher-container">
+      <Sidebar />
+
+      <div className="dispatcher-main">
+        <div className="dispatcher-content">
+          <Routes>
+            <Route path="/" element={
+              <div className="view-container">
+                <h1 className="page-title">Welcome to Dispatcher Control Center</h1>
+                <p style={{ color: '#6b7280' }}>Select a menu item to get started.</p>
+              </div>
+            } />
+            <Route path="map" element={<VehicleMap />} />
+            <Route path="pending" element={<PendingIncidents />} />
+            <Route path="active" element={<ActiveAssignments />} />
+            <Route path="vehicles" element={<AvailableVehicles />} />
+          </Routes>
+        </div>
       </div>
     </div>
   )

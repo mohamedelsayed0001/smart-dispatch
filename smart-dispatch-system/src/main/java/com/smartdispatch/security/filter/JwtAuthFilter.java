@@ -21,10 +21,10 @@ import java.util.List;
 public class JwtAuthFilter extends OncePerRequestFilter {
 
     private static final List<String> PUBLIC_URLS = List.of(
-            "/api/auth/login",
-            "/api/auth/signup",
+            "/api/auth", // Allow all auth endpoints (login, signup)
             "/api/check/users",
-            "/ws"
+            "/ws",
+            "/error"
     );
 
     private final JwtService jwtService;
@@ -47,6 +47,12 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             return;
         }
 
+        // Allow OPTIONS requests for CORS preflight
+        if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         String path = request.getServletPath();
 
         System.out.println("JwtAuthFilter: Processing request for path: " + path);
@@ -63,13 +69,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             }
         }
         System.out.println("JwtAuthFilter: Secured path accessed: " + path);
-        for (String prefix : PUBLIC_URLS) {
-            if (path.startsWith(prefix)) {
-                filterChain.doFilter(request, response);
-                return;
-            }
-        }
-
+        
         String authHeader = request.getHeader("Authorization");
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
@@ -94,6 +94,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             } catch (IOException e) {
                 System.err.println("IOException trying to write response for invalid token: " + e.getMessage());
             }
+            return; // Add return here to stop processing
         }
 
         UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(

@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import './App.css'
 import './index.css'
 import Testing from './testing/Testing'
@@ -18,7 +18,7 @@ function App() {
           <Route path="/test" element={<Testing />} />
           <Route path="/admin" element={<AdminPage />} />
           <Route path="/dispatcher/*" element={<DispatcherDashboard />} />
-          <Route path="*" element={<h1>NOT YET</h1>} />
+          <Route path="/" element={<Navigate to="/login" replace />} />
         </Routes>
       </Router>
     </ThemeProvider>

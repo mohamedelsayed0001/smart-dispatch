@@ -91,7 +91,7 @@ public class DispatcherServiceImp implements DispatcherService {
         if (incident == null) {
             throw new IllegalArgumentException("Incident not found");
         }
-        if(!incident.getStatus().equals("pending")){
+        if(!"PENDING".equalsIgnoreCase(incident.getStatus())){
             throw new IllegalStateException("Incident is not in pending status");
         }
 
@@ -99,7 +99,7 @@ public class DispatcherServiceImp implements DispatcherService {
         if (vehicle == null) {
             throw new IllegalArgumentException("Vehicle not found");
         }
-        if(!vehicle.getStatus().equals("Available")){
+        if(!"AVAILABLE".equalsIgnoreCase(vehicle.getStatus())){
             throw new IllegalStateException("Vehicle is not available");
         }
 
@@ -107,15 +107,15 @@ public class DispatcherServiceImp implements DispatcherService {
                 .dispatcherId(assignmentRequest.getDispatcherId())
                 .vehicleId(assignmentRequest.getVehicleId())
                 .incidentId(assignmentRequest.getIncidentId())
-                .status("active")
+                .status("PENDING")
                 .build();
         Integer assignmentId=assignmentDao.createAssignment(assignment);
         assignment.setId(assignmentId);
-        incidentDao.updateStatus(assignmentRequest.getIncidentId(),"assigned");
-        vehicleDao.updateStatus(assignmentRequest.getVehicleId(),"OnRoute");
+        incidentDao.updateStatus(assignmentRequest.getIncidentId(),"ASSIGNED");
+        vehicleDao.updateStatus(assignmentRequest.getVehicleId(),"ONROUTE");
 
-        incident.setStatus("assigned");
-        vehicle.setStatus("OnRoute");
+        incident.setStatus("ASSIGNED");
+        vehicle.setStatus("ONROUTE");
 
         IncidentDto updatedIncident = incidentMapper.mapTO(incident);
         VehicleDto updatedVehicle = vehicleMapper.mapTO(vehicle);
@@ -143,7 +143,7 @@ public class DispatcherServiceImp implements DispatcherService {
         Vehicle oldVehicle = vehicleDao.findById(existing.getVehicleId());
         Vehicle newVehicle = vehicleDao.findById(request.getNewVehicleId());
         if (newVehicle == null) throw new IllegalArgumentException("New vehicle not found");
-        if (!"Available".equalsIgnoreCase(newVehicle.getStatus())) {
+        if (!"AVAILABLE".equalsIgnoreCase(newVehicle.getStatus())) {
             throw new IllegalStateException("New vehicle is not available");
         }
 
@@ -152,11 +152,11 @@ public class DispatcherServiceImp implements DispatcherService {
         if (!ok) throw new IllegalStateException("Failed to update assignment");
 
         if (oldVehicle != null) {
-            vehicleDao.updateStatus(oldVehicle.getId(), "Available");
-            oldVehicle.setStatus("Available");
+            vehicleDao.updateStatus(oldVehicle.getId(), "AVAILABLE");
+            oldVehicle.setStatus("AVAILABLE");
         }
-        vehicleDao.updateStatus(newVehicle.getId(), "OnRoute");
-        newVehicle.setStatus("OnRoute");
+        vehicleDao.updateStatus(newVehicle.getId(), "ONROUTE");
+        newVehicle.setStatus("ONROUTE");
 
         Assignment updated = assignmentDao.findById(request.getAssignmentId());
         AssignmentDto dto = assignmentMapper.mapTO(updated);
