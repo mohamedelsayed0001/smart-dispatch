@@ -21,6 +21,7 @@ import com.smartdispatch.dispatcher.mappers.imp.AssignmentMapper;
 import com.smartdispatch.dispatcher.mappers.imp.IncidentMapper;
 import com.smartdispatch.dispatcher.mappers.imp.VehicleMapper;
 import com.smartdispatch.dispatcher.services.DispatcherService;
+import com.smartdispatch.security.service.NotificationService;
 @Service
 public class DispatcherServiceImp implements DispatcherService {
     private IncidentDao incidentDao;
@@ -29,9 +30,9 @@ public class DispatcherServiceImp implements DispatcherService {
     private IncidentMapper incidentMapper;
     private AssignmentMapper assignmentMapper;
     private VehicleMapper vehicleMapper;
-    private WebSocketNotificationServiceImp notificationService;
+    private NotificationService notificationService;
 
-    public DispatcherServiceImp(VehicleDao vehicleDao, IncidentDao incidentDao, AssignmentDao assignmentDao, IncidentMapper incidentMapper, AssignmentMapper assignmentMapper, VehicleMapper vehicleMapper, WebSocketNotificationServiceImp notificationService) {
+    public DispatcherServiceImp(VehicleDao vehicleDao, IncidentDao incidentDao, AssignmentDao assignmentDao, IncidentMapper incidentMapper, AssignmentMapper assignmentMapper, VehicleMapper vehicleMapper, NotificationService notificationService) {
         this.vehicleDao = vehicleDao;
         this.incidentDao = incidentDao;
         this.assignmentDao = assignmentDao;
@@ -119,17 +120,14 @@ public class DispatcherServiceImp implements DispatcherService {
         incident.setStatus("ASSIGNED");
         vehicle.setStatus("ONROUTE");
 
-        IncidentDto updatedIncident = incidentMapper.mapTO(incident);
-        VehicleDto updatedVehicle = vehicleMapper.mapTO(vehicle);
         AssignmentDto assignmentDto = assignmentMapper.mapTO(assignment);
         assignmentDto.setIncidentType(incident.getType());
         assignmentDto.setDescription(incident.getDescription());
-        notificationService.notifyVehicleUpdate(updatedVehicle);
-        notificationService.notifyIncidentUpdate(updatedIncident);
-        notificationService.notifyAssignmentUpdate(assignmentDto);
-        notificationService.broadcastNotification(
-                "SUCCESS",
-                "Assignment created: Vehicle " + vehicle.getId() + " → Incident " + incident.getId()
+        
+        notificationService.notifyUser(
+                String.valueOf(vehicle.getOperatorId()),
+                "/vehicle/assignment",
+                assignmentDto
         );
 
         return assignmentDto;
@@ -179,10 +177,13 @@ public class DispatcherServiceImp implements DispatcherService {
 
         dto.setIncidentType(incident.getType());
         dto.setDescription(incident.getDescription());
-        notificationService.notifyVehicleUpdate(vehicleMapper.mapTO(newVehicle));
-        if (oldVehicle != null) notificationService.notifyVehicleUpdate(vehicleMapper.mapTO(oldVehicle));
-        notificationService.notifyAssignmentUpdate(dto);
-        notificationService.broadcastNotification("SUCCESS", "Assignment reassigned to vehicle " + newVehicle.getId());
+        
+        Vehicle vehicle = vehicleDao.findById(updated.getVehicleId());
+        notificationService.notifyUser(
+                String.valueOf(vehicle.getOperatorId()),
+                "/assignment",
+                dto
+        );
 
         return dto;
     }

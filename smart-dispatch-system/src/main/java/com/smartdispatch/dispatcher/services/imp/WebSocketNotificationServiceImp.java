@@ -17,8 +17,8 @@ public class WebSocketNotificationServiceImp {
 
 
     public void notifyVehicleUpdate(VehicleDto vehicle) {
-        // Send the full VehicleDto
-        messagingTemplate.convertAndSend("/topic/vehicles", vehicle);
+        // Send to topic/vehicle/status
+        messagingTemplate.convertAndSend("/topic/vehicle/status", vehicle);
     }
 
 
@@ -28,8 +28,8 @@ public class WebSocketNotificationServiceImp {
     }
 
     public void notifyAssignmentUpdate(AssignmentDto assignment) {
-        // Send the full AssignmentDto
-        messagingTemplate.convertAndSend("/topic/assignments", assignment);
+        // Send to topic/vehicle/assignment
+        messagingTemplate.convertAndSend("/topic/vehicle/assignment", assignment);
     }
 
 
