@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import './css/responder.css';
 
-const NotificationPanel = ({ notifications, onAccept, onReject, loading }) => {
+const NotificationPanel = ({ newAssignments, onAccept, onReject, loading }) => {
   const [expandedNotification, setExpandedNotification] = useState(null);
 
   const getNotificationIcon = (type) => {
@@ -46,23 +46,23 @@ const NotificationPanel = ({ notifications, onAccept, onReject, loading }) => {
     return `${days}d ago`;
   };
 
-  const handleAccept = (notification) => {
-    onAccept(notification);
+  const handleAccept = (assignment) => {
+    onAccept(assignment);
     setExpandedNotification(null);
   };
 
-  const handleReject = (notification) => {
-    onReject(notification);
+  const handleReject = (assignment) => {
+    onReject(assignment);
     setExpandedNotification(null);
   };
 
-  const toggleExpand = (notificationId) => {
+  const toggleExpand = (assignmentId) => {
     setExpandedNotification(
-      expandedNotification === notificationId ? null : notificationId
+      expandedNotification === assignmentId ? null : assignmentId
     );
   };
 
-  if (notifications.length === 0) {
+  if (newAssignments.length === 0) {
     return (
       <div className="notification-panel">
         <div className="panel-header">
@@ -83,11 +83,11 @@ const NotificationPanel = ({ notifications, onAccept, onReject, loading }) => {
     <div className="notification-panel">
       <div className="panel-header">
         <h2>Notifications</h2>
-        <span className="notification-count">{notifications.length}</span>
+        <span className="notification-count">{newAssignments.length}</span>
       </div>
 
       <div className="notifications-list">
-        {notifications.map((notification) => {
+        {newAssignments.map((notification) => {
           const { incident, assignment } = notification;
           const isExpanded = expandedNotification === notification.id;
 

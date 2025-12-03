@@ -4,7 +4,7 @@ import locationService from './service/locationService';
 import 'leaflet/dist/leaflet.css';
 import './css/map.css';
 
-const MapView = ({ assignment, responderId, onLocationUpdate }) => {
+const MapView = ({ assignment, onLocationUpdate }) => {
   const mapContainerRef = useRef(null);
   const [route, setRoute] = useState(null);
   const [currentLocation, setCurrentLocation] = useState(null);
@@ -21,8 +21,6 @@ const MapView = ({ assignment, responderId, onLocationUpdate }) => {
 
     const initializeMap = async () => {
       try {
-        locationService.setResponderId(responderId);
-
         const location = await locationService.getCurrentPosition();
         if (!isMounted) return;
 
@@ -73,7 +71,7 @@ const MapView = ({ assignment, responderId, onLocationUpdate }) => {
       setError(null);
       isInitialized.current = false;
     };
-  }, [assignment, responderId]);
+  }, [assignment]);
 
 
   // Update vehicle marker when location changes

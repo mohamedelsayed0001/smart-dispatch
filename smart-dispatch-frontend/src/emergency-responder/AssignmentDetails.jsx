@@ -6,7 +6,7 @@ import NavigationPanel from './NavigationPanel';
 import locationService from './service/locationService';
 import './css/responder.css';
 
-const AssignmentDetails = ({ assignmentId, responderId, onBack }) => {
+const AssignmentDetails = ({ assignmentId, onBack }) => {
   const [assignment, setAssignment] = useState(null);
   const [locations, setLocations] = useState(null);
   const [route, setRoute] = useState(null);
@@ -41,14 +41,14 @@ const AssignmentDetails = ({ assignmentId, responderId, onBack }) => {
       stopLocationTracking();
       trackingStarted.current = false;
     };
-  }, [assignmentId, responderId]);
+  }, [assignmentId]);
 
   const loadAssignmentDetails = async (signal) => {
     try {
       setLoading(true);
       const [assignmentRes, locationsRes] = await Promise.all([
-        responderAPI.getAssignmentDetails(assignmentId, responderId, signal),
-        responderAPI.getAssignmentLocations(assignmentId, responderId, signal),
+        responderAPI.getAssignmentDetails(assignmentId, signal),
+        responderAPI.getAssignmentLocations(assignmentId, signal),
       ]);
 
       // Check if request was aborted
@@ -74,7 +74,6 @@ const AssignmentDetails = ({ assignmentId, responderId, onBack }) => {
     if (isTracking) return;
 
     locationService.startTracking(
-      responderId,
       (location) => {
         setCurrentLocation(location);
       },
@@ -95,7 +94,7 @@ const AssignmentDetails = ({ assignmentId, responderId, onBack }) => {
   const handleStatusChange = async (statusData) => {
     try {
       setStatusLoading(true);
-      await responderAPI.updateStatus(assignmentId, responderId, statusData);
+      await responderAPI.updateStatus(assignmentId, statusData);
 
       // Reload assignment details to get updated status
       const abortController = new AbortController();
@@ -122,7 +121,7 @@ const AssignmentDetails = ({ assignmentId, responderId, onBack }) => {
       // 1. Set assignment status to 'canceled'
       // 2. Set vehicle status to 'AVAILABLE'
       // 3. Set incident status to 'pending'
-      await responderAPI.cancelAssignment(assignmentId, responderId);
+      await responderAPI.cancelAssignment(assignmentId);
 
       setCancelLoading(false);
       setShowCancelConfirm(false);
@@ -223,7 +222,6 @@ const AssignmentDetails = ({ assignmentId, responderId, onBack }) => {
         <div className="details-map-section">
           <MapView
             assignment={assignment}
-            responderId={responderId}
             onLocationUpdate={setCurrentLocation}
             onRouteLoaded={handleRouteLoaded}
           />

@@ -2,7 +2,6 @@ package com.smartdispatch.security.filter;
 
 import java.io.IOException;
 
-import com.smartdispatch.security.model.AppUserDetails;
 import com.smartdispatch.security.service.JwtService;
 
 import jakarta.servlet.FilterChain;
@@ -25,15 +24,12 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             "/api/check/users",
             "/ws",
             "/error"
-            "/api/responder"
     );
 
     private final JwtService jwtService;
-    private final boolean securityEnabled;
 
-    JwtAuthFilter(JwtService jwtService, @org.springframework.beans.factory.annotation.Value("${app.security.enabled:true}") boolean securityEnabled) {
+    JwtAuthFilter(JwtService jwtService) {
         this.jwtService = jwtService;
-        this.securityEnabled = securityEnabled;
     }
 
     @Override
@@ -41,12 +37,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain)
             throws ServletException, IOException {
-
-        // If security is disabled, skip authentication checks and continue the chain
-        if (!securityEnabled) {
-            filterChain.doFilter(request, response);
-            return;
-        }
 
         // Allow OPTIONS requests for CORS preflight
         if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {

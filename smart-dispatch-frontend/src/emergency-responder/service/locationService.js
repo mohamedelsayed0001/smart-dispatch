@@ -6,14 +6,7 @@ class LocationService {
     this.watchId = null;
     this.isTracking = false;
     this.lastUpdate = null;
-    this.updateInterval = 5000; // 5 seconds
-    this.minDistance = 10; // minimum 10 meters before update
-    this.responderId = null; // Store responderId for API calls
-  }
-
-  // Set the responder ID for this service instance
-  setResponderId(responderId) {
-    this.responderId = responderId;
+    this.updateInterval = 60000; // 60 seconds
   }
 
   // Request location permission
@@ -33,17 +26,21 @@ class LocationService {
     });
   }
 
-  async handleInitialLocation(responderId) {
+  async handleInitialLocation() {
     try {
       // 1. Request permission
       const permissionGranted = await this.requestPermission();
-      if (!permissionGranted) return;
+      if (!permissionGranted) {
+        await this.requestPermission();
+        await this.handleInitialLocation();
+        return;
+      }
 
       // 2. Get current position
       const location = await this.getCurrentPosition();
 
       // 3. Send to backend once
-      await responderAPI.updateLocation(responderId, {
+      await responderAPI.updateLocation({
         latitude: location.latitude,
         longitude: location.longitude,
         timestamp: new Date().toISOString()
@@ -81,10 +78,9 @@ class LocationService {
   }
 
   // Start tracking location
-  startTracking(responderId, onLocationUpdate, onError) {
+  startTracking(onLocationUpdate, onError) {
     if (this.isTracking) return;
     this.isTracking = true;
-    this.responderId = responderId;
 
     let isRequesting = false;
 
@@ -125,48 +121,20 @@ class LocationService {
     if (!this.lastUpdate) return true;
 
     const timeDiff = new Date(newLocation.timestamp) - new Date(this.lastUpdate.timestamp);
-    console.log("here 1");
 
     // Send update every updateInterval milliseconds
     if (timeDiff >= this.updateInterval) return true;
 
-    console.log("here 2");
-    // Send update if moved significant distance
-    const distance = this.calculateDistance(
-      this.lastUpdate.latitude,
-      this.lastUpdate.longitude,
-      newLocation.latitude,
-      newLocation.longitude
-    );
-
-    return distance >= this.minDistance;
   }
 
   // Send location update to server
   async sendLocationUpdate(location) {
-    if (!this.responderId) {
-      console.warn('Cannot send location update: responderId not set');
-      return;
-    }
-
     try {
-      // Send via WebSocket if connected (faster)
-      if (webSocketService.isConnected()) {
-        console.log("updateee");
-
-        webSocketService.sendLocationUpdate({
-          latitude: location.latitude,
-          longitude: location.longitude,
-          timestamp: location.timestamp,
-        });
-      } else {
-        // Fallback to HTTP API
-        await responderAPI.updateLocation(this.responderId, {
-          latitude: location.latitude,
-          longitude: location.longitude,
-          timestamp: location.timestamp,
-        });
-      }
+      await responderAPI.updateLocation({
+        latitude: location.latitude,
+        longitude: location.longitude,
+        timestamp: location.timestamp,
+      });
     } catch (error) {
       console.error('Failed to send location update:', error);
     }
@@ -207,10 +175,6 @@ class LocationService {
     this.updateInterval = milliseconds;
   }
 
-  // Set minimum distance for updates
-  setMinDistance(meters) {
-    this.minDistance = meters;
-  }
 }
 
 // Create singleton instance

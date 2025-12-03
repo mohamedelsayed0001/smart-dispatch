@@ -1,6 +1,7 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
+// const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
+const API_BASE_URL = 'http://localhost:8080/api';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -8,6 +9,14 @@ const api = axios.create({
     'Content-Type': 'application/json',
   },
   withCredentials: true,
+});
+
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('authToken');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
 });
 
 // Handle response errors
@@ -25,72 +34,57 @@ api.interceptors.response.use(
   }
 );
 
-// Responder API endpoints
 export const responderAPI = {
   // Get responder profile
-  getProfile: (responderId, signal) =>
-    api.get(`/responder/profile/${responderId}`, { signal }),
+  getProfile: (signal) =>
+    api.get(`/responder/info`, { signal }),
 
   // Get all assignments (not just active) - paginated
-  getAllAssignments: (responderId, page = 0, size = 20, signal) =>
-    api.get(`/responder/assignments/${responderId}`, {
+  getAllAssignments: (page = 0, size = 20, signal) =>
+    api.get(`/responder/assignments`, {
       params: { page, size },
       signal
     }),
 
-  // Get active assignments (legacy - for backwards compatibility)
-  getActiveAssignments: (responderId, signal) =>
-    api.get(`/responder/assignments/active/${responderId}`, { signal }),
-
   // Get assignment details
-  getAssignmentDetails: (assignmentId, responderId, signal) =>
-    api.get(`/responder/assignments/${assignmentId}/responder/${responderId}`, { signal }),
+  getAssignmentDetails: (assignmentId, signal) =>
+    api.get(`/responder/assignments/${assignmentId}`, { signal }),
 
   // Get assignment locations (vehicle and incident)
-  getAssignmentLocations: (assignmentId, responderId, signal) =>
-    api.get(`/responder/assignments/${assignmentId}/locations/${responderId}`, { signal }),
+  getAssignmentLocations: (assignmentId, signal) =>
+    api.get(`/responder/assignments/${assignmentId}/locations`, { signal }),
 
   // Get notifications for responder - paginated
-  getNotifications: (responderId, page = 0, size = 20, signal) =>
-    api.get(`/responder/notifications/${responderId}`, {
+  getNotifications: (page = 0, size = 20, signal) =>
+    api.get(`/responder/notifications`, {
       params: { page, size },
       signal
     }),
 
   // Respond to assignment notification (accept/reject)
-  respondToAssignment: (assignmentId, responderId, responseData, signal) =>
-    api.post(`/responder/assignments/${assignmentId}/respond/${responderId}`, responseData, { signal }),
+  respondToAssignment: (assignment, signal) =>
+    api.post(`/responder/assignments/${assignment.id}/respond`, responseData, { signal }),
 
   // Update vehicle location
-  updateLocation: (responderId, locationData, signal) =>
-    api.post(`/responder/location/${responderId}`, locationData, { signal }),
+  updateLocation: (locationData, signal) =>
+    api.post(`/responder/location`, locationData, { signal }),
 
   // Update status
-  updateStatus: (assignmentId, responderId, statusData, signal) =>
-    api.put(`/responder/assignments/${assignmentId}/status/${responderId}`, statusData, { signal }),
+  updateStatus: (assignmentId, statusData, signal) =>
+    api.put(`/responder/assignments/${assignmentId}/status`, statusData, { signal }),
 
   // Cancel assignment
-  cancelAssignment: (assignmentId, responderId, signal) =>
-    api.post(`/responder/assignments/${assignmentId}/cancel/${responderId}`, {}, { signal }),
-
-  // Accept assignment (legacy)
-  acceptAssignment: (assignmentId, responderId, signal) =>
-    api.post(`/responder/assignments/${assignmentId}/accept/${responderId}`, {}, { signal }),
+  cancelAssignment: (assignmentId, signal) =>
+    api.post(`/responder/assignments/${assignmentId}/cancel`, {}, { signal }),
 
   // Mark arrival (legacy)
-  markArrival: (assignmentId, responderId, signal) =>
-    api.post(`/responder/assignments/${assignmentId}/arrive/${responderId}`, {}, { signal }),
+  markArrival: (assignmentId, signal) =>
+    api.post(`/responder/assignments/${assignmentId}/arrive`, {}, { signal }),
 
   // Complete assignment (legacy)
-  completeAssignment: (assignmentId, responderId, signal) =>
-    api.post(`/responder/assignments/${assignmentId}/complete/${responderId}`, {}, { signal }),
+  completeAssignment: (assignmentId, signal) =>
+    api.post(`/responder/assignments/${assignmentId}/complete`, {}, { signal }),
 
-  // Get assignment history (legacy - use getAllAssignments instead)
-  getAssignmentHistory: (responderId, page = 0, size = 10, signal) =>
-    api.get(`/responder/assignments/history/${responderId}`, {
-      params: { page, size },
-      signal
-    }),
 };
 
 export default api;

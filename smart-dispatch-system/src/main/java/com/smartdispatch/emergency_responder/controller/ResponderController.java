@@ -8,7 +8,9 @@ import org.springframework.web.bind.annotation.*;
 
 import com.smartdispatch.emergency_responder.dto.*;
 import com.smartdispatch.emergency_responder.service.ResponderService;
+import com.smartdispatch.security.model.AppUserDetails;
 
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import java.util.List;
 
 @RestController
@@ -20,171 +22,183 @@ public class ResponderController {
     @Autowired
     private final ResponderService responderService;
 
-    @GetMapping("/profile/{responderId}")
-    public ResponseEntity<ResponderProfileDTO> getProfile(@PathVariable Integer responderId) {
+    /* ----------------------------------------------------------
+        PROFILE
+    ----------------------------------------------------------- */
+
+    @GetMapping("/info")
+    public ResponseEntity<ResponderProfileDTO> getProfile(
+            @AuthenticationPrincipal AppUserDetails userDetails) {
+
+        Integer responderId = userDetails.getId().intValue();
         ResponderProfileDTO profile = responderService.getResponderProfile(responderId);
+
         return ResponseEntity.ok(profile);
     }
 
-    /**
-     * Get all active assignments for the responder
-     */
-    @GetMapping("/assignments/active/{responderId}")
-    public ResponseEntity<List<AssignmentDTO>> getActiveAssignments(@PathVariable Integer responderId) {
-        List<AssignmentDTO> assignments = responderService.getActiveAssignments(responderId);
-        return ResponseEntity.ok(assignments);
-    }
+    /* ----------------------------------------------------------
+        ASSIGNMENT DETAILS
+    ----------------------------------------------------------- */
 
-    /**
-     * Get specific assignment details
-     */
-    @GetMapping("/assignments/{assignmentId}/responder/{responderId}")
+    @GetMapping("/assignments/{assignmentId}")
     public ResponseEntity<AssignmentDTO> getAssignmentDetails(
-            @PathVariable Integer assignmentId,
-            @PathVariable Integer responderId) {
+            @AuthenticationPrincipal AppUserDetails userDetails,
+            @PathVariable Integer assignmentId) {
+
+        Integer responderId = userDetails.getId().intValue();
         AssignmentDTO assignment = responderService.getAssignmentDetails(assignmentId, responderId);
+
         return ResponseEntity.ok(assignment);
     }
 
-    /**
-     * Get vehicle and incident locations for an assignment
-     */
-    @GetMapping("/assignments/{assignmentId}/locations/{responderId}")
+    /* ----------------------------------------------------------
+        LOCATIONS (VEHICLE + INCIDENT)
+    ----------------------------------------------------------- */
+
+    @GetMapping("/assignments/{assignmentId}/locations")
     public ResponseEntity<LocationsResponseDTO> getAssignmentLocations(
-            @PathVariable Integer assignmentId,
-            @PathVariable Integer responderId) {
+            @AuthenticationPrincipal AppUserDetails userDetails,
+            @PathVariable Integer assignmentId) {
+
+        Integer responderId = userDetails.getId().intValue();
         LocationsResponseDTO locations = responderService.getAssignmentLocations(assignmentId, responderId);
+
         return ResponseEntity.ok(locations);
     }
 
-    /**
-     * Update vehicle location
-     */
-    @PostMapping("/location/{responderId}")
+    /* ----------------------------------------------------------
+        UPDATE LOCATION
+    ----------------------------------------------------------- */
+
+    @PostMapping("/location")
     public ResponseEntity<Void> updateLocation(
-            @PathVariable Integer responderId,
+            @AuthenticationPrincipal AppUserDetails userDetails,
             @RequestBody LocationDTO locationDTO) {
+
+        Integer responderId = userDetails.getId().intValue();
         responderService.updateVehicleLocation(responderId, locationDTO);
+
         return ResponseEntity.ok().build();
     }
 
-    /**
-     * Update assignment and vehicle status
-     */
-    @PutMapping("/assignments/{assignmentId}/status/{responderId}")
+    /* ----------------------------------------------------------
+        UPDATE STATUS
+    ----------------------------------------------------------- */
+
+    @PutMapping("/assignments/{assignmentId}/status")
     public ResponseEntity<Void> updateStatus(
+            @AuthenticationPrincipal AppUserDetails userDetails,
             @PathVariable Integer assignmentId,
-            @PathVariable Integer responderId,
             @RequestBody StatusUpdateDTO statusDTO) {
+
+        Integer responderId = userDetails.getId().intValue();
         responderService.updateStatus(assignmentId, responderId, statusDTO);
+
         return ResponseEntity.ok().build();
     }
 
-    /**
-     * Get assignment history with pagination
-     */
-    @GetMapping("/assignments/history/{responderId}")
-    public ResponseEntity<List<AssignmentDTO>> getAssignmentHistory(
-            @PathVariable Integer responderId,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
-        List<AssignmentDTO> history = responderService.getAssignmentHistory(responderId, page, size);
-        return ResponseEntity.ok(history);
-    }
+    /* ----------------------------------------------------------
+        ARRIVE
+    ----------------------------------------------------------- */
 
-    /**
-     * Accept an assignment (update status to active)
-     */
-    @PostMapping("/assignments/{assignmentId}/accept/{responderId}")
-    public ResponseEntity<Void> acceptAssignment(
-            @PathVariable Integer assignmentId,
-            @PathVariable Integer responderId) {
-
-        StatusUpdateDTO statusDTO = new StatusUpdateDTO();
-        statusDTO.setVehicleStatus("On Route");
-        statusDTO.setAssignmentStatus("active");
-
-        responderService.updateStatus(assignmentId, responderId, statusDTO);
-        return ResponseEntity.ok().build();
-    }
-
-    /**
-     * Mark arrival at incident location
-     */
-    @PostMapping("/assignments/{assignmentId}/arrive/{responderId}")
+    @PostMapping("/assignments/{assignmentId}/arrive")
     public ResponseEntity<Void> markArrival(
-            @PathVariable Integer assignmentId,
-            @PathVariable Integer responderId) {
+            @AuthenticationPrincipal AppUserDetails userDetails,
+            @PathVariable Integer assignmentId) {
+
+        Integer responderId = userDetails.getId().intValue();
 
         StatusUpdateDTO statusDTO = new StatusUpdateDTO();
         statusDTO.setVehicleStatus("Resolving");
 
         responderService.updateStatus(assignmentId, responderId, statusDTO);
+
         return ResponseEntity.ok().build();
     }
 
-    /**
-     * Complete an assignment
-     */
-    @PostMapping("/assignments/{assignmentId}/complete/{responderId}")
+    /* ----------------------------------------------------------
+        COMPLETE ASSIGNMENT
+    ----------------------------------------------------------- */
+
+    @PostMapping("/assignments/{assignmentId}/complete")
     public ResponseEntity<Void> completeAssignment(
-            @PathVariable Integer assignmentId,
-            @PathVariable Integer responderId) {
+            @AuthenticationPrincipal AppUserDetails userDetails,
+            @PathVariable Integer assignmentId) {
+
+        Integer responderId = userDetails.getId().intValue();
 
         StatusUpdateDTO statusDTO = new StatusUpdateDTO();
         statusDTO.setAssignmentStatus("completed");
 
         responderService.updateStatus(assignmentId, responderId, statusDTO);
+
         return ResponseEntity.ok().build();
     }
 
-    /**
-     * Get all assignments (not just active) - paginated
-     */
-    @GetMapping("/assignments/{responderId}")
+    /* ----------------------------------------------------------
+        GET ALL ASSIGNMENTS (PAGINATED)
+    ----------------------------------------------------------- */
+
+    @GetMapping("/assignments")
     public ResponseEntity<List<AssignmentDTO>> getAllAssignments(
-            @PathVariable Integer responderId,
+            @AuthenticationPrincipal AppUserDetails userDetails,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
+
+        Integer responderId = userDetails.getId().intValue();
         List<AssignmentDTO> assignments = responderService.getAllAssignments(responderId, page, size);
+
         return ResponseEntity.ok(assignments);
     }
 
-    /**
-     * Get notifications for responder - paginated
-     */
-    @GetMapping("/notifications/{responderId}")
+    /* ----------------------------------------------------------
+        GET NOTIFICATIONS
+    ----------------------------------------------------------- */
+
+    @GetMapping("/notifications")
     public ResponseEntity<List<NotificationDTO>> getNotifications(
-            @PathVariable Integer responderId,
+            @AuthenticationPrincipal AppUserDetails userDetails,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
+
+        Integer responderId = userDetails.getId().intValue();
+
         List<NotificationDTO> notifications = responderService.getNotifications(responderId, page, size);
         return ResponseEntity.ok(notifications);
     }
 
-    /**
-     * Respond to assignment notification (accept/reject)
-     */
-    @PostMapping("/assignments/{assignmentId}/respond/{responderId}")
+    /* ----------------------------------------------------------
+        RESPOND TO ASSIGNMENT (ACCEPT / REJECT)
+    ----------------------------------------------------------- */
+
+    @PostMapping("/assignments/{assignmentId}/respond")
     public ResponseEntity<AssignmentActionResponseDTO> respondToAssignment(
+            @AuthenticationPrincipal AppUserDetails userDetails,
             @PathVariable Integer assignmentId,
-            @PathVariable Integer responderId,
             @RequestBody AssignmentResponseDTO responseDTO) {
-        AssignmentActionResponseDTO result = responderService.respondToAssignment(
-                assignmentId,
-                responderId,
-                responseDTO.getResponse());
-        return ResponseEntity.ok(result);
+
+        Integer responderId = userDetails.getId().intValue();
+
+        AssignmentActionResponseDTO response =
+                responderService.respondToAssignment(assignmentId, responderId, responseDTO.getResponse());
+
+        return ResponseEntity.ok(response);
     }
 
-    /**
-     * Cancel assignment
-     */
-    @PostMapping("/assignments/{assignmentId}/cancel/{responderId}")
+    /* ----------------------------------------------------------
+        CANCEL ASSIGNMENT
+    ----------------------------------------------------------- */
+
+    @PostMapping("/assignments/{assignmentId}/cancel")
     public ResponseEntity<AssignmentActionResponseDTO> cancelAssignment(
-            @PathVariable Integer assignmentId,
-            @PathVariable Integer responderId) {
-        AssignmentActionResponseDTO result = responderService.cancelAssignment(assignmentId, responderId);
+            @AuthenticationPrincipal AppUserDetails userDetails,
+            @PathVariable Integer assignmentId) {
+
+        Integer responderId = userDetails.getId().intValue();
+
+        AssignmentActionResponseDTO result =
+                responderService.cancelAssignment(assignmentId, responderId);
+
         return ResponseEntity.ok(result);
     }
 }

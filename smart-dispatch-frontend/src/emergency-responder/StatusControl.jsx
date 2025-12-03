@@ -21,7 +21,7 @@ const StatusControl = ({
       label: 'Accept Assignment',
       icon: '✓',
       vehicleStatus: 'ON_ROUTE',
-      assignmentStatus: 'active',
+      assignmentStatus: 'ACTIVE',
       color: 'var(--status-available)',
       confirmMessage: 'Accept this assignment and start heading to the incident?',
     },
@@ -34,7 +34,7 @@ const StatusControl = ({
     complete: {
       label: 'Complete Assignment',
       icon: '✓',
-      assignmentStatus: 'completed',
+      assignmentStatus: 'COMPLETED',
       color: 'var(--status-available)',
       confirmMessage: 'Mark this assignment as completed? This will resolve the incident.',
     },
@@ -47,11 +47,11 @@ const StatusControl = ({
       available.push(actions.accept);
     }
 
-    if (currentStatus === 'ON_ROUTE' && assignmentStatus === 'active') {
+    if (currentStatus === 'ON_ROUTE' && assignmentStatus === 'ACTIVE') {
       available.push(actions.arrive);
     }
 
-    if (currentStatus === 'RESOLVING' && assignmentStatus === 'active') {
+    if (currentStatus === 'RESOLVING' && assignmentStatus === 'ACTIVE') {
       available.push(actions.complete);
     }
 

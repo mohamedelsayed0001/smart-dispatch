@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.smartdispatch.emergency_responder.dao.*;
 import com.smartdispatch.emergency_responder.dto.*;
 import com.smartdispatch.emergency_responder.model.*;
+import com.smartdispatch.security.service.NotificationService;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
@@ -17,422 +18,413 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ResponderService {
 
-    private final UserDAO userDAO;
-    private final VehicleDAO vehicleDAO;
-    private final AssignmentDAO assignmentDAO;
-    private final IncidentDAO incidentDAO;
-    private final VehicleLocationDAO vehicleLocationDAO;
-    private final NotificationDAO notificationDAO;
-//     private final NotificationService notificationService;
+  private final UserDAO userDAO;
+  private final VehicleDAO vehicleDAO;
+  private final AssignmentDAO assignmentDAO;
+  private final IncidentDAO incidentDAO;
+  private final VehicleLocationDAO vehicleLocationDAO;
+  private final NotificationDAO notificationDAO;
+  private final NotificationService notificationService;
 
-    public ResponderProfileDTO getResponderProfile(Integer responderId) {
-        User responder = userDAO.findById(responderId)
-                .orElseThrow(() -> new RuntimeException("Responder not found"));
+  public ResponderProfileDTO getResponderProfile(Integer responderId) {
+    User responder = userDAO.findById(responderId)
+        .orElseThrow(() -> new RuntimeException("Responder not found"));
 
-        if (!"operator".equals(responder.getRole())) {
-            throw new RuntimeException("User is not a responder");
-        }
-
-        Vehicle vehicle = vehicleDAO.findByOperatorId(responderId).orElse(null);
-
-        VehicleDetailsDTO vehicleDTO = null;
-        if (vehicle != null) {
-            vehicleDTO = new VehicleDetailsDTO(
-                    vehicle.getId(),
-                    vehicle.getType(),
-                    vehicle.getStatus(),
-                    vehicle.getCapacity());
-        }
-
-        return new ResponderProfileDTO(
-                responder.getId(),
-                responder.getName(),
-                responder.getEmail(),
-                responder.getRole(),
-                vehicleDTO);
+    if (!"operator".equals(responder.getRole())) {
+      throw new RuntimeException("User is not a responder");
     }
 
-    public List<AssignmentDTO> getActiveAssignments(Integer responderId) {
-        Vehicle vehicle = vehicleDAO.findByOperatorId(responderId)
-                .orElseThrow(() -> new RuntimeException("No vehicle assigned to responder"));
+    Vehicle vehicle = vehicleDAO.findByOperatorId(responderId).orElse(null);
 
-        List<Assignment> assignments = assignmentDAO.findByVehicleIdAndStatus(vehicle.getId(), "active");
-
-        return assignments.stream()
-                .map(this::convertToDTO)
-                .collect(Collectors.toList());
+    VehicleDetailsDTO vehicleDTO = null;
+    if (vehicle != null) {
+      vehicleDTO = new VehicleDetailsDTO(
+          vehicle.getId(),
+          vehicle.getType(),
+          vehicle.getStatus(),
+          vehicle.getCapacity());
     }
 
-    public AssignmentDTO getAssignmentDetails(Integer assignmentId, Integer responderId) {
-        Assignment assignment = assignmentDAO.findById(assignmentId)
-                .orElseThrow(() -> new RuntimeException("Assignment not found"));
+    return new ResponderProfileDTO(
+        responder.getId(),
+        responder.getName(),
+        responder.getEmail(),
+        responder.getRole(),
+        vehicleDTO);
+  }
 
-        Vehicle vehicle = vehicleDAO.findByOperatorId(responderId)
-                .orElseThrow(() -> new RuntimeException("No vehicle assigned"));
+  public List<AssignmentDTO> getActiveAssignments(Integer responderId) {
+    Vehicle vehicle = vehicleDAO.findByOperatorId(responderId)
+        .orElseThrow(() -> new RuntimeException("No vehicle assigned to responder"));
 
-        if (!assignment.getVehicleId().equals(vehicle.getId())) {
-            throw new RuntimeException("Not authorized to view this assignment");
-        }
+    List<Assignment> assignments = assignmentDAO.findByVehicleIdAndStatus(vehicle.getId(), "active");
 
-        return convertToDTO(assignment);
+    return assignments.stream()
+        .map(this::convertToDTO)
+        .collect(Collectors.toList());
+  }
+
+  public AssignmentDTO getAssignmentDetails(Integer assignmentId, Integer responderId) {
+    Assignment assignment = assignmentDAO.findById(assignmentId)
+        .orElseThrow(() -> new RuntimeException("Assignment not found"));
+
+    Vehicle vehicle = vehicleDAO.findByOperatorId(responderId)
+        .orElseThrow(() -> new RuntimeException("No vehicle assigned"));
+
+    if (!assignment.getVehicleId().equals(vehicle.getId())) {
+      throw new RuntimeException("Not authorized to view this assignment");
     }
 
-    public LocationsResponseDTO getAssignmentLocations(Integer assignmentId, Integer responderId) {
-        Assignment assignment = assignmentDAO.findById(assignmentId)
-                .orElseThrow(() -> new RuntimeException("Assignment not found"));
+    return convertToDTO(assignment);
+  }
 
-        Vehicle vehicle = vehicleDAO.findByOperatorId(responderId)
-                .orElseThrow(() -> new RuntimeException("No vehicle assigned"));
+  public LocationsResponseDTO getAssignmentLocations(Integer assignmentId, Integer responderId) {
+    Assignment assignment = assignmentDAO.findById(assignmentId)
+        .orElseThrow(() -> new RuntimeException("Assignment not found"));
 
-        if (!assignment.getVehicleId().equals(vehicle.getId())) {
-            throw new RuntimeException("Not authorized");
-        }
+    Vehicle vehicle = vehicleDAO.findByOperatorId(responderId)
+        .orElseThrow(() -> new RuntimeException("No vehicle assigned"));
 
-        // Get latest vehicle location
-        VehicleLocation latestLocation = vehicleLocationDAO
-                .findTopByVehicleIdOrderByTimeStampDesc(vehicle.getId())
-                .orElseThrow(() -> new RuntimeException("No location data for vehicle"));
-
-        LocationDTO vehicleLocation = new LocationDTO(
-                latestLocation.getLatitude(),
-                latestLocation.getLongitude(),
-                latestLocation.getTimeStamp());
-
-        VehicleLocationDTO vehicleDTO = new VehicleLocationDTO(
-                vehicle.getId(),
-                vehicle.getType(),
-                vehicleLocation);
-
-        // Get incident location
-        Incident incident = incidentDAO.findById(assignment.getIncidentId())
-                .orElseThrow(() -> new RuntimeException("Incident not found"));
-
-        LocationDTO incidentLocation = new LocationDTO(
-                incident.getLatitude(),
-                incident.getLongitude(),
-                incident.getTimeReported());
-
-        IncidentLocationDTO incidentDTO = new IncidentLocationDTO(
-                incident.getId(),
-                incident.getType(),
-                incident.getLevel(),
-                incidentLocation);
-
-        return new LocationsResponseDTO(vehicleDTO, incidentDTO);
+    if (!assignment.getVehicleId().equals(vehicle.getId())) {
+      throw new RuntimeException("Not authorized");
     }
 
-    @Transactional
-    public void updateVehicleLocation(Integer responderId, LocationDTO locationDTO) {
-        Vehicle vehicle = vehicleDAO.findByOperatorId(responderId)
-                .orElseThrow(() -> new RuntimeException("No vehicle assigned"));
+    // Get latest vehicle location
+    VehicleLocation latestLocation = vehicleLocationDAO
+        .findTopByVehicleIdOrderByTimeStampDesc(vehicle.getId())
+        .orElseThrow(() -> new RuntimeException("No location data for vehicle"));
 
-        vehicleLocationDAO.saveWithCoordinates(
-                vehicle.getId(),
-                locationDTO.getLatitude(),
-                locationDTO.getLongitude());
+    LocationDTO vehicleLocation = new LocationDTO(
+        latestLocation.getLatitude(),
+        latestLocation.getLongitude(),
+        latestLocation.getTimeStamp());
+
+    VehicleLocationDTO vehicleDTO = new VehicleLocationDTO(
+        vehicle.getId(),
+        vehicle.getType(),
+        vehicleLocation);
+
+    // Get incident location
+    Incident incident = incidentDAO.findById(assignment.getIncidentId())
+        .orElseThrow(() -> new RuntimeException("Incident not found"));
+
+    LocationDTO incidentLocation = new LocationDTO(
+        incident.getLatitude(),
+        incident.getLongitude(),
+        incident.getTimeReported());
+
+    IncidentLocationDTO incidentDTO = new IncidentLocationDTO(
+        incident.getId(),
+        incident.getType(),
+        incident.getLevel(),
+        incidentLocation);
+
+    return new LocationsResponseDTO(vehicleDTO, incidentDTO);
+  }
+
+  @Transactional
+  public void updateVehicleLocation(Integer responderId, LocationDTO locationDTO) {
+    Vehicle vehicle = vehicleDAO.findByOperatorId(responderId)
+        .orElseThrow(() -> new RuntimeException("No vehicle assigned"));
+
+    vehicleLocationDAO.saveWithCoordinates(
+        vehicle.getId(),
+        locationDTO.getLatitude(),
+        locationDTO.getLongitude());
+  }
+
+  @Transactional
+  public void updateStatus(Integer assignmentId, Integer responderId, StatusUpdateDTO statusDTO) {
+    Assignment assignment = assignmentDAO.findById(assignmentId)
+        .orElseThrow(() -> new RuntimeException("Assignment not found"));
+
+    Vehicle vehicle = vehicleDAO.findByOperatorId(responderId)
+        .orElseThrow(() -> new RuntimeException("No vehicle assigned"));
+
+    if (!assignment.getVehicleId().equals(vehicle.getId())) {
+      throw new RuntimeException("Not authorized");
     }
 
-    @Transactional
-    public void updateStatus(Integer assignmentId, Integer responderId, StatusUpdateDTO statusDTO) {
-        Assignment assignment = assignmentDAO.findById(assignmentId)
-                .orElseThrow(() -> new RuntimeException("Assignment not found"));
+    // Validate status transition
+    validateStatusTransition(vehicle.getStatus(), statusDTO.getVehicleStatus());
 
-        Vehicle vehicle = vehicleDAO.findByOperatorId(responderId)
-                .orElseThrow(() -> new RuntimeException("No vehicle assigned"));
-
-        if (!assignment.getVehicleId().equals(vehicle.getId())) {
-            throw new RuntimeException("Not authorized");
-        }
-
-        // Validate status transition
-        validateStatusTransition(vehicle.getStatus(), statusDTO.getVehicleStatus());
-
-        // Update vehicle status
-        if (statusDTO.getVehicleStatus() != null) {
-            vehicleDAO.updateStatus(vehicle.getId(), statusDTO.getVehicleStatus());
-        }
-
-        // Update assignment status
-        if (statusDTO.getAssignmentStatus() != null) {
-            Timestamp timeResolved = null;
-
-            if ("completed".equals(statusDTO.getAssignmentStatus())) {
-                timeResolved = Timestamp.valueOf(LocalDateTime.now());
-
-                // Update incident status
-                incidentDAO.updateStatus(
-                        assignment.getIncidentId(),
-                        "resolved",
-                        timeResolved);
-
-                // Return vehicle to available
-                vehicleDAO.updateStatus(vehicle.getId(), "Available");
-            }
-
-            assignmentDAO.updateStatus(
-                    assignmentId,
-                    statusDTO.getAssignmentStatus(),
-                    timeResolved);
-        }
-
-        // Notify dispatcher
-        User dispatcher = userDAO.findById(assignment.getDispatcherId())
-                .orElse(null);
-
-        if (dispatcher != null) {
-        //     notificationService.notifyDispatcher(
-        //             dispatcher.getId(),
-        //             "STATUS_UPDATE",
-        //             String.format("Vehicle %s updated status: %s",
-        //                     vehicle.getId(),
-        //                     statusDTO.getVehicleStatus()));
-        }
+    // Update vehicle status
+    if (statusDTO.getVehicleStatus() != null) {
+      vehicleDAO.updateStatus(vehicle.getId(), statusDTO.getVehicleStatus());
     }
 
-    public List<AssignmentDTO> getAssignmentHistory(Integer responderId, int page, int size) {
-        Vehicle vehicle = vehicleDAO.findByOperatorId(responderId)
-                .orElseThrow(() -> new RuntimeException("No vehicle assigned"));
+    // Update assignment status
+    if (statusDTO.getAssignmentStatus() != null) {
+      Timestamp timeResolved = null;
 
-        List<Assignment> assignments = assignmentDAO
-                .findByVehicleIdOrderByTimeAssignedDesc(vehicle.getId());
+      if ("completed".equals(statusDTO.getAssignmentStatus())) {
+        timeResolved = Timestamp.valueOf(LocalDateTime.now());
 
-        return assignments.stream()
-                .skip((long) page * size)
-                .limit(size)
-                .map(this::convertToDTO)
-                .collect(Collectors.toList());
+        // Update incident status
+        incidentDAO.updateStatus(
+            assignment.getIncidentId(),
+            "resolved",
+            timeResolved);
+
+        // Return vehicle to available
+        vehicleDAO.updateStatus(vehicle.getId(), "Available");
+      }
+
+      assignmentDAO.updateStatus(
+          assignmentId,
+          statusDTO.getAssignmentStatus(),
+          timeResolved);
     }
 
-    private void validateStatusTransition(String currentStatus, String newStatus) {
-        if (newStatus == null)
-            return;
+    // Notify dispatcher
+    User dispatcher = userDAO.findById(assignment.getDispatcherId())
+        .orElse(null);
 
-        boolean isValid = false;
-        switch (currentStatus) {
-            case "Available":
-                isValid = "On Route".equals(newStatus);
-                break;
-            case "On Route":
-                isValid = "Resolving".equals(newStatus) || "Available".equals(newStatus);
-                break;
-            case "Resolving":
-                isValid = "Available".equals(newStatus);
-                break;
-        }
+    if (dispatcher != null) {
+      notificationService.notifyChannel(
+          "vehicle/status",
+          java.util.Map.of(
+              "dispatcherId", dispatcher.getId(),
+              "vehicleId", vehicle.getId(),
+              "newStatus", statusDTO.getVehicleStatus()));
+    }
+  }
 
-        if (!isValid) {
-            throw new RuntimeException(
-                    String.format("Invalid status transition from %s to %s",
-                            currentStatus, newStatus));
-        }
+  public List<AssignmentDTO> getAssignmentHistory(Integer responderId, int page, int size) {
+    Vehicle vehicle = vehicleDAO.findByOperatorId(responderId)
+        .orElseThrow(() -> new RuntimeException("No vehicle assigned"));
+
+    List<Assignment> assignments = assignmentDAO
+        .findByVehicleIdOrderByTimeAssignedDesc(vehicle.getId());
+
+    return assignments.stream()
+        .skip((long) page * size)
+        .limit(size)
+        .map(this::convertToDTO)
+        .collect(Collectors.toList());
+  }
+
+  private void validateStatusTransition(String currentStatus, String newStatus) {
+    if (newStatus == null)
+      return;
+
+    boolean isValid = false;
+    switch (currentStatus) {
+      case "Available":
+        isValid = "On Route".equals(newStatus);
+        break;
+      case "On Route":
+        isValid = "Resolving".equals(newStatus) || "Available".equals(newStatus);
+        break;
+      case "Resolving":
+        isValid = "Available".equals(newStatus);
+        break;
     }
 
-    private AssignmentDTO convertToDTO(Assignment assignment) {
-        Incident incident = incidentDAO.findById(assignment.getIncidentId())
-                .orElseThrow(() -> new RuntimeException("Incident not found"));
+    if (!isValid) {
+      throw new RuntimeException(
+          String.format("Invalid status transition from %s to %s",
+              currentStatus, newStatus));
+    }
+  }
 
-        Vehicle vehicle = vehicleDAO.findById(assignment.getVehicleId())
-                .orElseThrow(() -> new RuntimeException("Vehicle not found"));
+  private AssignmentDTO convertToDTO(Assignment assignment) {
+    Incident incident = incidentDAO.findById(assignment.getIncidentId())
+        .orElseThrow(() -> new RuntimeException("Incident not found"));
 
-        IncidentDetailsDTO incidentDTO = new IncidentDetailsDTO(
-                incident.getId(),
-                incident.getType(),
-                incident.getLevel(),
-                incident.getDescription(),
-                incident.getLatitude(),
-                incident.getLongitude(),
-                incident.getStatus(),
-                incident.getTimeReported());
+    Vehicle vehicle = vehicleDAO.findById(assignment.getVehicleId())
+        .orElseThrow(() -> new RuntimeException("Vehicle not found"));
 
-        VehicleDetailsDTO vehicleDTO = new VehicleDetailsDTO(
-                vehicle.getId(),
-                vehicle.getType(),
-                vehicle.getStatus(),
-                vehicle.getCapacity());
+    IncidentDetailsDTO incidentDTO = new IncidentDetailsDTO(
+        incident.getId(),
+        incident.getType(),
+        incident.getLevel(),
+        incident.getDescription(),
+        incident.getLatitude(),
+        incident.getLongitude(),
+        incident.getStatus(),
+        incident.getTimeReported());
 
-        return new AssignmentDTO(
-                assignment.getId(),
-                incident.getId(),
-                vehicle.getId(),
-                assignment.getStatus(),
-                assignment.getTimeAssigned(),
-                assignment.getTimeResolved(),
-                incidentDTO,
-                vehicleDTO);
+    VehicleDetailsDTO vehicleDTO = new VehicleDetailsDTO(
+        vehicle.getId(),
+        vehicle.getType(),
+        vehicle.getStatus(),
+        vehicle.getCapacity());
+
+    return new AssignmentDTO(
+        assignment.getId(),
+        incident.getId(),
+        vehicle.getId(),
+        assignment.getStatus(),
+        assignment.getTimeAssigned(),
+        assignment.getTimeResolved(),
+        incidentDTO,
+        vehicleDTO);
+  }
+
+  /**
+   * Get all assignments (active, completed, canceled, rejected)
+   */
+  public List<AssignmentDTO> getAllAssignments(Integer responderId, int page, int size) {
+    Vehicle vehicle = vehicleDAO.findByOperatorId(responderId)
+        .orElseThrow(() -> new RuntimeException("No vehicle assigned to responder"));
+
+    // Get all assignments, not filtered by status
+    List<Assignment> assignments = assignmentDAO
+        .findByVehicleIdOrderByTimeAssignedDesc(vehicle.getId());
+
+    return assignments.stream()
+        .skip((long) page * size)
+        .limit(size)
+        .map(this::convertToDTO)
+        .collect(Collectors.toList());
+  }
+
+  /**
+   * Get notifications for responder
+   */
+  public List<NotificationDTO> getNotifications(Integer responderId, int page, int size) {
+    Vehicle vehicle = vehicleDAO.findByOperatorId(responderId)
+        .orElseThrow(() -> new RuntimeException("No vehicle assigned to responder"));
+
+    List<Notification> notifications = notificationDAO.findPendingByNotifiedId(
+        responderId,
+        size,
+        page * size);
+
+    return notifications.stream()
+        .map(this::convertNotificationToDTO)
+        .collect(Collectors.toList());
+  }
+
+  /**
+   * Respond to assignment (accept or reject)
+   */
+  @Transactional
+  public AssignmentActionResponseDTO respondToAssignment(
+      Integer assignmentId,
+      Integer responderId,
+      String response) {
+
+    Assignment assignment = assignmentDAO.findById(assignmentId)
+        .orElseThrow(() -> new RuntimeException("Assignment not found"));
+
+    Vehicle vehicle = vehicleDAO.findByOperatorId(responderId)
+        .orElseThrow(() -> new RuntimeException("No vehicle assigned"));
+
+    if (!assignment.getVehicleId().equals(vehicle.getId())) {
+      throw new RuntimeException("Not authorized for this assignment");
     }
 
-    /**
-     * Get all assignments (active, completed, canceled, rejected)
-     */
-    public List<AssignmentDTO> getAllAssignments(Integer responderId, int page, int size) {
-        Vehicle vehicle = vehicleDAO.findByOperatorId(responderId)
-                .orElseThrow(() -> new RuntimeException("No vehicle assigned to responder"));
+    Incident incident = incidentDAO.findById(assignment.getIncidentId())
+        .orElseThrow(() -> new RuntimeException("Incident not found"));
 
-        // Get all assignments, not filtered by status
-        List<Assignment> assignments = assignmentDAO
-                .findByVehicleIdOrderByTimeAssignedDesc(vehicle.getId());
+    if ("accepted".equalsIgnoreCase(response)) {
+      // ACCEPT: Update statuses
+      assignmentDAO.updateStatus(assignmentId, "active", null);
+      vehicleDAO.updateStatus(vehicle.getId(), "ON_ROUTE");
+      incidentDAO.updateStatus(assignment.getIncidentId(), "assigned", null);
 
-        return assignments.stream()
-                .skip((long) page * size)
-                .limit(size)
-                .map(this::convertToDTO)
-                .collect(Collectors.toList());
+      // Remove notification
+      notificationDAO.deleteByNotifiedIdAndAssignmentId(responderId, assignmentId);
+
+      notificationService.notifyChannel(
+          "vehicle/assignment",
+          java.util.Map.of(
+              "responderId", responderId,
+              "assignmentId", assignmentId,
+              "response", "ACCEPTED"));
+
+      return new AssignmentActionResponseDTO(
+          true,
+          "Assignment accepted",
+          convertToDTO(assignment),
+          null,
+          null);
+
+    } else if ("rejected".equalsIgnoreCase(response)) {
+      // REJECT: Update statuses
+      assignmentDAO.updateStatus(assignmentId, "rejected", null);
+      // Vehicle stays AVAILABLE
+      incidentDAO.updateStatus(assignment.getIncidentId(), "pending", null);
+
+      // Remove notification
+      notificationDAO.deleteByNotifiedIdAndAssignmentId(responderId, assignmentId);
+
+      notificationService.notifyChannel(
+          "vehicle/assignment",
+          java.util.Map.of(
+              "responderId", responderId,
+              "assignmentId", assignmentId,
+              "response", "REJECTED"));
+
+      return new AssignmentActionResponseDTO(
+          true,
+          "Assignment rejected",
+          null,
+          null,
+          null);
+
+    } else {
+      throw new RuntimeException("Invalid response: " + response);
+    }
+  }
+
+  /**
+   * Cancel assignment
+   */
+  @Transactional
+  public AssignmentActionResponseDTO cancelAssignment(Integer assignmentId, Integer responderId) {
+    Assignment assignment = assignmentDAO.findById(assignmentId)
+        .orElseThrow(() -> new RuntimeException("Assignment not found"));
+
+    Vehicle vehicle = vehicleDAO.findByOperatorId(responderId)
+        .orElseThrow(() -> new RuntimeException("No vehicle assigned"));
+
+    if (!assignment.getVehicleId().equals(vehicle.getId())) {
+      throw new RuntimeException("Not authorized");
     }
 
-    /**
-     * Get notifications for responder
-     */
-    public List<NotificationDTO> getNotifications(Integer responderId, int page, int size) {
-        Vehicle vehicle = vehicleDAO.findByOperatorId(responderId)
-                .orElseThrow(() -> new RuntimeException("No vehicle assigned to responder"));
+    // Update statuses
+    assignmentDAO.updateStatus(assignmentId, "canceled", null);
+    vehicleDAO.updateStatus(vehicle.getId(), "AVAILABLE");
+    incidentDAO.updateStatus(assignment.getIncidentId(), "pending", null);
 
-        List<Notification> notifications = notificationDAO.findPendingByNotifiedId(
-                responderId,
-                size,
-                page * size);
+    notificationService.notifyChannel(
+        "vehicle/assignment",
+        java.util.Map.of(
+            "responderId", responderId,
+            "assignmentId", assignmentId,
+            "response", "CANCELED"));
 
-        return notifications.stream()
-                .map(this::convertNotificationToDTO)
-                .collect(Collectors.toList());
-    }
+    return new AssignmentActionResponseDTO(
+        true,
+        "Assignment cancelled",
+        convertToDTO(assignment),
+        null,
+        null);
+  }
 
-    /**
-     * Respond to assignment (accept or reject)
-     */
-    @Transactional
-    public AssignmentActionResponseDTO respondToAssignment(
-            Integer assignmentId,
-            Integer responderId,
-            String response) {
+  /**
+   * Convert Notification to DTO with full assignment and incident details
+   */
+  private NotificationDTO convertNotificationToDTO(Notification notification) {
+    // Parse the content to extract assignmentId
+    // Assuming content is JSON like: {"assignmentId": 45, "message": "..."}
+    // You'll need a JSON parser or store assignmentId separately
 
-        Assignment assignment = assignmentDAO.findById(assignmentId)
-                .orElseThrow(() -> new RuntimeException("Assignment not found"));
+    // For now, simplified version:
+    NotificationDTO dto = new NotificationDTO();
+    dto.setId(notification.getId());
+    dto.setNotifiedId(notification.getNotifiedId());
+    dto.setNotificationType(notification.getNotificationType());
+    dto.setContent(notification.getContent());
+    dto.setTimeSent(notification.getTimeSent());
+    dto.setTimeDelivered(notification.getTimeDelivered());
 
-        Vehicle vehicle = vehicleDAO.findByOperatorId(responderId)
-                .orElseThrow(() -> new RuntimeException("No vehicle assigned"));
+    // TODO: Parse content to get assignmentId and load full details
+    // For now, return basic notification
 
-        if (!assignment.getVehicleId().equals(vehicle.getId())) {
-            throw new RuntimeException("Not authorized for this assignment");
-        }
-
-        Incident incident = incidentDAO.findById(assignment.getIncidentId())
-                .orElseThrow(() -> new RuntimeException("Incident not found"));
-
-        if ("accepted".equalsIgnoreCase(response)) {
-            // ACCEPT: Update statuses
-            assignmentDAO.updateStatus(assignmentId, "active", null);
-            vehicleDAO.updateStatus(vehicle.getId(), "ON_ROUTE");
-            incidentDAO.updateStatus(assignment.getIncidentId(), "assigned", null);
-
-            // Remove notification
-            notificationDAO.deleteByNotifiedIdAndAssignmentId(responderId, assignmentId);
-
-            // Notify dispatcher
-        //     notificationService.notifyDispatcher(
-        //             assignment.getDispatcherId(),
-        //             "ASSIGNMENT_RESPONSE",
-        //             java.util.Map.of(
-        //                     "assignmentId", assignmentId,
-        //                     "responderId", responderId,
-        //                     "response", "accepted",
-        //                     "message", "Responder accepted the assignment"));
-
-            return new AssignmentActionResponseDTO(
-                    true,
-                    "Assignment accepted",
-                    convertToDTO(assignment),
-                    null,
-                    null);
-
-        } else if ("rejected".equalsIgnoreCase(response)) {
-            // REJECT: Update statuses
-            assignmentDAO.updateStatus(assignmentId, "rejected", null);
-            // Vehicle stays AVAILABLE
-            incidentDAO.updateStatus(assignment.getIncidentId(), "pending", null);
-
-            // Remove notification
-            notificationDAO.deleteByNotifiedIdAndAssignmentId(responderId, assignmentId);
-
-            // Notify dispatcher
-        //     notificationService.notifyDispatcher(
-        //             assignment.getDispatcherId(),
-        //             "ASSIGNMENT_RESPONSE",
-        //             java.util.Map.of(
-        //                     "assignmentId", assignmentId,
-        //                     "responderId", responderId,
-        //                     "response", "rejected",
-        //                     "message", "Responder rejected the assignment"));
-
-            return new AssignmentActionResponseDTO(
-                    true,
-                    "Assignment rejected",
-                    null,
-                    null,
-                    null);
-
-        } else {
-            throw new RuntimeException("Invalid response: " + response);
-        }
-    }
-
-    /**
-     * Cancel assignment
-     */
-    @Transactional
-    public AssignmentActionResponseDTO cancelAssignment(Integer assignmentId, Integer responderId) {
-        Assignment assignment = assignmentDAO.findById(assignmentId)
-                .orElseThrow(() -> new RuntimeException("Assignment not found"));
-
-        Vehicle vehicle = vehicleDAO.findByOperatorId(responderId)
-                .orElseThrow(() -> new RuntimeException("No vehicle assigned"));
-
-        if (!assignment.getVehicleId().equals(vehicle.getId())) {
-            throw new RuntimeException("Not authorized");
-        }
-
-        // Update statuses
-        assignmentDAO.updateStatus(assignmentId, "canceled", null);
-        vehicleDAO.updateStatus(vehicle.getId(), "AVAILABLE");
-        incidentDAO.updateStatus(assignment.getIncidentId(), "pending", null);
-
-        // Notify dispatcher
-        // notificationService.notifyDispatcher(
-        //         assignment.getDispatcherId(),
-        //         "ASSIGNMENT_CANCELLED",
-        //         java.util.Map.of(
-        //                 "assignmentId", assignmentId,
-        //                 "responderId", responderId,
-        //                 "vehicleId", vehicle.getId(),
-        //                 "message", "Responder cancelled the assignment"));
-
-        return new AssignmentActionResponseDTO(
-                true,
-                "Assignment cancelled",
-                convertToDTO(assignment),
-                null,
-                null);
-    }
-
-    /**
-     * Convert Notification to DTO with full assignment and incident details
-     */
-    private NotificationDTO convertNotificationToDTO(Notification notification) {
-        // Parse the content to extract assignmentId
-        // Assuming content is JSON like: {"assignmentId": 45, "message": "..."}
-        // You'll need a JSON parser or store assignmentId separately
-
-        // For now, simplified version:
-        NotificationDTO dto = new NotificationDTO();
-        dto.setId(notification.getId());
-        dto.setNotifiedId(notification.getNotifiedId());
-        dto.setNotificationType(notification.getNotificationType());
-        dto.setContent(notification.getContent());
-        dto.setTimeSent(notification.getTimeSent());
-        dto.setTimeDelivered(notification.getTimeDelivered());
-
-        // TODO: Parse content to get assignmentId and load full details
-        // For now, return basic notification
-
-        return dto;
-    }
+    return dto;
+  }
 }

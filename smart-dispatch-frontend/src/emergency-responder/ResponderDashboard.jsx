@@ -8,19 +8,17 @@ import AssignmentDetails from './AssignmentDetails';
 import './css/responder.css';
 
 const ResponderDashboard = () => {
-  const RESPONDER_ID = 2; // Change this to test different responders
-  const MAX_ITEMS = 20; // Show last 20 items
+  const MAX_ITEMS = 20;
   
   const [profile, setProfile] = useState(null);
   const [assignments, setAssignments] = useState([]);
-  const [notifications, setNotifications] = useState([]);
+  const [newAssignments, setNewAssignments] = useState([]);
   const [selectedAssignment, setSelectedAssignment] = useState(null);
   const [loading, setLoading] = useState(true);
   const [notificationLoading, setNotificationLoading] = useState(false);
   const [wsConnected, setWsConnected] = useState(false);
   const [error, setError] = useState(null);
   
-  // Use refs to prevent duplicate initialization
   const isInitialized = useRef(false);
   const isConnecting = useRef(false);
   const abortControllerRef = useRef(null);
@@ -51,11 +49,10 @@ const ResponderDashboard = () => {
       setLoading(true);
       setError(null);
 
-      // Load profile and all assignments (last 20)
       const [profileRes, assignmentsRes, notificationsRes] = await Promise.all([
-        responderAPI.getProfile(RESPONDER_ID, signal),
-        responderAPI.getAllAssignments(RESPONDER_ID, 0, MAX_ITEMS, signal),
-        responderAPI.getNotifications(RESPONDER_ID, 0, MAX_ITEMS, signal),
+        responderAPI.getProfile(signal),
+        responderAPI.getAllAssignments(0, MAX_ITEMS, signal),
+        responderAPI.getNotifications(0, MAX_ITEMS, signal),
       ]);
 
       // Check if request was aborted
@@ -63,13 +60,13 @@ const ResponderDashboard = () => {
 
       setProfile(profileRes.data);
       setAssignments(assignmentsRes.data);
-      setNotifications(notificationsRes.data);
+      setNewAssignments(notificationsRes.data);
 
-      locationService.handleInitialLocation(RESPONDER_ID);
+      // locationService.handleInitialLocation();
       
       // Connect to WebSocket
       if (!isConnecting.current) {
-        await connectWebSocket(RESPONDER_ID);
+        await connectWebSocket();
       }
 
       setLoading(false);
@@ -86,13 +83,12 @@ const ResponderDashboard = () => {
     }
   };
 
-  const connectWebSocket = async (userId) => {
+  const connectWebSocket = async () => {
     if (isConnecting.current) return;
     isConnecting.current = true;
 
     try {
       await webSocketService.connect(
-        userId,
         () => {
           console.log('WebSocket connected');
           setWsConnected(true);
@@ -103,11 +99,7 @@ const ResponderDashboard = () => {
         }
       );
 
-      // Register message handlers
       webSocketService.onMessage('NEW_ASSIGNMENT', handleNewAssignment);
-      webSocketService.onMessage('ASSIGNMENT_RESPONSE', handleAssignmentResponse);
-      webSocketService.onMessage('ASSIGNMENT_CANCELLED', handleAssignmentCancelled);
-      webSocketService.onMessage('STATUS_UPDATE', handleStatusUpdate);
     } catch (error) {
       console.error('Failed to connect WebSocket:', error);
       setWsConnected(false);
@@ -119,82 +111,24 @@ const ResponderDashboard = () => {
   const handleNewAssignment = (message) => {
     console.log('New assignment notification received:', message);
 
-    // Add to notifications list (keep last 20)
-    setNotifications(prev => {
-      const updated = [message.payload, ...prev];
-      return updated.slice(0, MAX_ITEMS);
-    });
+    setNewAssignments(prev => [message.data, ...prev].slice(0, MAX_ITEMS));
 
-    // Show browser notification
-    if ('Notification' in window && Notification.permission === 'granted') {
-      new Notification('New Assignment Request', {
-        body: `New ${message.payload.incident?.type} incident`,
-        icon: '/emergency-icon.png',
-        tag: `assignment-${message.payload.assignment?.id}`,
-      });
-    }
-
-    // Play sound or vibrate
     if ('vibrate' in navigator) {
       navigator.vibrate([200, 100, 200]);
     }
   };
 
-  const handleAssignmentResponse = (message) => {
-    console.log('Assignment response received:', message);
-    
-    // Show notification about response
-    if ('Notification' in window && Notification.permission === 'granted') {
-      new Notification('Assignment Update', {
-        body: message.payload.message || 'Assignment status updated',
-      });
-    }
-
-    // Reload assignments
-    loadAssignments();
-  };
-
-  const handleAssignmentCancelled = (message) => {
-    console.log('Assignment cancelled:', message);
-
-    // Remove from notifications if exists
-    setNotifications(prev => 
-      prev.filter(n => n.assignment?.id !== message.payload.assignmentId)
-    );
-
-    // Show notification
-    if ('Notification' in window && Notification.permission === 'granted') {
-      new Notification('Assignment Cancelled', {
-        body: 'An assignment has been cancelled',
-      });
-    }
-
-    // Reload assignments
-    loadAssignments();
-  };
-
-  const handleStatusUpdate = (message) => {
-    console.log('Status update:', message);
-    loadAssignments();
-  };
-
-  const handleAcceptNotification = async (notification) => {
+  const handleAcceptAssignment = async (assignment) => {
     try {
       setNotificationLoading(true);
 
-      // Send acceptance response
-      await responderAPI.respondToAssignment(
-        notification.assignment.id,
-        RESPONDER_ID,
-        { response: 'accepted' }
+      assignment.status = "ACTIVE";
+      await responderAPI.respondToAssignment(assignment);
+
+      setNewAssignments(prev => 
+        prev.filter(n => n.id !== assignment.id)
       );
 
-      // Remove from notifications
-      setNotifications(prev => 
-        prev.filter(n => n.id !== notification.id)
-      );
-
-      // Reload assignments to show the new active assignment
       await loadAssignments();
 
       setNotificationLoading(false);
@@ -208,20 +142,17 @@ const ResponderDashboard = () => {
     }
   };
 
-  const handleRejectNotification = async (notification) => {
+  const handleRejectAssignment = async (assignment) => {
     try {
       setNotificationLoading(true);
 
       // Send rejection response
-      await responderAPI.respondToAssignment(
-        notification.assignment.id,
-        RESPONDER_ID,
-        { response: 'rejected' }
-      );
+      assignment.status = "REJECTED";
+      await responderAPI.respondToAssignment(assignment);
 
       // Remove from notifications
-      setNotifications(prev => 
-        prev.filter(n => n.id !== notification.id)
+      setNewAssignments(prev => 
+        prev.filter(n => n.id !== assignment.id)
       );
 
       setNotificationLoading(false);
@@ -237,7 +168,7 @@ const ResponderDashboard = () => {
 
   const loadAssignments = async () => {
     try {
-      const response = await responderAPI.getAllAssignments(RESPONDER_ID, 0, MAX_ITEMS);
+      const response = await responderAPI.getAllAssignments(0, MAX_ITEMS);
       setAssignments(response.data);
     } catch (error) {
       if (error.name === 'CanceledError' || error.code === 'ECONNABORTED') {
@@ -248,26 +179,15 @@ const ResponderDashboard = () => {
   };
 
   const handleAssignmentClick = (assignment) => {
-    // Only allow viewing active assignments
-    if (assignment.status === 'active') {
+    if (assignment.status === 'ACTIVE') {
       setSelectedAssignment(assignment);
     }
   };
 
   const handleBackToDashboard = () => {
     setSelectedAssignment(null);
-    loadAssignments(); // Refresh assignments
+    loadAssignments();
   };
-
-  const requestNotificationPermission = async () => {
-    if ('Notification' in window && Notification.permission === 'default') {
-      await Notification.requestPermission();
-    }
-  };
-
-  useEffect(() => {
-    requestNotificationPermission();
-  }, []);
 
   if (loading) {
     return (
@@ -298,7 +218,6 @@ const ResponderDashboard = () => {
     return (
       <AssignmentDetails
         assignmentId={selectedAssignment.id}
-        responderId={RESPONDER_ID}
         onBack={handleBackToDashboard}
       />
     );
@@ -344,9 +263,9 @@ const ResponderDashboard = () => {
         {/* Left Side - Notifications */}
         <div className="dashboard-notifications">
           <NotificationPanel
-            notifications={notifications}
-            onAccept={handleAcceptNotification}
-            onReject={handleRejectNotification}
+            newAssignments={newAssignments}
+            onAccept={handleAcceptAssignment}
+            onReject={handleRejectAssignment}
             loading={notificationLoading}
           />
         </div>
