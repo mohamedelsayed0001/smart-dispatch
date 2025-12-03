@@ -25,7 +25,7 @@ export default function Signup() {
       }
       // apiSignup stores token and user already
       setLoading(false)
-      navigate('/dispatcher')
+      navigate('/reportform')
     } catch (err) {
       console.error('Signup error', err)
       setError(err.message || 'Network error')

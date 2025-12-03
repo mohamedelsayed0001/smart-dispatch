@@ -24,7 +24,7 @@ export default function Login() {
       const data = await apiLogin(email, password)
       // apiLogin stores token and user already
       setLoading(false)
-      navigate('/dispatcher')
+      navigate(`/${data.role}`)
     } catch (err) {
       console.error('Login error', err)
       setError(err.message || 'Network error')

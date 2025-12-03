@@ -126,7 +126,7 @@ export default function DispatcherDashboard() {
           'CANCELED': 'warning',
           'PENDING': 'info'
         }[assignment.respone?.toUpperCase()] || 'info'
-          
+
         showToast(message, toastType)
       },
       onIncident: (incident) => {
@@ -194,8 +194,8 @@ export default function DispatcherDashboard() {
             } />
             <Route path="map" element={<VehicleMap />} />
             <Route path="pending" element={<PendingIncidents />} />
-            <Route path="active" element={<ActiveAssignments />} />
-            <Route path="vehicles" element={<AvailableVehicles />} />
+            <Route path="active" element={<ActiveAssignments showToast={showToast} />} />
+            <Route path="vehicles" element={<AvailableVehicles showToast={showToast} />} />
           </Routes>
         </div>
       </div>
