@@ -1,16 +1,16 @@
 /* Dispatcher Dashboard Styles - Matching AdminPage with Dark Mode Support */
 
-/* Light Mode (Default) */
+/* Default set to dark styling for dispatcher (use dark theme visuals by default) */
 :root {
-    --dispatcher-bg: #f9fafb;
-    --dispatcher-sidebar-bg: white;
-    --dispatcher-text-primary: #1f2937;
-    --dispatcher-text-secondary: #6b7280;
-    --dispatcher-border: #e5e7eb;
-    --dispatcher-hover: #f3f4f6;
+    --dispatcher-bg: #000000;
+    --dispatcher-sidebar-bg: #0b0b0b;
+    --dispatcher-text-primary: #ffffff;
+    --dispatcher-text-secondary: #cbd5e1;
+    --dispatcher-border: rgba(255, 255, 255, 0.06);
+    --dispatcher-hover: rgba(255, 255, 255, 0.04);
     --dispatcher-accent: #E11D2F;
-    --dispatcher-accent-hover: #c41828;
-    --dispatcher-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    --dispatcher-accent-hover: #ff2a3f;
+    --dispatcher-shadow: 0 10px 30px rgba(2, 6, 23, 0.65);
 }
 
 /* Dark Mode */
@@ -33,6 +33,114 @@
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
     transition: background-color 0.3s ease;
     color: var(--dispatcher-text-primary);
+}
+
+/* Ensure any white-background utilities used inside dispatcher have readable (black) text */
+.dispatcher-container .bg-white,
+.dispatcher-container .bg-white * {
+    color: #000 !important;
+}
+
+/* Ensure native form controls (select/options, inputs) inside dispatcher are readable */
+.dispatcher-container select,
+.dispatcher-container select option,
+.dispatcher-container input,
+.dispatcher-container textarea {
+    color: #000 !important;
+    background: #fff !important;
+}
+
+/* Dispatcher button styles (red / black / white theme) */
+.dispatcher-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.18s ease;
+}
+
+.dispatcher-btn--primary {
+    background: var(--dispatcher-accent);
+    color: #fff;
+    border: 1px solid transparent;
+    box-shadow: 0 4px 8px rgba(225, 29, 47, 0.12);
+}
+
+.dispatcher-btn--primary:hover {
+    background: var(--dispatcher-accent-hover);
+}
+
+.dispatcher-btn--dark {
+    background: #000;
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.dispatcher-btn--dark:hover {
+    background: #111;
+}
+
+.dispatcher-btn--outline {
+    background: #fff;
+    color: var(--dispatcher-accent);
+    border: 1px solid var(--dispatcher-accent);
+}
+
+.dispatcher-btn--outline:hover {
+    background: var(--dispatcher-accent);
+    color: #fff;
+}
+
+.dispatcher-btn--neutral {
+    background: var(--dispatcher-sidebar-bg);
+    color: var(--dispatcher-text-primary);
+    border: 1px solid var(--dispatcher-border);
+}
+
+.dispatcher-btn--neutral:hover {
+    filter: brightness(1.05);
+}
+
+.dispatcher-btn--assign {
+    background: #fff;
+    color: #000;
+    border: 1px solid var(--dispatcher-accent);
+    box-shadow: 0 2px 4px rgba(225, 29, 47, 0.15);
+}
+
+.dispatcher-btn--assign:hover {
+    background: var(--dispatcher-accent);
+    color: #fff;
+    border-color: var(--dispatcher-accent);
+    box-shadow: 0 4px 8px rgba(225, 29, 47, 0.3);
+}
+
+.dispatcher-btn--confirm {
+    background: #10b981;
+    color: #fff;
+    border: 1px solid #059669;
+    box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
+}
+
+.dispatcher-btn--confirm:hover {
+    background: #059669;
+    box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3);
+}
+
+.dispatcher-btn--cancel {
+    background: #ef4444;
+    color: #fff;
+    border: 1px solid #dc2626;
+    box-shadow: 0 2px 4px rgba(239, 68, 68, 0.2);
+}
+
+.dispatcher-btn--cancel:hover {
+    background: #dc2626;
+    box-shadow: 0 4px 8px rgba(239, 68, 68, 0.3);
 }
 
 /* Dispatcher Sidebar */
@@ -119,12 +227,13 @@
     border-top: 1px solid var(--dispatcher-border);
 }
 
+
 .dispatcher-logout-btn {
     width: 100%;
     padding: 12px 16px;
     border-radius: 8px;
     border: 1px solid var(--dispatcher-accent);
-    background: white;
+    background: var(--dispatcher-sidebar-bg);
     color: var(--dispatcher-accent);
     font-weight: 600;
     cursor: pointer;

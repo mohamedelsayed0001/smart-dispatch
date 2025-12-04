@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { connect, disconnect } from '../../utils/dispatcherSocket'
 import { fetchAssignments, reassignAssignment, fetchAvailableVehicles, getCurrentDispatcherId } from '../../utils/dispatcherApi'
 
-export default function Assignment({assignments, setAssignments}) {
+export default function Assignment({ assignments, setAssignments }) {
   const navigate = useNavigate()
   // const [assignments, setAssignments] = useState([])
   const [showReassignModal, setShowReassignModal] = useState(false)
@@ -79,9 +79,9 @@ export default function Assignment({assignments, setAssignments}) {
           const canReassign = a.status?.toUpperCase() === 'PENDING' || a.status?.toUpperCase() === 'REJECTED'
 
           return (
-            <div key={a.id} className="p-3 rounded bg-white shadow flex items-center justify-between">
+            <div key={a.id} className="p-3 rounded bg-white shadow flex items-center justify-between" data-assignment-id={a.id}>
               <div>
-                <div className="font-medium">#{a.id} — {a.description}</div>
+                <div className="font-medium">{a.description}</div>
                 <div className="text-sm text-gray-500">
                   Vehicle: {a.vehicle?.name || a.vehicleId} • Status:
                   <span className={`ml-1 font-medium ${a.status?.toUpperCase() === 'PENDING' ? 'text-amber-600' :
@@ -97,33 +97,49 @@ export default function Assignment({assignments, setAssignments}) {
               </div>
               <div className="flex gap-2">
                 <button
-                  className="px-3 py-1 bg-white border border-[#E11D2F] text-[#E11D2F] rounded hover:bg-[#E11D2F] hover:text-white transition-colors"
+                  className="px-3 py-1 dispatcher-btn dispatcher-btn--outline"
                   onClick={() => {
-                    // Get vehicle coordinates
-                    const vehicle = a.vehicle
+                    // Get incident coordinates (prioritize incident location over vehicle)
+                    const incident = a.incident
                     let lat, lng
 
-                    // Try different possible coordinate formats
-                    if (vehicle?.lat && vehicle?.lng) {
-                      lat = vehicle.lat
-                      lng = vehicle.lng
-                    } else if (vehicle?.latitude && vehicle?.longitude) {
-                      lat = vehicle.latitude
-                      lng = vehicle.longitude
-                    } else if (vehicle?.currentLatitude && vehicle?.currentLongitude) {
-                      lat = vehicle.currentLatitude
-                      lng = vehicle.currentLongitude
-                    } else if (vehicle?.location?.lat && vehicle?.location?.lng) {
-                      lat = vehicle.location.lat
-                      lng = vehicle.location.lng
-                    } else if (vehicle?.location?.coordinates && Array.isArray(vehicle.location.coordinates)) {
-                      lng = vehicle.location.coordinates[0]
-                      lat = vehicle.location.coordinates[1]
+                    // Try to get incident location first
+                    if (incident?.lat && incident?.lng) {
+                      lat = incident.lat
+                      lng = incident.lng
+                    } else if (incident?.latitude && incident?.longitude) {
+                      lat = incident.latitude
+                      lng = incident.longitude
+                    } else if (incident?.location?.lat && incident?.location?.lng) {
+                      lat = incident.location.lat
+                      lng = incident.location.lng
+                    } else if (incident?.location?.coordinates && Array.isArray(incident.location.coordinates)) {
+                      lng = incident.location.coordinates[0]
+                      lat = incident.location.coordinates[1]
+                    } else {
+                      // Fallback to vehicle location if incident location not available
+                      const vehicle = a.vehicle
+                      if (vehicle?.lat && vehicle?.lng) {
+                        lat = vehicle.lat
+                        lng = vehicle.lng
+                      } else if (vehicle?.latitude && vehicle?.longitude) {
+                        lat = vehicle.latitude
+                        lng = vehicle.longitude
+                      } else if (vehicle?.currentLatitude && vehicle?.currentLongitude) {
+                        lat = vehicle.currentLatitude
+                        lng = vehicle.currentLongitude
+                      } else if (vehicle?.location?.lat && vehicle?.location?.lng) {
+                        lat = vehicle.location.lat
+                        lng = vehicle.location.lng
+                      } else if (vehicle?.location?.coordinates && Array.isArray(vehicle.location.coordinates)) {
+                        lng = vehicle.location.coordinates[0]
+                        lat = vehicle.location.coordinates[1]
+                      }
                     }
 
-                    // Navigate to map with coordinates
+                    // Navigate to map with coordinates and maximum zoom
                     if (lat && lng) {
-                      navigate(`/dispatcher/map?lat=${lat}&lng=${lng}`)
+                      navigate(`/dispatcher/map?lat=${lat}&lng=${lng}&zoom=18`)
                     } else {
                       // If no coordinates, just navigate to map
                       navigate('/dispatcher/map')
@@ -134,7 +150,7 @@ export default function Assignment({assignments, setAssignments}) {
                 </button>
                 {canReassign && (
                   <button
-                    className="px-3 py-1 bg-white border border-[#E11D2F] text-[#E11D2F] rounded hover:bg-[#E11D2F] hover:text-white transition-colors"
+                    className="px-3 py-1 dispatcher-btn dispatcher-btn--outline"
                     onClick={async () => {
                       setReassigningAssignment(a)
                       console.log("")
@@ -183,7 +199,7 @@ export default function Assignment({assignments, setAssignments}) {
                     </div>
                     <div>
                       <button
-                        className="px-3 py-1 rounded bg-gray-900 text-white text-sm hover:bg-gray-800 transition-colors"
+                        className="px-3 py-1 dispatcher-btn dispatcher-btn--confirm text-sm"
                         onClick={async () => {
                           try {
                             const dispatcherId = getCurrentDispatcherId()

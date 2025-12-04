@@ -1,15 +1,15 @@
 /* Global CSS Variables for Emergency Response System */
 :root {
-  /* Primary Colors */
-  --primary-color: #2563eb;
-  --primary-hover: #1d4ed8;
-  --primary-light: #dbeafe;
-  --primary-dark: #1e40af;
+  /* Primary Colors - Matching Dispatcher Theme */
+  --primary-color: #E11D2F;
+  --primary-hover: #ff2a3f;
+  --primary-light: #ff4d5e;
+  --primary-dark: #c01828;
 
   /* Status Colors */
   --status-available: #10b981;
-  --status-on-route: #3b82f6;
-  --status-resolving: #f59e0b;
+  --status-on-route: #f59e0b;
+  --status-resolving: #ef4444;
   --status-offline: #6b7280;
 
   /* Severity Colors */
@@ -23,27 +23,27 @@
   --incident-fire: #f97316;
   --incident-police: #3b82f6;
 
-  /* Neutral Colors */
-  --bg-primary: #ffffff;
-  --bg-secondary: #f9fafb;
-  --bg-tertiary: #f3f4f6;
-  --bg-dark: #1f2937;
+  /* Neutral Colors - Dark Theme */
+  --bg-primary: #0b0b0b;
+  --bg-secondary: #000000;
+  --bg-tertiary: #1a1a1a;
+  --bg-dark: #000000;
 
-  --text-primary: #111827;
-  --text-secondary: #6b7280;
+  --text-primary: #ffffff;
+  --text-secondary: #cbd5e1;
   --text-tertiary: #9ca3af;
-  --text-inverse: #ffffff;
+  --text-inverse: #000000;
 
   /* Border Colors */
-  --border-light: #e5e7eb;
-  --border-medium: #d1d5db;
-  --border-dark: #9ca3af;
+  --border-light: rgba(255, 255, 255, 0.06);
+  --border-medium: rgba(255, 255, 255, 0.1);
+  --border-dark: rgba(255, 255, 255, 0.15);
 
   /* Shadow */
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.6);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.7);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.8);
 
   /* Spacing */
   --spacing-xs: 0.25rem;
@@ -89,28 +89,12 @@
   /* Map specific */
   --map-height: calc(100vh - 4rem);
   --map-marker-size: 32px;
-  --route-color: #2563eb;
+  --route-color: #E11D2F;
   --route-width: 4px;
 }
 
-/* Dark mode support (optional) */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg-primary: #1f2937;
-    --bg-secondary: #111827;
-    --bg-tertiary: #374151;
-    --bg-dark: #030712;
+/* Dark theme is now the default - no media query needed */
 
-    --text-primary: #f9fafb;
-    --text-secondary: #d1d5db;
-    --text-tertiary: #9ca3af;
-    --text-inverse: #111827;
-
-    --border-light: #374151;
-    --border-medium: #4b5563;
-    --border-dark: #6b7280;
-  }
-}
 
 /* Global Resets */
 * {
@@ -141,6 +125,7 @@
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-md);
   border: 1px solid var(--border-light);
+  color: var(--text-primary);
 }
 
 .btn {
@@ -155,26 +140,40 @@
 
 .btn-primary {
   background-color: var(--primary-color);
-  color: var(--text-inverse);
+  color: var(--text-primary);
+  box-shadow: 0 2px 4px rgba(225, 29, 47, 0.2);
 }
 
 .btn-primary:hover {
   background-color: var(--primary-hover);
+  box-shadow: 0 4px 8px rgba(225, 29, 47, 0.3);
 }
 
 .btn-success {
   background-color: var(--status-available);
-  color: var(--text-inverse);
+  color: var(--text-primary);
+}
+
+.btn-success:hover {
+  background-color: #059669;
 }
 
 .btn-warning {
   background-color: var(--status-resolving);
-  color: var(--text-inverse);
+  color: var(--text-primary);
+}
+
+.btn-warning:hover {
+  background-color: #dc2626;
 }
 
 .btn-danger {
   background-color: var(--severity-critical);
-  color: var(--text-inverse);
+  color: var(--text-primary);
+}
+
+.btn-danger:hover {
+  background-color: #b91c1c;
 }
 
 .badge {

@@ -49,8 +49,8 @@ export default function AssignModal({ incident, onClose, onAssigned }) {
           ))}
         </div>
         <div className="mt-4 flex justify-end gap-2">
-          <button className="px-3 py-1 rounded bg-gray-900 text-white" onClick={onClose} disabled={loading}>Cancel</button>
-          <button className="px-3 py-1 rounded bg-gray-900 text-white" onClick={assign} disabled={!selected || loading}>{loading ? 'Assigning…' : 'Confirm Assign'}</button>
+          <button className="px-3 py-1 dispatcher-btn dispatcher-btn--cancel" onClick={onClose} disabled={loading}>Cancel</button>
+          <button className="px-3 py-1 dispatcher-btn dispatcher-btn--confirm" onClick={assign} disabled={!selected || loading}>{loading ? 'Assigning…' : 'Confirm'}</button>
         </div>
       </div>
     </div>

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { fetchAvailableVehicles } from '../../utils/dispatcherApi'
 import { connect, disconnect } from '../../utils/dispatcherSocket'
 
-export default function AvailableVehicles({vehicles, setVehicles}) {
+export default function AvailableVehicles({ vehicles, setVehicles }) {
   // const [vehicles, setVehicles] = useState([])
   const [loading, setLoading] = useState(true)
   const navigate = useNavigate()
@@ -73,7 +73,7 @@ export default function AvailableVehicles({vehicles, setVehicles}) {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
         {vehicles.map((v) => (
-          <div key={v.id} className="p-3 rounded bg-white shadow">
+          <div key={v.id} className="p-3 rounded bg-white shadow" data-vehicle-id={v.id}>
             <div className="flex items-center justify-between">
               <div>
                 <div className="font-medium">{v.name || `Vehicle ${v.id}`}</div>
@@ -84,9 +84,9 @@ export default function AvailableVehicles({vehicles, setVehicles}) {
             <div className="mt-3 text-sm text-gray-500">Last known: {Number.isFinite(v.lat) && Number.isFinite(v.lng) ? `${v.lat.toFixed(3)}, ${v.lng.toFixed(3)}` : 'N/A'}</div>
             <div className="mt-3">
               <button
-                className="px-3 py-1 rounded bg-gray-900 text-white text-sm"
+                className="px-3 py-1 dispatcher-btn dispatcher-btn--outline text-sm"
                 onClick={() => {
-                  if (Number.isFinite(v.lat) && Number.isFinite(v.lng)) navigate(`/dispatcher/map?lat=${v.lat}&lng=${v.lng}`)
+                  if (Number.isFinite(v.lat) && Number.isFinite(v.lng)) navigate(`/dispatcher/map?lat=${v.lat}&lng=${v.lng}&zoom=18`)
                   else navigate('/dispatcher/map')
                 }}
               >

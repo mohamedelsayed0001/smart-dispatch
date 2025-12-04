@@ -94,7 +94,7 @@ export default function VehicleMap({ height = '100vh' }) {
       const lonNum = parseFloat(lon)
       if (mapRef.current && !Number.isNaN(latNum) && !Number.isNaN(lonNum)) {
         setHighlightPosition([latNum, lonNum])
-        mapRef.current.flyTo([latNum, lonNum], 16)
+        mapRef.current.flyTo([latNum, lonNum], 18)
       }
     } catch (e) {
       console.error('Search error', e)
@@ -128,7 +128,7 @@ export default function VehicleMap({ height = '100vh' }) {
     const lonNum = parseFloat(item.lon)
     if (mapRef.current && !Number.isNaN(latNum) && !Number.isNaN(lonNum)) {
       setHighlightPosition([latNum, lonNum])
-      mapRef.current.flyTo([latNum, lonNum], 16)
+      mapRef.current.flyTo([latNum, lonNum], 18)
     }
   }
 
@@ -185,7 +185,7 @@ export default function VehicleMap({ height = '100vh' }) {
     const lng = parseFloat(params.get('lng'))
     if (!Number.isNaN(lat) && !Number.isNaN(lng)) {
       setHighlightPosition([lat, lng])
-      const tryFly = () => { if (mapRef.current) mapRef.current.flyTo([lat, lng], 16) }
+      const tryFly = () => { if (mapRef.current) mapRef.current.flyTo([lat, lng], 18) }
       if (mapRef.current) tryFly()
       else {
         const id = setInterval(() => { if (mapRef.current) { tryFly(); clearInterval(id) } }, 200)
@@ -214,7 +214,7 @@ export default function VehicleMap({ height = '100vh' }) {
               placeholder="Search place, address or vehicle"
               className="px-3 py-2 border border-gray-200 rounded w-80 text-sm focus:outline-none focus:border-blue-500"
             />
-            <button onClick={() => handleSearch()} className="px-3 py-2 bg-gray-900 text-white rounded text-sm hover:bg-gray-800 transition-colors">Search</button>
+            <button onClick={() => handleSearch()} className="px-3 py-2 dispatcher-btn dispatcher-btn--primary text-sm">Search</button>
 
             {suggestions.length > 0 && (
               <div className="absolute top-full left-0 mt-1 w-full bg-white rounded shadow-lg z-50 overflow-hidden border border-gray-100">

@@ -78,19 +78,19 @@ export default function PendingIncidents() {
             </select>
           </div>
 
-          <button className="px-3 py-2 bg-white border rounded text-black" onClick={() => { setTypeFilter('ALL'); setLevelFilter('ALL') }}>Clear</button>
+          <button className="px-3 py-2 dispatcher-btn dispatcher-btn--outline" onClick={() => { setTypeFilter('ALL'); setLevelFilter('ALL') }}>Clear</button>
         </div>
       </div>
 
       <div className="grid gap-3">
         {filteredIncidents.map((inc) => (
-          <div key={inc.id} className="p-3 rounded bg-white shadow flex items-start justify-between">
+          <div key={inc.id} className="p-3 rounded bg-white shadow flex items-start justify-between" data-incident-id={inc.id}>
             <div>
-              <div className="font-medium">Incident #{inc.id} — {inc.type || inc.status || 'Unknown'}</div>
+              <div className="font-medium">{inc.type || inc.status || 'Unknown'} Incident</div>
               <div className="text-sm text-gray-500">{inc.address || inc.description || 'No address'} • {inc.time || ''}</div>
             </div>
             <div className="flex flex-col gap-2">
-              <button className="px-3 py-1 bg-gray-900 text-white rounded" onClick={() => openAssign(inc)}>Assign</button>
+              <button className="px-3 py-1 dispatcher-btn dispatcher-btn--assign" onClick={() => openAssign(inc)}>Assign</button>
             </div>
           </div>
         ))}
