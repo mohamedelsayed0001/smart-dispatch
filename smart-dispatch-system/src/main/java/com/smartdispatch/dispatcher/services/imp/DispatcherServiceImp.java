@@ -123,7 +123,8 @@ public class DispatcherServiceImp implements DispatcherService {
         AssignmentDto assignmentDto = assignmentMapper.mapTO(assignment);
         assignmentDto.setIncidentType(incident.getType());
         assignmentDto.setDescription(incident.getDescription());
-        
+        assignmentDto.setCurrentLatitude(vehicle.getCurrentLatitude());
+        assignmentDto.setCurrentLongitude(vehicle.getCurrentLongitude());
         notificationService.notifyUser(
                 String.valueOf(vehicle.getOperatorId()),
                 "/assignment",
@@ -166,7 +167,7 @@ public class DispatcherServiceImp implements DispatcherService {
         Assignment updated = assignmentDao.findById(request.getAssignmentId());
         AssignmentDto dto = assignmentMapper.mapTO(updated);
         Incident incident = incidentDao.findById(existing.getIncidentId());
-        
+    
         if (incident == null) {
              throw new IllegalStateException("Incident not found");
         }
@@ -177,7 +178,8 @@ public class DispatcherServiceImp implements DispatcherService {
 
         dto.setIncidentType(incident.getType());
         dto.setDescription(incident.getDescription());
-        
+        dto.setCurrentLatitude(newVehicle.getCurrentLatitude());
+        dto.setCurrentLongitude(newVehicle.getCurrentLongitude());
         Vehicle vehicle = vehicleDao.findById(updated.getVehicleId());
         notificationService.notifyUser(
                 String.valueOf(vehicle.getOperatorId()),

@@ -99,25 +99,44 @@ export default function Assignment({ assignments, setAssignments }) {
                 <button
                   className="px-3 py-1 dispatcher-btn dispatcher-btn--outline"
                   onClick={() => {
-                    // Get incident coordinates (prioritize incident location over vehicle)
-                    const incident = a.incident
+                    // Prefer coordinates attached directly to the assignment, then incident, then vehicle
                     let lat, lng
 
-                    // Try to get incident location first
-                    if (incident?.lat && incident?.lng) {
-                      lat = incident.lat
-                      lng = incident.lng
-                    } else if (incident?.latitude && incident?.longitude) {
-                      lat = incident.latitude
-                      lng = incident.longitude
-                    } else if (incident?.location?.lat && incident?.location?.lng) {
-                      lat = incident.location.lat
-                      lng = incident.location.lng
-                    } else if (incident?.location?.coordinates && Array.isArray(incident.location.coordinates)) {
-                      lng = incident.location.coordinates[0]
-                      lat = incident.location.coordinates[1]
-                    } else {
-                      // Fallback to vehicle location if incident location not available
+                    // 1) Assignment-level coordinates (new fields you added)
+                    if (a?.lat && a?.lng) {
+                      lat = a.lat
+                      lng = a.lng
+                    } else if (a?.latitude && a?.longitude) {
+                      lat = a.latitude
+                      lng = a.longitude
+                    } else if (a?.location?.lat && a?.location?.lng) {
+                      lat = a.location.lat
+                      lng = a.location.lng
+                    } else if (a?.location?.coordinates && Array.isArray(a.location.coordinates)) {
+                      lng = a.location.coordinates[0]
+                      lat = a.location.coordinates[1]
+                    }
+
+                    // 2) Incident coordinates
+                    const incident = a.incident
+                    if ((!Number.isFinite(lat) || !Number.isFinite(lng)) && incident) {
+                      if (incident?.lat && incident?.lng) {
+                        lat = incident.lat
+                        lng = incident.lng
+                      } else if (incident?.latitude && incident?.longitude) {
+                        lat = incident.latitude
+                        lng = incident.longitude
+                      } else if (incident?.location?.lat && incident?.location?.lng) {
+                        lat = incident.location.lat
+                        lng = incident.location.lng
+                      } else if (incident?.location?.coordinates && Array.isArray(incident.location.coordinates)) {
+                        lng = incident.location.coordinates[0]
+                        lat = incident.location.coordinates[1]
+                      }
+                    }
+
+                    // 3) Vehicle coordinates (fallback)
+                    if ((!Number.isFinite(lat) || !Number.isFinite(lng)) && a.vehicle) {
                       const vehicle = a.vehicle
                       if (vehicle?.lat && vehicle?.lng) {
                         lat = vehicle.lat
@@ -138,7 +157,7 @@ export default function Assignment({ assignments, setAssignments }) {
                     }
 
                     // Navigate to map with coordinates and maximum zoom
-                    if (lat && lng) {
+                    if (Number.isFinite(Number(lat)) && Number.isFinite(Number(lng))) {
                       navigate(`/dispatcher/map?lat=${lat}&lng=${lng}&zoom=18`)
                     } else {
                       // If no coordinates, just navigate to map

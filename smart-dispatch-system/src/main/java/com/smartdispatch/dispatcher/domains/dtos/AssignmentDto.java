@@ -20,4 +20,6 @@ public class AssignmentDto {
     private LocalDateTime timeAssigned;
     private LocalDateTime timeResolved;
     private String status;
+    private Double currentLatitude;
+    private Double currentLongitude;
 }
