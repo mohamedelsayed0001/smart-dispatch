@@ -33,7 +33,7 @@ public class LocationTrackService {
                 return;
             }
 
-            System.out.println("📡 Broadcasting locations for " + carIds.size() + " vehicles");
+            // System.out.println("📡 Broadcasting locations for " + carIds.size() + " vehicles");
 
             for (Long carId : carIds) {
                 try {
@@ -72,7 +72,7 @@ public class LocationTrackService {
 
 
                     } catch (Exception e) {
-            System.err.println("❌ Error broadcasting location: " + e.getMessage());
+            // System.err.println("❌ Error broadcasting location: " + e.getMessage());
             e.printStackTrace();
         }
     }

@@ -3,9 +3,9 @@ import { useNavigate } from 'react-router-dom'
 import { connect, disconnect } from '../../utils/dispatcherSocket'
 import { fetchAssignments, reassignAssignment, fetchAvailableVehicles, getCurrentDispatcherId } from '../../utils/dispatcherApi'
 
-export default function Assignment() {
+export default function Assignment({assignments, setAssignments}) {
   const navigate = useNavigate()
-  const [assignments, setAssignments] = useState([])
+  // const [assignments, setAssignments] = useState([])
   const [showReassignModal, setShowReassignModal] = useState(false)
   const [reassigningAssignment, setReassigningAssignment] = useState(null)
   const [availableVehicles, setAvailableVehicles] = useState([])

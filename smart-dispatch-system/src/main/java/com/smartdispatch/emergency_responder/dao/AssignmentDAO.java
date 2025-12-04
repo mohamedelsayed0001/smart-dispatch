@@ -22,6 +22,8 @@ public class AssignmentDAO {
 
   private static final String UPDATE_STATUS = "UPDATE Assignment SET status = ?, time_resolved = ? WHERE id = ?";
 
+  private static final String UPDATE_STATUS_WITH_CURRENT_TIME = "UPDATE Assignment SET status = ?, time_resolved = CURRENT_TIMESTAMP WHERE id = ?";
+
   private final RowMapper<Assignment> assignmentRowMapper = (rs, rowNum) -> {
     Assignment assignment = new Assignment();
     assignment.setId(rs.getInt("id"));
@@ -60,5 +62,9 @@ public class AssignmentDAO {
 
   public int updateStatus(Integer assignmentId, String status, Timestamp timeResolved) {
     return jdbcTemplate.update(UPDATE_STATUS, status, timeResolved, assignmentId);
+  }
+
+  public int updateStatusWithCurrentTime(Integer assignmentId, String status) {
+    return jdbcTemplate.update(UPDATE_STATUS_WITH_CURRENT_TIME, status, assignmentId);
   }
 }

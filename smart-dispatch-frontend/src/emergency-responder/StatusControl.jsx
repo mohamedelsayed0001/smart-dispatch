@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import './css/responder.css';
 
-const StatusControl = ({ 
-  currentStatus, 
-  assignmentStatus, 
-  onStatusChange, 
-  loading 
+const StatusControl = ({
+  currentStatus,
+  assignmentStatus,
+  onStatusChange,
+  loading,
+  onBack
 }) => {
   const [showConfirm, setShowConfirm] = useState(false);
   const [pendingAction, setPendingAction] = useState(null);
@@ -73,6 +74,9 @@ const StatusControl = ({
       });
       setShowConfirm(false);
       setPendingAction(null);
+      if (pendingAction.assignmentStatus == "COMPLETED") {
+        onBack()
+      }
     } catch (error) {
       console.error('Error updating status:', error);
       alert('Failed to update status. Please try again.');
@@ -95,13 +99,13 @@ const StatusControl = ({
     <div className="status-control">
       <div className="current-status">
         <h3 className="status-label">Current Status</h3>
-        <div 
+        <div
           className="status-display"
           style={{ borderColor: currentStatusInfo.color }}
         >
           <span className="status-icon">{currentStatusInfo.icon}</span>
           <span className="status-text">{currentStatusInfo.label}</span>
-          <div 
+          <div
             className="status-indicator"
             style={{ backgroundColor: currentStatusInfo.color }}
           />
@@ -138,15 +142,15 @@ const StatusControl = ({
               <p>{pendingAction.confirmMessage}</p>
             </div>
             <div className="confirm-footer">
-              <button 
-                className="btn btn-secondary" 
+              <button
+                className="btn btn-secondary"
                 onClick={handleCancel}
                 disabled={loading}
               >
                 Cancel
               </button>
-              <button 
-                className="btn btn-primary" 
+              <button
+                className="btn btn-primary"
                 onClick={handleConfirm}
                 disabled={loading}
               >

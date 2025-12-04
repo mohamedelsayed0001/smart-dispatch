@@ -257,6 +257,7 @@ const AssignmentDetails = ({ assignmentId, onBack }) => {
               currentStatus={vehicle.status}
               assignmentStatus={assignment.status}
               onStatusChange={handleStatusChange}
+              onBack={onBack}
               loading={statusLoading}
             />
           </div>
