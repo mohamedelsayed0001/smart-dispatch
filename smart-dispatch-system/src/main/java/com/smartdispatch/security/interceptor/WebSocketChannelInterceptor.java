@@ -1,7 +1,6 @@
 package com.smartdispatch.security.interceptor;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.Ordered;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
@@ -24,8 +23,6 @@ public class WebSocketChannelInterceptor implements ChannelInterceptor, Ordered 
 
     @Autowired
     private JwtService jwtService;
-    @Value("${app.security.enabled:true}")
-    private boolean securityEnabled;
 
     @Override
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
@@ -38,11 +35,6 @@ public class WebSocketChannelInterceptor implements ChannelInterceptor, Ordered 
             return message;
         }
 
-        // If security is disabled for this app (dev mode), allow anonymous websocket CONNECT
-        if (!securityEnabled) {
-            System.out.println("WebSocket security disabled - allowing anonymous CONNECT");
-            return MessageBuilder.createMessage(message.getPayload(), accessor.getMessageHeaders());
-        }
 
         System.out.println("CONNECT command detected");
 

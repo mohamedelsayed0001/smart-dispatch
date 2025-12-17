@@ -98,7 +98,7 @@ class WebSocketService {
   subscribeToNotifications(userId) {
     if (!this.client || !this.connected) return;
     
-    const destination = `/user/assignment`;
+    const destination = `/topic/assignment/new/${userId}`;
 
     try {
       const subscription = this.client.subscribe(destination, (message) => {

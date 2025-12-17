@@ -22,6 +22,8 @@ import com.smartdispatch.dispatcher.mappers.imp.IncidentMapper;
 import com.smartdispatch.dispatcher.mappers.imp.VehicleMapper;
 import com.smartdispatch.dispatcher.services.DispatcherService;
 import com.smartdispatch.security.service.NotificationService;
+import com.smartdispatch.security.service.websocketDto.NewAssignmentDto;
+
 @Service
 public class DispatcherServiceImp implements DispatcherService {
     private IncidentDao incidentDao;
@@ -32,7 +34,9 @@ public class DispatcherServiceImp implements DispatcherService {
     private VehicleMapper vehicleMapper;
     private NotificationService notificationService;
 
-    public DispatcherServiceImp(VehicleDao vehicleDao, IncidentDao incidentDao, AssignmentDao assignmentDao, IncidentMapper incidentMapper, AssignmentMapper assignmentMapper, VehicleMapper vehicleMapper, NotificationService notificationService) {
+    public DispatcherServiceImp(VehicleDao vehicleDao, IncidentDao incidentDao, AssignmentDao assignmentDao,
+            IncidentMapper incidentMapper, AssignmentMapper assignmentMapper, VehicleMapper vehicleMapper,
+            NotificationService notificationService) {
         this.vehicleDao = vehicleDao;
         this.incidentDao = incidentDao;
         this.assignmentDao = assignmentDao;
@@ -44,14 +48,15 @@ public class DispatcherServiceImp implements DispatcherService {
 
     @Override
     public List<IncidentDto> getPendingIncidents() {
-      List<Incident>incidents=  incidentDao.getAllPendingIncidents();
+        List<Incident> incidents = incidentDao.getAllPendingIncidents();
         return incidents.stream()
                 .map(incidentMapper::mapTO)
                 .toList();
     }
+
     @Override
     public List<IncidentDto> getAllIncidents() {
-      List<Incident>incidents=  incidentDao.getAllPendingIncidents();
+        List<Incident> incidents = incidentDao.getAllPendingIncidents();
         return incidents.stream()
                 .map(incidentMapper::mapTO)
                 .toList();
@@ -59,12 +64,11 @@ public class DispatcherServiceImp implements DispatcherService {
 
     @Override
     public List<AssignmentDto> getAllAssignments() {
-        List<Assignment>assignments=  assignmentDao.getAllAssignments();
-       
+        List<Assignment> assignments = assignmentDao.getAllAssignments();
 
         List<AssignmentDto> theReturn = assignments.stream().map(assignmentMapper::mapTO).toList();
-        for(AssignmentDto i : theReturn ){
-            Incident incident =incidentDao.findById(i.getIncidentId());
+        for (AssignmentDto i : theReturn) {
+            Incident incident = incidentDao.findById(i.getIncidentId());
             i.setDescription(incident.getDescription());
             i.setIncidentType(incident.getType());
         }
@@ -73,7 +77,7 @@ public class DispatcherServiceImp implements DispatcherService {
 
     @Override
     public List<VehicleDto> getAvailableVehicles(String type) {
-        List<Vehicle>vehicles=  vehicleDao.findAvailableVehiclesByType(type);
+        List<Vehicle> vehicles = vehicleDao.findAvailableVehiclesByType(type);
         return vehicles.stream()
                 .map(vehicleMapper::mapTO)
                 .toList();
@@ -81,7 +85,7 @@ public class DispatcherServiceImp implements DispatcherService {
 
     @Override
     public List<VehicleDto> getAllVehicles() {
-        List<Vehicle>vehicles=  vehicleDao.findAllVehicles();
+        List<Vehicle> vehicles = vehicleDao.findAllVehicles();
         return vehicles.stream()
                 .map(vehicleMapper::mapTO)
                 .toList();
@@ -94,28 +98,28 @@ public class DispatcherServiceImp implements DispatcherService {
         if (incident == null) {
             throw new IllegalArgumentException("Incident not found");
         }
-        if(!"PENDING".equalsIgnoreCase(incident.getStatus())){
+        if (!"PENDING".equalsIgnoreCase(incident.getStatus())) {
             throw new IllegalStateException("Incident is not in pending status");
         }
 
-       Vehicle vehicle =vehicleDao.findById(assignmentRequest.getVehicleId());
+        Vehicle vehicle = vehicleDao.findById(assignmentRequest.getVehicleId());
         if (vehicle == null) {
             throw new IllegalArgumentException("Vehicle not found");
         }
-        if(!"AVAILABLE".equalsIgnoreCase(vehicle.getStatus())){
+        if (!"AVAILABLE".equalsIgnoreCase(vehicle.getStatus())) {
             throw new IllegalStateException("Vehicle is not available");
         }
 
-        Assignment assignment =Assignment.builder()
+        Assignment assignment = Assignment.builder()
                 .dispatcherId(assignmentRequest.getDispatcherId())
                 .vehicleId(assignmentRequest.getVehicleId())
                 .incidentId(assignmentRequest.getIncidentId())
                 .status("PENDING")
                 .build();
-        Integer assignmentId=assignmentDao.createAssignment(assignment);
+        Integer assignmentId = assignmentDao.createAssignment(assignment);
         assignment.setId(assignmentId);
-        incidentDao.updateStatus(assignmentRequest.getIncidentId(),"ASSIGNED");
-        vehicleDao.updateStatus(assignmentRequest.getVehicleId(),"ONROUTE");
+        incidentDao.updateStatus(assignmentRequest.getIncidentId(), "ASSIGNED");
+        vehicleDao.updateStatus(assignmentRequest.getVehicleId(), "ONROUTE");
 
         incident.setStatus("ASSIGNED");
         vehicle.setStatus("ONROUTE");
@@ -125,11 +129,9 @@ public class DispatcherServiceImp implements DispatcherService {
         assignmentDto.setDescription(incident.getDescription());
         assignmentDto.setCurrentLatitude(vehicle.getCurrentLatitude());
         assignmentDto.setCurrentLongitude(vehicle.getCurrentLongitude());
-        notificationService.notifyUser(
-                String.valueOf(vehicle.getOperatorId()),
-                "/assignment",
-                assignmentDto
-        );
+
+        notificationService.notifyNewAssignment(new NewAssignmentDto(assignmentDto, incident, vehicle),
+                vehicle.getOperatorId());
 
         return assignmentDto;
 
@@ -140,19 +142,21 @@ public class DispatcherServiceImp implements DispatcherService {
     public AssignmentDto reassignAssignment(ReassignRequest request) {
         // find existing assignment
         Assignment existing = assignmentDao.findById(request.getAssignmentId());
-        if (existing == null) throw new IllegalArgumentException("Assignment not found");
+        if (existing == null)
+            throw new IllegalArgumentException("Assignment not found");
 
         // find vehicles
         Vehicle oldVehicle = vehicleDao.findById(existing.getVehicleId());
         Vehicle newVehicle = vehicleDao.findById(request.getNewVehicleId());
-        if (newVehicle == null) throw new IllegalArgumentException("New vehicle not found");
+        if (newVehicle == null)
+            throw new IllegalArgumentException("New vehicle not found");
         if (!"AVAILABLE".equalsIgnoreCase(newVehicle.getStatus())) {
             throw new IllegalStateException("New vehicle is not available");
         }
 
-
         boolean ok = assignmentDao.updateVehicle(request.getAssignmentId(), request.getNewVehicleId());
-        if (!ok) throw new IllegalStateException("Failed to update assignment");
+        if (!ok)
+            throw new IllegalStateException("Failed to update assignment");
 
         // Update assignment status to PENDING
         assignmentDao.updateStatus(request.getAssignmentId(), "PENDING");
@@ -167,11 +171,11 @@ public class DispatcherServiceImp implements DispatcherService {
         Assignment updated = assignmentDao.findById(request.getAssignmentId());
         AssignmentDto dto = assignmentMapper.mapTO(updated);
         Incident incident = incidentDao.findById(existing.getIncidentId());
-    
+
         if (incident == null) {
-             throw new IllegalStateException("Incident not found");
+            throw new IllegalStateException("Incident not found");
         }
-        
+
         // Update incident status to ASSIGNED
         incidentDao.updateStatus(incident.getId(), "ASSIGNED");
         incident.setStatus("ASSIGNED");
@@ -181,13 +185,8 @@ public class DispatcherServiceImp implements DispatcherService {
         dto.setCurrentLatitude(newVehicle.getCurrentLatitude());
         dto.setCurrentLongitude(newVehicle.getCurrentLongitude());
         Vehicle vehicle = vehicleDao.findById(updated.getVehicleId());
-        notificationService.notifyUser(
-                String.valueOf(vehicle.getOperatorId()),
-                "/assignment",
-                dto
-        );
+        notificationService.notifyNewAssignment(new NewAssignmentDto(dto, incident, vehicle), vehicle.getOperatorId());
 
         return dto;
     }
 }
-

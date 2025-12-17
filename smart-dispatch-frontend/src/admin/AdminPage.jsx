@@ -97,14 +97,7 @@ const AdminPage = () => {
             />
           )}
           {activeMenu === 'vehicles' && <Vehicles />}
-          {activeMenu === 'locations' && <VehicleLocations />}  {
-                  <div 
-                    className={`menu-item ${activeMenu === 'locations' ? 'active' : ''}`}
-                    onClick={() => setActiveMenu('locations')}
-                  >
-                    <span className="menu-icon">📍</span>
-                    <span>Vehicle Locations</span>
-                  </div>}
+          {activeMenu === 'locations' && <VehicleLocations />}  
           {activeMenu === 'reports' && (
             <Reports
               reports={reports}

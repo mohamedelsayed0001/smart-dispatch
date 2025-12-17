@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Routes, Route, NavLink, useNavigate } from 'react-router-dom'
+import { Routes, Route, NavLink } from 'react-router-dom'
 import { Map, AlertCircle, CheckCircle, Truck, Moon, Sun } from 'lucide-react'
 import { connect, disconnect } from './dispatcherSocket.js'
 import Toast from './components/Toast'
@@ -10,14 +10,13 @@ import PendingIncidents from './pages/PendingIncidents'
 import ActiveAssignments from './pages/ActiveAssignments'
 import AvailableVehicles from './pages/AvailableVehicles'
 import './styles/DispatcherDashboard.css'
+import { useAuth } from '../components/AuthProvider'
 
 function Sidebar() {
-  const navigate = useNavigate()
+  const {logout} = useAuth();
 
   const handleLogout = () => {
-    localStorage.removeItem('authToken')
-    localStorage.removeItem('user')
-    navigate('/login')
+    logout();
   }
 
   const MenuItem = ({ icon: Icon, label, to }) => (

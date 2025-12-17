@@ -8,14 +8,14 @@ import './css/responder.css';
 
 const ResponderDashboard = () => {
   const MAX_ITEMS = 20;
-  
+
   const [profile, setProfile] = useState(null);
   const [assignments, setAssignments] = useState([]);
   const [selectedAssignment, setSelectedAssignment] = useState(null);
   const [loading, setLoading] = useState(true);
   const [wsConnected, setWsConnected] = useState(false);
   const [error, setError] = useState(null);
-  
+
   const isInitialized = useRef(false);
   const isConnecting = useRef(false);
   const abortControllerRef = useRef(null);
@@ -54,11 +54,11 @@ const ResponderDashboard = () => {
       // Check if request was aborted
       if (signal.aborted) return;
 
-       setProfile(profileRes.data);
-       setAssignments(assignmentsRes.data);
+      setProfile(profileRes.data);
+      setAssignments(assignmentsRes.data);
 
       locationService.handleInitialLocation();
-      
+
       // Connect to WebSocket
       if (!isConnecting.current) {
         await connectWebSocket(profileRes.data);
@@ -107,7 +107,7 @@ const ResponderDashboard = () => {
   const handleNewAssignment = (message) => {
     console.log('New assignment notification received:', message);
 
-    // add at start of assignments
+    setAssignments(prevAssignments => [message, ...prevAssignments]);
 
     if ('vibrate' in navigator) {
       navigator.vibrate([200, 100, 200]);

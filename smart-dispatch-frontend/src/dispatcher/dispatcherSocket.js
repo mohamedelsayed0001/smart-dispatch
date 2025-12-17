@@ -92,7 +92,7 @@ export function connect({ onMessage, onVehicle, onIncident, onAssignment, onNoti
     console.info('[stomp] connected')
 
     // Subscribe to vehicle status updates
-    client.subscribe('/topic/vehicle/status', (msg) => {
+    client.subscribe('/topic/vehicle/update', (msg) => {
       try {
         const body = JSON.parse(msg.body)
         triggerCallbacks('onVehicle', body)
@@ -102,7 +102,7 @@ export function connect({ onMessage, onVehicle, onIncident, onAssignment, onNoti
     })
 
     // Subscribe to vehicle assignment updates
-    client.subscribe('/topic/vehicle/assignment', (msg) => {
+    client.subscribe('/topic/assignment/update', (msg) => {
       try {
         console.log('[stomp] Raw assignment message:', msg.body)
         const body = JSON.parse(msg.body)

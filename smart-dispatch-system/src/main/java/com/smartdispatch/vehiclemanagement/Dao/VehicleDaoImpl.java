@@ -105,39 +105,6 @@ public class VehicleDaoImpl implements vechileDao<VehicleEntity> {
             }
         }
 
-//        @Override
-//        public int countCompletedTasksByServiceId(Long serviceID) throws Exception {
-//            try {
-//                String sql = "SELECT COUNT(*) FROM Task WHERE serviceID = ? AND status = 'done'";
-//                Integer count = jdbcTemplate.queryForObject(sql, Integer.class, serviceID);
-//                return count != null ? count : 0;
-//            } catch (DataAccessException e) {
-//                throw new Exception("Failed to count completed tasks: " + e.getMessage(), e);
-//            }
-//        }
-//
-//        @Override
-//        public int countTasker(long serviceID) throws Exception {
-//            try {
-//                String sql = "SELECT COUNT(*) FROM Tasker WHERE serviceID = ?";
-//                Integer count = jdbcTemplate.queryForObject(sql, Integer.class, serviceID);
-//                return count != null ? count : 0;
-//            } catch (DataAccessException e) {
-//                throw new Exception("Failed to count taskers: " + e.getMessage(), e);
-//            }
-//        }
-//
-//        public Long findIdByName(String name) throws Exception {
-//            try {
-//                String sql = "SELECT serviceID FROM service WHERE name = ?";
-//                return jdbcTemplate.queryForObject(sql, Long.class, name);
-//            } catch (EmptyResultDataAccessException e) {
-//                return null;
-//            } catch (DataAccessException e) {
-//                throw new Exception("Failed to find service by name: " + e.getMessage(), e);
-//            }
-//        }
-//
         public VehicleEntity findById(long id) throws Exception {
             try {
                 String sql = "SELECT id, type, status, capacity, operator_id " +

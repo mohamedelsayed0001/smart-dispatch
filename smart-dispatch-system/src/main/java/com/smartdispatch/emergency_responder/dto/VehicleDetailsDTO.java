@@ -12,4 +12,6 @@ public class VehicleDetailsDTO {
   private String type;
   private String status;
   private Integer capacity;
+  private Double latitude;
+  private Double longitude;
 }

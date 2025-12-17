@@ -28,11 +28,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     );
 
     private final JwtService jwtService;
-    private final Environment env;
 
-    JwtAuthFilter(JwtService jwtService, Environment env) {
+    JwtAuthFilter(JwtService jwtService) {
         this.jwtService = jwtService;
-        this.env = env;
     }
 
     @Override
@@ -46,19 +44,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             return;
         }
 
-        // Read the security flag from the environment at runtime so changes in properties take effect
-        boolean securityEnabled = true;
-        try {
-            securityEnabled = Boolean.parseBoolean(env.getProperty("app.security.enabled", "true"));
-        } catch (Exception e) {
-            System.err.println("JwtAuthFilter: Failed to read app.security.enabled, defaulting to true: " + e.getMessage());
-        }
-
-        // If security is disabled, skip authentication checks and continue the chain
-        if (!securityEnabled) {
-            filterChain.doFilter(request, response);
-            return;
-        }
 
         String path = request.getServletPath();
 

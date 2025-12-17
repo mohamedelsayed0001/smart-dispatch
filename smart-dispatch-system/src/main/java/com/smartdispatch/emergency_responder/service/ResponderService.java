@@ -8,6 +8,7 @@ import com.smartdispatch.emergency_responder.dao.*;
 import com.smartdispatch.emergency_responder.dto.*;
 import com.smartdispatch.emergency_responder.model.*;
 import com.smartdispatch.security.service.NotificationService;
+import com.smartdispatch.security.service.websocketDto.*;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
@@ -39,11 +40,18 @@ public class ResponderService {
 
     VehicleDetailsDTO vehicleDTO = null;
     if (vehicle != null) {
+      VehicleLocation location = vehicleLocationDAO.findTopByVehicleIdOrderByTimeStampDesc(vehicle.getId())
+          .orElse(null);
+      Double lat = location != null ? location.getLatitude() : null;
+      Double lon = location != null ? location.getLongitude() : null;
+
       vehicleDTO = new VehicleDetailsDTO(
           vehicle.getId(),
           vehicle.getType(),
           vehicle.getStatus(),
-          vehicle.getCapacity());
+          vehicle.getCapacity(),
+          lat,
+          lon);
     }
 
     return Map.of(
@@ -137,13 +145,11 @@ public class ResponderService {
         locationDTO.getLatitude(),
         locationDTO.getLongitude());
 
-    notificationService.notifyChannel(
-        "vehicle/status",
-        java.util.Map.of(
-            "vehicleId", vehicle.getId(),
-            "newStatus", vehicle.getStatus(),
-            "latitude", locationDTO.getLatitude(),
-            "longitude", locationDTO.getLongitude()));
+    notificationService.notifyVehicleUpdate(new VehicleUpdateDto(
+        vehicle.getId(),
+        vehicle.getStatus(),
+        locationDTO.getLatitude(),
+        locationDTO.getLongitude()));
   }
 
   @Transactional
@@ -185,28 +191,17 @@ public class ResponderService {
         .orElse(null);
 
     if (dispatcher != null && statusDTO.getVehicleStatus() != null) {
-      // Get location - handle case where it might not exist
       Optional<VehicleLocation> locationOpt = vehicleLocationDAO
           .findTopByVehicleIdOrderByTimeStampDesc(vehicle.getId());
 
       if (locationOpt.isPresent()) {
         VehicleLocation location = locationOpt.get();
-        notificationService.notifyChannel(
-            "vehicle/status",
-            java.util.Map.of(
-                "dispatcherId", dispatcher.getId(),
-                "vehicleId", vehicle.getId(),
-                "newStatus", statusDTO.getVehicleStatus(),
-                "latitude", location.getLatitude(),
-                "longitude", location.getLongitude()));
-      } else {
-        // Send notification without location if location data is unavailable
-        notificationService.notifyChannel(
-            "vehicle/status",
-            java.util.Map.of(
-                "dispatcherId", dispatcher.getId(),
-                "vehicleId", vehicle.getId(),
-                "newStatus", statusDTO.getVehicleStatus()));
+
+        notificationService.notifyVehicleUpdate(new VehicleUpdateDto(
+            vehicle.getId(),
+            statusDTO.getVehicleStatus(),
+            location.getLatitude(),
+            location.getLongitude()));
       }
     }
   }
@@ -236,12 +231,7 @@ public class ResponderService {
       vehicleDAO.updateStatus(vehicle.getId(), "ONROUTE");
       incidentDAO.updateStatus(assignment.getIncidentId(), "ASSIGNED", null);
 
-      notificationService.notifyChannel(
-          "vehicle/assignment",
-          java.util.Map.of(
-              "responderId", responderId,
-              "assignmentId", assignmentId,
-              "response", "ACTIVE"));
+      notificationService.notifyAssignmentUpdate(new AssignmentUpdateDto(responderId, assignmentId, response));
 
       return new AssignmentActionResponseDTO(
           true,
@@ -256,12 +246,7 @@ public class ResponderService {
       // Vehicle stays AVAILABLE
       incidentDAO.updateStatus(assignment.getIncidentId(), "PENDING", null);
 
-      notificationService.notifyChannel(
-          "vehicle/assignment",
-          java.util.Map.of(
-              "responderId", responderId,
-              "assignmentId", assignmentId,
-              "response", "REJECTED"));
+      notificationService.notifyAssignmentUpdate(new AssignmentUpdateDto(responderId, assignmentId, response));
 
       return new AssignmentActionResponseDTO(
           true,
@@ -292,12 +277,7 @@ public class ResponderService {
     vehicleDAO.updateStatus(vehicle.getId(), "AVAILABLE");
     incidentDAO.updateStatus(assignment.getIncidentId(), "PENDING", null);
 
-    notificationService.notifyChannel(
-        "vehicle/assignment",
-        java.util.Map.of(
-            "responderId", responderId,
-            "assignmentId", assignmentId,
-            "response", "CANCELED"));
+    notificationService.notifyAssignmentUpdate(new AssignmentUpdateDto(responderId, assignmentId, "CANCELED"));
 
     return new AssignmentActionResponseDTO(
         true,
@@ -348,11 +328,17 @@ public class ResponderService {
         incident.getStatus(),
         incident.getTimeReported());
 
+    VehicleLocation location = vehicleLocationDAO.findTopByVehicleIdOrderByTimeStampDesc(vehicle.getId()).orElse(null);
+    Double lat = location != null ? location.getLatitude() : null;
+    Double lon = location != null ? location.getLongitude() : null;
+
     VehicleDetailsDTO vehicleDTO = new VehicleDetailsDTO(
         vehicle.getId(),
         vehicle.getType(),
         vehicle.getStatus(),
-        vehicle.getCapacity());
+        vehicle.getCapacity(),
+        lat,
+        lon);
 
     return new AssignmentDTO(
         assignment.getId(),

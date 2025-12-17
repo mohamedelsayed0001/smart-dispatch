@@ -87,23 +87,23 @@ public class VehicleController {
         }
     }
 
-    @GetMapping("/getVehicleDetails/{Id}")
+    // @GetMapping("/getVehicleDetails/{Id}")
 //    @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<VehicleDto> getDetails(@PathVariable long Id) throws Exception{
-        try {
-            if (Id <= 0) {
-                return ResponseEntity.badRequest().build();
-            }
+    // public ResponseEntity<VehicleDto> getDetails(@PathVariable long Id) throws Exception{
+    //     try {
+    //         if (Id <= 0) {
+    //             return ResponseEntity.badRequest().build();
+    //         }
 
-            VehicleDto details = vehicleService.getDetails(Id);
-            if (details != null) {
-                return ResponseEntity.ok(details);
-            } else {
-                return ResponseEntity.notFound().build();
-            }
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-    }
+    //         VehicleDto details = vehicleService.getDetails(Id);
+    //         if (details != null) {
+    //             return ResponseEntity.ok(details);
+    //         } else {
+    //             return ResponseEntity.notFound().build();
+    //         }
+    //     } catch (Exception e) {
+    //         System.out.println(e.getMessage());
+    //         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+    //     }
+    // }
 }

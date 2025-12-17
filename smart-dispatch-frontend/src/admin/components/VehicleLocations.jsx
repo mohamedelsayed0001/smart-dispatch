@@ -110,6 +110,7 @@ const VehicleLocationsMap = () => {
       setIsConnected(true);
 
       stompClient.subscribe('/topic/locations/all', (message) => {
+      // stompClient.subscribe('/topic/vehicle/update', (message) => {
         try {
           const location = JSON.parse(message.body);
           const normalized = {
