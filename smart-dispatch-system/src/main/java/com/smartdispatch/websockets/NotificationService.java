@@ -1,10 +1,10 @@
-package com.smartdispatch.security.service;
+package com.smartdispatch.websockets;
 
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import com.smartdispatch.dispatcher.domains.dtos.IncidentDto;
-import com.smartdispatch.security.service.websocketDto.*;
+import com.smartdispatch.websockets.websocketDto.*;
 
 @Service
 public class NotificationService {
@@ -31,7 +31,7 @@ public class NotificationService {
     }
 
     public void notifyIncidentUpdate(IncidentDto incident) {
-        notifyChannel("incidents/update", incident);
+        notifyChannel("incident/update", incident);
     }
 
     public void notifyAssignmentUpdate(AssignmentUpdateDto assignmentUpdateDto) {

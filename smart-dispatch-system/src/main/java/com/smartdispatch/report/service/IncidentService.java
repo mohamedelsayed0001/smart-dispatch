@@ -7,8 +7,8 @@ import org.springframework.stereotype.Service;
 
 import com.smartdispatch.report.dao.ReportedIncidentDao;
 import com.smartdispatch.report.dto.ReportedIncidentDto;
+import com.smartdispatch.websockets.NotificationService;
 import com.smartdispatch.report.dto.AdminIncidentReportDto;
-import com.smartdispatch.security.service.NotificationService;
 
 @Service
 public class IncidentService {

@@ -21,8 +21,8 @@ import com.smartdispatch.dispatcher.mappers.imp.AssignmentMapper;
 import com.smartdispatch.dispatcher.mappers.imp.IncidentMapper;
 import com.smartdispatch.dispatcher.mappers.imp.VehicleMapper;
 import com.smartdispatch.dispatcher.services.DispatcherService;
-import com.smartdispatch.security.service.NotificationService;
-import com.smartdispatch.security.service.websocketDto.NewAssignmentDto;
+import com.smartdispatch.websockets.NotificationService;
+import com.smartdispatch.websockets.websocketDto.NewAssignmentDto;
 
 @Service
 public class DispatcherServiceImp implements DispatcherService {

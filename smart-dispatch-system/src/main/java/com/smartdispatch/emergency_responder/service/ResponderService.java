@@ -7,8 +7,8 @@ import org.springframework.transaction.annotation.Transactional;
 import com.smartdispatch.emergency_responder.dao.*;
 import com.smartdispatch.emergency_responder.dto.*;
 import com.smartdispatch.emergency_responder.model.*;
-import com.smartdispatch.security.service.NotificationService;
-import com.smartdispatch.security.service.websocketDto.*;
+import com.smartdispatch.websockets.NotificationService;
+import com.smartdispatch.websockets.websocketDto.*;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;

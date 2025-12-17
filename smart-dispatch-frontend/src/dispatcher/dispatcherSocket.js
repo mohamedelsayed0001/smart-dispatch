@@ -113,7 +113,7 @@ export function connect({ onMessage, onVehicle, onIncident, onAssignment, onNoti
     })
 
     // Subscribe to incidents (keeping existing)
-    client.subscribe('/topic/incidents', (msg) => {
+    client.subscribe('/topic/incident/update', (msg) => {
       try {
         const body = JSON.parse(msg.body)
         triggerCallbacks('onIncident', body)
@@ -123,14 +123,14 @@ export function connect({ onMessage, onVehicle, onIncident, onAssignment, onNoti
     })
 
     // Subscribe to notifications (keeping existing)
-    client.subscribe('/topic/notifications', (msg) => {
-      try {
-        const body = JSON.parse(msg.body)
-        triggerCallbacks('onNotification', body)
-      } catch (e) {
-        console.error('[stomp] Error parsing notification message:', e)
-      }
-    })
+    // client.subscribe('/topic/notifications', (msg) => {
+    //   try {
+    //     const body = JSON.parse(msg.body)
+    //     triggerCallbacks('onNotification', body)
+    //   } catch (e) {
+    //     console.error('[stomp] Error parsing notification message:', e)
+    //   }
+    // })
 
     // Subscribe to user-specific assignment notifications
     // Get dispatcher ID from localStorage or context

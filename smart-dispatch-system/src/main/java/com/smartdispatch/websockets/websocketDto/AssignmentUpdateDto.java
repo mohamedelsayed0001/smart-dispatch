@@ -1,4 +1,4 @@
-package com.smartdispatch.security.service.websocketDto;
+package com.smartdispatch.websockets.websocketDto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

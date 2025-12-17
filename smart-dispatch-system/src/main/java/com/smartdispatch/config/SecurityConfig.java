@@ -1,4 +1,4 @@
-package com.smartdispatch.security.config;
+package com.smartdispatch.config;
 
 import java.util.List;
 
