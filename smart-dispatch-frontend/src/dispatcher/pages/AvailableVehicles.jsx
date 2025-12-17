@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { fetchAvailableVehicles } from '../../utils/dispatcherApi'
-import { connect, disconnect } from '../../utils/dispatcherSocket'
+import { fetchAvailableVehicles } from '../dispatcherApi.js'
+import { connect, disconnect } from '../dispatcherSocket'
 
 export default function AvailableVehicles({ vehicles, setVehicles }) {
   // const [vehicles, setVehicles] = useState([])

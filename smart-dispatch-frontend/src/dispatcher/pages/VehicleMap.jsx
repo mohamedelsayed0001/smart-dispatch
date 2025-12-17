@@ -1,10 +1,10 @@
-import React, { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { MapContainer, TileLayer, CircleMarker, Popup, Polyline, useMap, Marker } from 'react-leaflet'
 import { useLocation } from 'react-router-dom'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 
-import { fetchAvailableVehicles, fetchPendingIncidents } from '../../utils/dispatcherApi'
+import { fetchAvailableVehicles, fetchPendingIncidents } from '../dispatcherApi'
 
 function FitBounds({ coords }) {
   const map = useMap()

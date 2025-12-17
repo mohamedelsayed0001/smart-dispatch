@@ -1,6 +1,5 @@
-import React from 'react';
 import { LayoutDashboard, Users, FileText, BarChart3, Truck, MapPin } from 'lucide-react';
-import './styles/AdminSidebar.css';
+import '../styles/AdminSidebar.css';
 
 const AdminSidebar = ({ activeMenu, setActiveMenu }) => {
   const MenuItem = ({ icon: Icon, label, id }) => (

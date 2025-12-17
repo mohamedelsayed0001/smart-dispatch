@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Routes, Route, NavLink, useNavigate } from 'react-router-dom'
 import { Map, AlertCircle, CheckCircle, Truck, Moon, Sun } from 'lucide-react'
-import { logout } from '../utils/api'
-import { connect, disconnect } from '../utils/dispatcherSocket'
+import { connect, disconnect } from './dispatcherSocket.js'
 import Toast from './components/Toast'
 import VehicleMap from './pages/VehicleMap'
 import DashboardOverview from './pages/DashboardOverview'
@@ -16,13 +15,8 @@ function Sidebar() {
   const navigate = useNavigate()
 
   const handleLogout = () => {
-    try {
-      logout()
-    } catch (e) {
-      console.warn('logout helper failed', e)
-      localStorage.removeItem('jwt_token')
-      localStorage.removeItem('user')
-    }
+    localStorage.removeItem('authToken')
+    localStorage.removeItem('user')
     navigate('/login')
   }
 
@@ -114,10 +108,10 @@ export default function DispatcherDashboard() {
           const updated = [...prev]
           updated[idx] = {
             ...updated[idx],
-            status: vehicle.newStatus, 
-            currentLongitude: vehicle.longitude, 
+            status: vehicle.newStatus,
+            currentLongitude: vehicle.longitude,
             currentLatitude: vehicle.latitude,
-            lng: vehicle.longitude, 
+            lng: vehicle.longitude,
             lat: vehicle.latitude
           }
 
@@ -229,7 +223,7 @@ export default function DispatcherDashboard() {
             <Route path="map" element={<VehicleMap />} />
             <Route path="pending" element={<PendingIncidents />} />
             <Route path="active" element={<ActiveAssignments assignments={assignments} setAssignments={setAssignments} />} />
-            <Route path="vehicles" element={<AvailableVehicles vehicles={vehicles} setVehicles={setVehicles}/>} />
+            <Route path="vehicles" element={<AvailableVehicles vehicles={vehicles} setVehicles={setVehicles} />} />
           </Routes>
         </div>
       </div>

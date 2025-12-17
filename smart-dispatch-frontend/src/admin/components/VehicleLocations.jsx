@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import SockJS from 'sockjs-client';
@@ -103,7 +103,7 @@ const VehicleLocationsMap = () => {
     const socket = new SockJS('http://localhost:8080/ws-car-location');
     const stompClient = Stomp.over(socket);
     stompClient.debug = () => {}; // disable logs
-    const token = typeof window !== 'undefined' ? localStorage.getItem('jwt_token') : null;
+    const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
 
     const onConnect = () => {
       console.log('✅ Connected to WebSocket');

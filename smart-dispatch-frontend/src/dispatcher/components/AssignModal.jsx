@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react'
-import { fetchAvailableVehicles, createAssignment, getCurrentDispatcherId } from '../../utils/dispatcherApi'
+import { useEffect, useState } from 'react'
+import { fetchAvailableVehicles, createAssignment, getCurrentDispatcherId } from '../dispatcherApi'
 
 export default function AssignModal({ incident, onClose, onAssigned }) {
   const [vehicles, setVehicles] = useState([])

@@ -1,6 +1,5 @@
-import React from 'react';
 import { BarChart3 } from 'lucide-react';
-import './styles/Analysis.css';
+import '../styles/Analysis.css';
 
 const Analysis = () => {
   return (

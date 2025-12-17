@@ -78,7 +78,7 @@ export function connect({ onMessage, onVehicle, onIncident, onAssignment, onNoti
 
   // Create new client
   console.log(`[dispatcherSocket] Creating new WebSocket connection for #${connectionId}`)
-  const token = typeof window !== 'undefined' ? localStorage.getItem('jwt_token') : null
+  const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null
 
   client = new Client({
     // use SockJS to match the server's sockjs endpoint

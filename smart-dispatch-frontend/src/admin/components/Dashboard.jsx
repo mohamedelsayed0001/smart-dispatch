@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
-import { MapPin } from 'lucide-react';
+// import { MapPin } from 'lucide-react';
 import L from 'leaflet';
 import SockJS from 'sockjs-client';
 import { Stomp } from '@stomp/stompjs';
@@ -73,7 +73,7 @@ const Dashboard = () => {
   useEffect(() => {
     const socket = new SockJS('http://localhost:8080/ws-car-location');
     const stompClient = Stomp.over(socket);
-    const token = typeof window !== 'undefined' ? localStorage.getItem('jwt_token') : null;
+    const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
     stompClient.debug = () => {};
 
     const onConnect = () => {

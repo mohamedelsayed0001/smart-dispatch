@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import './styles/Report.css';
+import { useState } from 'react';
+import './Report.css';
+import { submitReport } from './api';
 
 export default function EmergencyReportForm() {
   const [formData, setFormData] = useState({
@@ -26,31 +27,18 @@ export default function EmergencyReportForm() {
     setStatus('');
 
     try {
-      const authToken = localStorage.getItem('authToken');
-
       console.log(formData)
 
-      const response = await fetch('http://localhost:8080/api/report', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${authToken}`
-        },
-        body: JSON.stringify(formData)
-      });
+      await submitReport(formData);
 
-      if (response.ok) {
-        setStatus('Report submitted successfully!');
-        setFormData({
-          type: 'FIRE',
-          level: 'HIGH',
-          description: '',
-          latitude: '',
-          longitude: ''
-        });
-      } else {
-        setStatus('Failed to submit report. Please try again.');
-      }
+      setStatus('Report submitted successfully!');
+      setFormData({
+        type: 'FIRE',
+        level: 'HIGH',
+        description: '',
+        latitude: '',
+        longitude: ''
+      });
     } catch (error) {
       setStatus('Error: ' + error.message);
     } finally {
@@ -62,7 +50,7 @@ export default function EmergencyReportForm() {
     <div className="report">
       <div className="form-card">
         <h1 className="form-title">Emergency Report</h1>
-        
+
         <div onSubmit={handleSubmit}>
           <div className="form-group">
             <label htmlFor="type">Emergency Type</label>
@@ -142,7 +130,7 @@ export default function EmergencyReportForm() {
             </div>
           </div>
 
-          <button 
+          <button
             type="button"
             onClick={handleSubmit}
             className="submit-button"

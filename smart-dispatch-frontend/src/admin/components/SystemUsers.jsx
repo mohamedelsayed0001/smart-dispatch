@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Search, MoreVertical, X } from 'lucide-react';
-import { updateUserRole } from '../../utils/api';
-import './styles/SystemUsers.css';
+import { updateUserRole } from './../api.js';
+import '../styles/SystemUsers.css';
 
 const SystemUsers = ({ users, totalPages, currentPage, setCurrentPage, userFilter, setUserFilter, searchQuery, setSearchQuery, onRefresh }) => {
   const [openMenuId, setOpenMenuId] = useState(null);
@@ -146,11 +146,11 @@ const SystemUsers = ({ users, totalPages, currentPage, setCurrentPage, userFilte
                 <X size={24} />
               </button>
             </div>
-            
+
             <div className="modal-body">
               <p className="modal-text">Promoting: <span className="modal-highlight">{promoteModal.name}</span></p>
               <p className="modal-text">Current role: <span className="modal-highlight">{promoteModal.role}</span></p>
-              
+
               <label className="modal-label">New Role</label>
               <select
                 value={selectedRole}

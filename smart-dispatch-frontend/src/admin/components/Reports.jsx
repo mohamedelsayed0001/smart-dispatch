@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
-import './styles/Reports.css';
+import '../styles/Reports.css';
 
 // Fix for default markers in leaflet
 delete L.Icon.Default.prototype._getIconUrl;
@@ -20,7 +20,7 @@ const Reports = ({ reports, totalPages, currentPage, setCurrentPage }) => {
 
   const formatDate = (iso) => {
     if (!iso) return '';
-    try { return new Date(iso).toLocaleString(); } catch(e) { return iso; }
+    try { return new Date(iso).toLocaleString(); } catch (e) { return iso; }
   }
 
   return (
@@ -28,7 +28,7 @@ const Reports = ({ reports, totalPages, currentPage, setCurrentPage }) => {
       <h1 className="page-title">Reports</h1>
 
       <div style={{ marginBottom: '16px' }}>
-        <button 
+        <button
           onClick={() => setShowFullMap(true)}
           className="btn btn-primary"
         >
@@ -48,7 +48,7 @@ const Reports = ({ reports, totalPages, currentPage, setCurrentPage }) => {
           </thead>
           <tbody>
             {reports.map((report) => (
-              <tr key={report.id} onClick={() => openDetails(report)} style={{cursor: 'pointer'}}>
+              <tr key={report.id} onClick={() => openDetails(report)} style={{ cursor: 'pointer' }}>
                 <td>{report.type ? report.type : (report.title || 'Report')}</td>
                 <td>{report.level || report.type || '-'}</td>
                 <td>{formatDate(report.timeReported || report.date)}</td>
@@ -103,12 +103,12 @@ const Reports = ({ reports, totalPages, currentPage, setCurrentPage }) => {
               <p><strong>Description:</strong></p>
               <p>{selected.description}</p>
               <p><strong>Location:</strong> {selected.latitude}, {selected.longitude}</p>
-              
+
               {selected.latitude && selected.longitude && (
                 <div style={{ marginTop: '16px', height: '300px', borderRadius: '8px', overflow: 'hidden' }}>
-                  <MapContainer 
-                    center={[selected.latitude, selected.longitude]} 
-                    zoom={15} 
+                  <MapContainer
+                    center={[selected.latitude, selected.longitude]}
+                    zoom={15}
                     style={{ height: '100%', width: '100%' }}
                   >
                     <TileLayer
@@ -137,9 +137,9 @@ const Reports = ({ reports, totalPages, currentPage, setCurrentPage }) => {
               <button onClick={() => setShowFullMap(false)} className="modal-close">✕</button>
             </div>
             <div style={{ flex: 1, position: 'relative' }}>
-              <MapContainer 
-                center={[30.0, 31.0]} 
-                zoom={10} 
+              <MapContainer
+                center={[30.0, 31.0]}
+                zoom={10}
                 style={{ height: '100%', width: '100%' }}
               >
                 <TileLayer
@@ -148,7 +148,7 @@ const Reports = ({ reports, totalPages, currentPage, setCurrentPage }) => {
                 />
                 {reports.map((report) => {
                   if (!report.latitude || !report.longitude) return null;
-                  
+
                   let color = '#FFD700'; // PENDING = yellow
                   let shape = 'circle';
                   if (report.status === 'ASSIGNED') {
@@ -159,7 +159,7 @@ const Reports = ({ reports, totalPages, currentPage, setCurrentPage }) => {
                     color = '#22C55E'; // green
                     shape = 'diamond';
                   }
-                  
+
                   let svgShape = '';
                   if (shape === 'circle') {
                     svgShape = `<circle cx="12" cy="12" r="8" fill="${color}" stroke="white" stroke-width="2"/>`;
@@ -168,16 +168,16 @@ const Reports = ({ reports, totalPages, currentPage, setCurrentPage }) => {
                   } else if (shape === 'diamond') {
                     svgShape = `<polygon points="12,4 20,12 12,20 4,12" fill="${color}" stroke="white" stroke-width="2"/>`;
                   }
-                  
+
                   const svgIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">${svgShape}</svg>`;
                   const iconUrl = `data:image/svg+xml;base64,${btoa(svgIcon)}`;
-                  
+
                   const icon = L.icon({
                     iconUrl: iconUrl,
                     iconSize: [32, 32],
                     iconAnchor: [16, 16],
                   });
-                  
+
                   return (
                     <Marker key={report.id} position={[report.latitude, report.longitude]} icon={icon}>
                       <Popup>{report.type} ({report.status})</Popup>

@@ -11,7 +11,7 @@ export const fetchDashboardData = async () => {
 
 export const fetchUsers = async (page = 1, filter = 'all', search = '') => {
     try {
-        const token = localStorage.getItem('jwt_token');
+        const token = localStorage.getItem('authToken');
         const response = await fetch(
             `http://localhost:8080/api/admin/users?page=${page}&role=${filter}&search=${encodeURIComponent(search)}`,
             {
@@ -62,7 +62,7 @@ export const fetchUsers = async (page = 1, filter = 'all', search = '') => {
 
 export const fetchReports = async (page = 1) => {
     try {
-        const token = localStorage.getItem('jwt_token');
+        const token = localStorage.getItem('authToken');
         const res = await fetch(`http://localhost:8080/api/admin/reports`, {
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -100,7 +100,7 @@ export const fetchReports = async (page = 1) => {
 export const updateUserRole = async (userId, newRole) => {
     try {
         console.log(`[API] Updating user ${userId} to ${newRole}`);
-        const token = localStorage.getItem('jwt_token');
+        const token = localStorage.getItem('authToken');
 
         const response = await fetch(`http://localhost:8080/api/admin/users/${userId}/role`, {
             method: 'PUT',
@@ -123,59 +123,3 @@ export const updateUserRole = async (userId, newRole) => {
         throw error;
     }
 };
-
-// Auth helpers for frontend pages
-export const login = async (email, password) => {
-    const res = await fetch('http://localhost:8080/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
-    });
-
-    if (!res.ok) {
-        const errText = await res.text().catch(() => null)
-        throw new Error(errText || 'Login failed')
-    }
-
-    const data = await res.json()
-    if (data.token) {
-        localStorage.setItem("authToken", data.token)
-        localStorage.setItem("jwt_token", data.token)
-        localStorage.setItem('user', JSON.stringify({ id: data.id, name: data.name, email: data.email, role: data.role }))
-    }
-    return data
-}
-
-export const signup = async (name, email, password, role = 'OPERATOR') => {
-    const res = await fetch('http://localhost:8080/api/auth/signup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password, role })
-    });
-
-    if (res.status === 409) {
-        // email exists
-        const data = await res.json().catch(() => null)
-
-        return { conflict: true, data }
-    }
-    
-    if (!res.ok) {
-        const errText = await res.text().catch(() => null)
-        throw new Error(errText || 'Signup failed')
-    }
-
-    const data = await res.json()
-    if (data.token) {
-        localStorage.setItem("authToken", data.token)
-        localStorage.setItem("jwt_token", data.token)
-        localStorage.setItem('user', JSON.stringify({ id: data.id, name: data.name, email: data.email, role: data.role }))
-    }
-    return data
-}
-
-export const logout = () => {
-    localStorage.removeItem('jwt_token')
-    localStorage.removeItem('authToken')
-    localStorage.removeItem('user')
-}

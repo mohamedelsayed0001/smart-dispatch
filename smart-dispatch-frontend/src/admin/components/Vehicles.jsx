@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Plus, Edit, Trash2, X, Search } from 'lucide-react';
-import './styles/Vehicles.css';
+import '../styles/Vehicles.css';
 
 const Vehicles = () => {
-  
+
   const [vehicles, setVehicles] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [editingVehicle, setEditingVehicle] = useState(null);
@@ -18,9 +18,9 @@ const Vehicles = () => {
   useEffect(() => {
     fetchVehicles();
   }, []);
-  
-  const token = localStorage.getItem('jwt_token');
-  
+
+  const token = localStorage.getItem('authToken');
+
   const fetchVehicles = async () => {
     try {
       const response = await fetch('http://localhost:8080/api/vehicle/getAllVehicles', {
@@ -30,7 +30,7 @@ const Vehicles = () => {
           'Authorization': `Bearer ${token}`
         }
       });
-      
+
       if (response.ok) {
         const data = await response.json();
         console.log('✅ Vehicles fetched:', data);
@@ -48,12 +48,12 @@ const Vehicles = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     try {
-      const url = editingVehicle 
+      const url = editingVehicle
         ? `http://localhost:8080/api/vehicle/edit/${editingVehicle.id}`
         : 'http://localhost:8080/api/vehicle/create';
-      
+
       const response = await fetch(url, {
         method: 'POST',
         headers: {
@@ -225,15 +225,15 @@ const Vehicles = () => {
                   <td>{vehicle.operatorId || 'N/A'}</td>
                   <td>
                     <div className="action-buttons">
-                      <button 
-                        className="btn-icon btn-edit" 
+                      <button
+                        className="btn-icon btn-edit"
                         onClick={() => handleEdit(vehicle)}
                         title="Edit"
                       >
                         <Edit size={16} />
                       </button>
-                      <button 
-                        className="btn-icon btn-delete" 
+                      <button
+                        className="btn-icon btn-delete"
                         onClick={() => handleDelete(vehicle.id)}
                         title="Delete"
                       >

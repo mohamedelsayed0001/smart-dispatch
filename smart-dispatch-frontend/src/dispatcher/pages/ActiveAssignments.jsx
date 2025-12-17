@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { connect, disconnect } from '../../utils/dispatcherSocket'
-import { fetchAssignments, reassignAssignment, fetchAvailableVehicles, getCurrentDispatcherId } from '../../utils/dispatcherApi'
+import { connect, disconnect } from '../dispatcherSocket.js'
+import { fetchAssignments, reassignAssignment, fetchAvailableVehicles, getCurrentDispatcherId } from '../dispatcherApi.js'
 
 export default function Assignment({ assignments, setAssignments }) {
   const navigate = useNavigate()

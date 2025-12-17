@@ -1,6 +1,5 @@
-
-import React, { useEffect, useState } from 'react'
-import { fetchPendingIncidents } from '../../utils/dispatcherApi'
+import { useEffect, useState } from 'react'
+import { fetchPendingIncidents } from '../dispatcherApi.js'
 import AssignModal from '../components/AssignModal'
 
 export default function PendingIncidents() {

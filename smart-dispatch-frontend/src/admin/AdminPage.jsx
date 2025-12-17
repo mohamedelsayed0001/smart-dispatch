@@ -1,15 +1,15 @@
-import React, { useState, useEffect, useRef } from 'react';
-import AdminSidebar from '../components/admin/AdminSidebar';
-import Dashboard from '../components/admin/Dashboard';
-import SystemUsers from '../components/admin/SystemUsers';
-import Vehicles from '../components/admin/Vehicles';
-import VehicleLocations from '../components/admin/VehicleLocations'; // Add this
-import Reports from '../components/admin/Reports';
-import Analysis from '../components/admin/Analysis';
-import { fetchDashboardData, fetchUsers, fetchReports } from '../utils/api';
+import { useState, useEffect, useRef } from 'react';
+import AdminSidebar from './components/AdminSidebar';
+import Dashboard from './components/Dashboard';
+import SystemUsers from './components/SystemUsers';
+import Vehicles from './components/Vehicles';
+import VehicleLocations from './components/VehicleLocations'; // Add this
+import Reports from './components/Reports';
+import Analysis from './components/Analysis';
+import { fetchDashboardData, fetchUsers, fetchReports } from './api.js';
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
-import './styles/AdminPage.css';
+import './AdminPage.css';
 
 const AdminPage = () => {
   const [activeMenu, setActiveMenu] = useState('dashboard');
@@ -37,7 +37,7 @@ const AdminPage = () => {
       });
       // subscribe to websocket topic for live reports
       if (!stompClientRef.current) {
-        const token = localStorage.getItem('jwt_token');
+        const token = localStorage.getItem('authToken');
         const client = new Client({
           webSocketFactory: () => new SockJS('http://localhost:8080/ws'),
           connectHeaders: token ? { Authorization: `Bearer ${token}` } : {},

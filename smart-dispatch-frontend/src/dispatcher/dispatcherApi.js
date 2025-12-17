@@ -1,7 +1,7 @@
 const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8080'
 
 async function getJson(url, opts = {}) {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('jwt_token') : null
+  const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null
   const headers = {
     'Content-Type': 'application/json',
     ...(opts.headers || {}),
@@ -43,7 +43,7 @@ export const fetchAvailableVehicles = async (type) => {
 export const getCurrentDispatcherId = () => {
   try {
     if (typeof window === 'undefined') return null
-    const token = localStorage.getItem('jwt_token')
+    const token = localStorage.getItem('authToken')
     if (!token) return null
     const parts = token.split('.')
     if (parts.length < 2) return null

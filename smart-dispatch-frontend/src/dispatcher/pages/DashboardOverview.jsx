@@ -1,4 +1,3 @@
-import React from 'react'
 import VehicleMap from './VehicleMap'
 import '../styles/Dispatcher.css'
 
