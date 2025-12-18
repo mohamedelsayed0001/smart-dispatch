@@ -1,26 +1,62 @@
 package com.smartdispatch.vehiclemanagement.service;
 
+import com.smartdispatch.vehiclemanagement.init.VehicleLocationInitializer;
+
 import com.smartdispatch.vehiclemanagement.Dao.LocationDao;
+import com.smartdispatch.vehiclemanagement.Dto.VehicleLiveLocationDto;
 import com.smartdispatch.vehiclemanagement.model.LocationVehicle;
-import org.springframework.beans.factory.annotation.Autowired;
+
+import lombok.RequiredArgsConstructor;
+
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Service
+@RequiredArgsConstructor
 public class LocationTrackService {
 
-    @Autowired
-    private LocationDao locationDao;
-
-    @Autowired
-    private SimpMessagingTemplate messagingTemplate;
+    private final LocationDao locationDao;
+    private final SimpMessagingTemplate messagingTemplate;
+    private final RedisTemplate<String, String> redisTemplate;
 
     public LocationVehicle getNewestLocation(Long id) throws SQLException {
         return locationDao.findNewestByVehicleId(id);
+    }
+
+    // TODO optimize by saving only dirty locations
+    @Scheduled(fixedRate = 5000)
+    public void saveLiveLocations() {
+
+        Map<Object, Object> entries =
+                redisTemplate.opsForHash().entries(VehicleLocationInitializer.VEHICLE_LOCATIONS_KEY);
+
+        if (entries.isEmpty()) {
+            return;
+        }
+
+        List<VehicleLiveLocationDto> locations = new ArrayList<>(entries.size());
+
+        for (var entry : entries.entrySet()) {
+            Integer vehicleId = Integer.valueOf(entry.getKey().toString());
+            String[] coords = entry.getValue().toString().split(",");
+
+            locations.add(
+                VehicleLiveLocationDto.builder()
+                    .vehicleId(vehicleId)
+                    .latitude(Double.parseDouble(coords[1]))
+                    .longitude(Double.parseDouble(coords[0]))
+                    .build()
+            );
+        }
+
+        locationDao.saveBatch(locations);
     }
 
     @Scheduled(fixedRate = 2000)

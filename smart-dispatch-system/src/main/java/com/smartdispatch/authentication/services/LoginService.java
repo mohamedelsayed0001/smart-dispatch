@@ -43,14 +43,11 @@ public class LoginService {
             if (optUser.isEmpty()) return null;
             User user = optUser.get();
 
-
-            String role = "ROLE_" + user.getRole(); // OPERATOR, DISPATCHER, ADMIN…
-
             String token = jwtService.generateToken(
                     user.getId(),
                     user.getName(),
                     user.getEmail(),
-                    role
+                    user.getRole()
             );
 
             return new LoginResponseDTO(
@@ -87,7 +84,7 @@ public class LoginService {
                 newUser.getId(),
                 newUser.getName(),
                 newUser.getEmail(),
-                "ROLE_" + newUser.getRole()
+                newUser.getRole()
         );
 
         return new LoginResponseDTO(

@@ -4,11 +4,12 @@ import com.smartdispatch.vehiclemanagement.Dto.VehicleDto;
 import com.smartdispatch.vehiclemanagement.service.VehicleService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.management.ServiceNotFoundException;
 import java.util.List;
-//eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiQURNSU4iLCJpZCI6IjE3IiwiZW1haWwiOiJib21iQGdtYWlsLmNvbSIsInVzZXJuYW1lIjoiZmZmIiwic3ViIjoiMTciLCJpYXQiOjE3NjQ1Mzg0MjAsImV4cCI6MTc2NDYyNDgyMH0.EJBoAUTo3SqLFKanRD2ha0_Cp9Q49IJ0UlvSGZKKirQ
+
 @RestController
 @RequestMapping("/api/vehicle")
 public class VehicleController {
@@ -20,7 +21,7 @@ public class VehicleController {
     }
 
     @PostMapping("/create")
-//    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> createService( @RequestBody VehicleDto vehicleDto) throws Exception {
         try {
             if (vehicleDto.getId() != null && vehicleDto.getId() != 0) {
@@ -37,7 +38,7 @@ public class VehicleController {
     }
 
     @PostMapping("/edit/{id}")
-//    @PreAuthorize("hasRole('ROLE_ADMIN')"
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> editService(@PathVariable long id,  @RequestBody VehicleDto vehicleDto) throws Exception {
         try {
             if (id <= 0) {
@@ -54,8 +55,9 @@ public class VehicleController {
         }
     }
 
+    // TODO remove vehicle location from redis
     @DeleteMapping("/delete/{id}")
-    /*@PreAuthorize("hasRole('ROLE_ADMIN')")*/
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> deleteService(@PathVariable long id) throws Exception {
         try {
             if (id <= 0) {
@@ -72,6 +74,7 @@ public class VehicleController {
     }
 
     @GetMapping("/getAllVehicles")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<VehicleDto>> getAllService() throws Exception {
         try {
             List<VehicleDto> serviceDtoList = vehicleService.getAllService();
@@ -87,7 +90,7 @@ public class VehicleController {
     }
 
     // @GetMapping("/getVehicleDetails/{Id}")
-//    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    // @PreAuthorize("hasRole('ADMIN')")
     // public ResponseEntity<VehicleDto> getDetails(@PathVariable long Id) throws Exception{
     //     try {
     //         if (Id <= 0) {

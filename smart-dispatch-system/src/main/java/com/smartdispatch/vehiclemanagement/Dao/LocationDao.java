@@ -2,29 +2,77 @@ package com.smartdispatch.vehiclemanagement.Dao;
 
 import com.smartdispatch.vehiclemanagement.model.LocationVehicle;
 import com.smartdispatch.vehiclemanagement.rowmapper.LocationRowMapper;
-import com.smartdispatch.vehiclemanagement.Interface.ILocationDao;
-import org.springframework.beans.factory.annotation.Autowired;
+
+import lombok.RequiredArgsConstructor;
+
+import com.smartdispatch.vehiclemanagement.Dto.VehicleLiveLocationDto;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-@Component
-public class LocationDao implements ILocationDao {
+@Repository
+@RequiredArgsConstructor
+public class LocationDao {
 
     private final JdbcTemplate jdbcTemplate;
 
-    @Autowired
-    public LocationDao(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-        System.out.println("✅ LocationDao initialized with JdbcTemplate: " + (jdbcTemplate != null));
+    public List<VehicleLiveLocationDto> findAllLiveLocations() {
+        String sql = """
+            SELECT
+                vehicle_id AS vehicleId,
+                latitude,
+                longitude
+            FROM (
+                SELECT
+                    vehicle_id,
+                    latitude,
+                    longitude,
+                    ROW_NUMBER() OVER (
+                        PARTITION BY vehicle_id
+                        ORDER BY time_stamp DESC
+                    ) AS rn
+                FROM vehicle_location
+            ) t
+            WHERE rn = 1
+        """;
+
+        return jdbcTemplate.query(sql, (rs, rowNum) ->
+            VehicleLiveLocationDto.builder()
+                .vehicleId(rs.getInt("vehicleId"))
+                .latitude(rs.getDouble("latitude"))
+                .longitude(rs.getDouble("longitude"))
+                .build()
+        );
     }
 
-    @Override
+    public void saveBatch(List<VehicleLiveLocationDto> locations) {
+
+        String sql = """
+            INSERT INTO vehicle_location (vehicle_id, latitude, longitude, time_stamp)
+            VALUES (?, ?, ?, CURRENT_TIMESTAMP)
+        """;
+
+        if (locations == null) {
+            System.out.println("Didn't save live locations because locations is null");
+            return;
+        }
+
+        jdbcTemplate.<VehicleLiveLocationDto>batchUpdate(
+            sql,
+            locations,
+            1000,
+            (ps, location) -> {
+                ps.setInt(1, location.getVehicleId());
+                ps.setDouble(2, location.getLatitude());
+                ps.setDouble(3, location.getLongitude());
+            }
+        );
+    }
+
     public LocationVehicle findNewestByVehicleId(Long vehicleId) throws SQLException {
         if (jdbcTemplate == null) {
             System.err.println("❌ JdbcTemplate is NULL in findNewestByVehicleId!");
@@ -52,7 +100,6 @@ public class LocationDao implements ILocationDao {
         }
     }
 
-    @Override
     public List<Long> findAllDistinctCarIds() throws SQLException {
         if (jdbcTemplate == null) {
             System.err.println("❌ JdbcTemplate is NULL in findAllDistinctCarIds!");

@@ -2,11 +2,13 @@ package com.smartdispatch.report.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.smartdispatch.report.dto.ReportedIncidentDto;
@@ -35,9 +37,16 @@ public class ReportedIncidentController {
     }
 
     @GetMapping("/admin/reports")
-    ResponseEntity<?> getAllReports() {
+    @PreAuthorize("hasRole('ADMIN')")
+    ResponseEntity<?> getAllReports(
+        @RequestParam(required = false) Integer id,
+        @RequestParam(required = false) String status,
+        @RequestParam(required = false) String type,
+        @RequestParam(required = false) String level,
+        @RequestParam(required = false) String text
+    ) {
         try {
-            var list = incidentService.getAllIncidents();
+            var list = incidentService.getAllIncidents(id, status, type, level, text);
             return ResponseEntity.ok(list);
         } catch (Exception e) {
             System.out.println("[ReportedIncidentController] Error fetching reports: " + e.getMessage());

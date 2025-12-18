@@ -1,0 +1,43 @@
+package com.smartdispatch.vehiclemanagement.init;
+
+import jakarta.annotation.PostConstruct;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import lombok.RequiredArgsConstructor;
+
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.stereotype.Component;
+
+import com.smartdispatch.vehiclemanagement.Dao.LocationDao;
+import com.smartdispatch.vehiclemanagement.Dto.VehicleLiveLocationDto;
+
+@Component
+@RequiredArgsConstructor
+public class VehicleLocationInitializer {
+
+    private final RedisTemplate<String, String> redisTemplate;
+    private final LocationDao locationDao;
+
+    public static final String VEHICLE_LOCATIONS_KEY = "vehicles:locations";
+
+    @PostConstruct
+    public void loadVehicleLocations() {
+        List<VehicleLiveLocationDto> vehicles = locationDao.findAllLiveLocations();
+
+        Map<String, String> map = new HashMap<>(vehicles.size());
+
+        for (VehicleLiveLocationDto v : vehicles) {
+            map.put(
+                v.getVehicleId().toString(),
+                v.getLongitude() + "," + v.getLatitude()
+            );
+        }
+
+        redisTemplate.opsForHash().putAll(VEHICLE_LOCATIONS_KEY, map);
+
+        System.out.println("Loaded " + vehicles.size() + " vehicles into Redis");
+    }
+}

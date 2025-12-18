@@ -1,17 +1,18 @@
 package com.smartdispatch.emergency_responder.service;
 
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.smartdispatch.emergency_responder.dao.*;
 import com.smartdispatch.emergency_responder.dto.*;
 import com.smartdispatch.emergency_responder.model.*;
+import com.smartdispatch.vehiclemanagement.init.VehicleLocationInitializer;
 import com.smartdispatch.websockets.NotificationService;
 import com.smartdispatch.websockets.websocketDto.*;
 
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -27,6 +28,7 @@ public class ResponderService {
   private final IncidentDAO incidentDAO;
   private final VehicleLocationDAO vehicleLocationDAO;
   private final NotificationService notificationService;
+  private final RedisTemplate<String, String> redisTemplate;
 
   public Map<String, Object> getResponderProfile(Integer responderId) {
     User responder = userDAO.findById(responderId)
@@ -135,21 +137,36 @@ public class ResponderService {
     return new LocationsResponseDTO(vehicleDTO, incidentDTO);
   }
 
+  // TODO refactor this part so this method only calls another mothod to save in redis
   @Transactional
   public void updateVehicleLocation(Integer responderId, LocationDTO locationDTO) {
     Vehicle vehicle = vehicleDAO.findByOperatorId(responderId)
         .orElseThrow(() -> new RuntimeException("No vehicle assigned"));
 
-    vehicleLocationDAO.saveWithCoordinates(
-        vehicle.getId(),
-        locationDTO.getLatitude(),
-        locationDTO.getLongitude());
+    // vehicleLocationDAO.saveWithCoordinates(
+    //   vehicle.getId(),
+    //   locationDTO.getLatitude(),
+    //   locationDTO.getLongitude()
+    // );
 
-    notificationService.notifyVehicleUpdate(new VehicleUpdateDto(
+    String vehicleId = vehicle.getId().toString();
+    if (vehicleId == null)
+      return;
+
+    redisTemplate.opsForHash().put(
+      VehicleLocationInitializer.VEHICLE_LOCATIONS_KEY,
+      vehicleId,
+      locationDTO.getLongitude() + "," + locationDTO.getLatitude()
+    );
+
+    notificationService.notifyVehicleUpdate(
+      new VehicleUpdateDto(
         vehicle.getId(),
         vehicle.getStatus(),
         locationDTO.getLatitude(),
-        locationDTO.getLongitude()));
+        locationDTO.getLongitude()
+      )
+    );
   }
 
   @Transactional

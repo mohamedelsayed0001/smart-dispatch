@@ -1,4 +1,3 @@
--- Emergency Response System Database Schema - MySQL Version
 -- Drop tables if they exist (in reverse order of dependencies)
 SET FOREIGN_KEY_CHECKS = 0;
 
@@ -11,7 +10,6 @@ DROP TABLE IF EXISTS User;
 
 SET FOREIGN_KEY_CHECKS = 1;
 
--- Create User table
 CREATE TABLE User (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
@@ -23,7 +21,6 @@ CREATE TABLE User (
     INDEX idx_user_email (email)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Create Incident table
 CREATE TABLE Incident (
     id INT AUTO_INCREMENT PRIMARY KEY,
     type ENUM('FIRE', 'MEDICAL', 'CRIME') NOT NULL,
@@ -44,7 +41,6 @@ CREATE TABLE Incident (
     INDEX idx_incident_type (type)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Create Vehicle table
 CREATE TABLE Vehicle (
     id INT AUTO_INCREMENT PRIMARY KEY,
     type ENUM('AMBULANCE', 'FIRETRUCK', 'POLICE')  NOT NULL,
@@ -57,7 +53,6 @@ CREATE TABLE Vehicle (
     INDEX idx_vehicle_type (type)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Create vehicle_location table
 CREATE TABLE vehicle_location (
     id INT AUTO_INCREMENT PRIMARY KEY,
     vehicle_id INT NOT NULL,
@@ -65,12 +60,9 @@ CREATE TABLE vehicle_location (
     latitude DECIMAL(10, 8) NOT NULL,
     time_stamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (vehicle_id) REFERENCES Vehicle(id) ON DELETE CASCADE,
-    INDEX idx_vehicle_location_vehicle (vehicle_id),
-    INDEX idx_vehicle_location_timestamp (time_stamp),
-    INDEX idx_vehicle_location_coords (latitude, longitude)
+    INDEX idx_vehicle_latest (vehicle_id, time_stamp DESC)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Create Notification table
 CREATE TABLE Notification (
     id INT AUTO_INCREMENT PRIMARY KEY,
     notified_id INT NOT NULL,
@@ -85,7 +77,6 @@ CREATE TABLE Notification (
     INDEX idx_notification_time_sent (time_sent)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Create Assignment table
 CREATE TABLE Assignment (
     id INT AUTO_INCREMENT PRIMARY KEY,
     dispatcher_id INT NOT NULL,

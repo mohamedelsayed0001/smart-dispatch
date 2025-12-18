@@ -3,6 +3,7 @@ package com.smartdispatch.report.dao;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -72,6 +73,61 @@ public class ReportedIncidentDao {
                 + "FROM Incident i LEFT JOIN `User` u ON i.citizen_id = u.id ORDER BY i.time_reported DESC";
 
         return jdbcTemplate.query(sql, (rs, rowNum) -> {
+            AdminIncidentReportDto dto = new AdminIncidentReportDto();
+            dto.setId(rs.getInt("id"));
+            dto.setType(rs.getString("type"));
+            dto.setLevel(rs.getString("level"));
+            dto.setDescription(rs.getString("description"));
+            dto.setLatitude(rs.getDouble("latitude"));
+            dto.setLongitude(rs.getDouble("longitude"));
+            dto.setStatus(rs.getString("status"));
+            Timestamp tReported = rs.getTimestamp("time_reported");
+            if (tReported != null) dto.setTimeReported(tReported.toLocalDateTime());
+            Timestamp tResolved = rs.getTimestamp("time_resolved");
+            if (tResolved != null) dto.setTimeResolved(tResolved.toLocalDateTime());
+            dto.setReporterName(rs.getString("reporter_name"));
+            return dto;
+        });
+    }
+
+    public List<AdminIncidentReportDto> getAllIncidents(Integer id, String status, String type, String level, String text) {
+        StringBuilder sql = new StringBuilder(
+            "SELECT i.id, i.type, i.level, i.description, i.latitude, i.longitude, i.status, i.time_reported, i.time_resolved, u.name AS reporter_name "
+            + "FROM Incident i LEFT JOIN `User` u ON i.citizen_id = u.id WHERE 1=1"
+        );
+        
+        List<Object> params = new ArrayList<>();
+        
+        if (id != null) {
+            sql.append(" AND i.id = ?");
+            params.add(id);
+        }
+        
+        if (status != null && !status.isEmpty()) {
+            sql.append(" AND i.status = ?");
+            params.add(status);
+        }
+        
+        if (type != null && !type.isEmpty()) {
+            sql.append(" AND i.type = ?");
+            params.add(type);
+        }
+        
+        if (level != null && !level.isEmpty()) {
+            sql.append(" AND i.level = ?");
+            params.add(level);
+        }
+        
+        if (text != null && !text.isEmpty()) {
+            sql.append(" AND (i.description LIKE ? OR u.name LIKE ?)");
+            String searchPattern = "%" + text + "%";
+            params.add(searchPattern);
+            params.add(searchPattern);
+        }
+        
+        sql.append(" ORDER BY i.time_reported DESC");
+        
+        return jdbcTemplate.query(sql.toString(), params.toArray(), (rs, rowNum) -> {
             AdminIncidentReportDto dto = new AdminIncidentReportDto();
             dto.setId(rs.getInt("id"));
             dto.setType(rs.getString("type"));

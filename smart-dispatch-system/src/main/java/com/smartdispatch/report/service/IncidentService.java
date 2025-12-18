@@ -55,4 +55,8 @@ public class IncidentService {
     public List<AdminIncidentReportDto> getAllIncidents() {
         return reportedIncidentDao.getAllIncidents();
     }
+
+    public List<AdminIncidentReportDto> getAllIncidents(Integer id, String status, String type, String level, String text) {
+        return reportedIncidentDao.getAllIncidents(id, status, type, level, text);
+    }
 }

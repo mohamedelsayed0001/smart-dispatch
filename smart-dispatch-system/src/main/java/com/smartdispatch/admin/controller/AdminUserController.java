@@ -6,6 +6,7 @@ import com.smartdispatch.admin.service.AdminUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -19,14 +20,8 @@ public class AdminUserController {
     @Autowired
     private AdminUserService userService;
 
-    /**
-     * Get all users with pagination and filtering
-     * Query parameters:
-     * - page: page number (default 1)
-     * - role: filter by role (all, admin, dispatcher, operator, citizen)
-     * - search: search by name or email
-     */
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<PaginatedResponse<UserDTO>> getUsers(
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "all") String role,
@@ -46,10 +41,8 @@ public class AdminUserController {
         }
     }
 
-    /**
-     * Promote/Update user role
-     */
     @PutMapping("/{id}/role")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Map<String, String>> updateUserRole(
             @PathVariable Long id,
             @RequestBody Map<String, String> body
