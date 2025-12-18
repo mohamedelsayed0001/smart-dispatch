@@ -1,11 +1,24 @@
 /* AdminSidebar Component Styles */
 
 .admin-sidebar {
-  width: 256px;
+  width: 250px;
   background-color: white;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   padding: 24px;
   flex-shrink: 0;
+  position: fixed;
+  left: 0;
+  top: 0;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  transition: width 0.3s ease, padding 0.3s ease;
+  z-index: 1000;
+}
+
+.admin-sidebar.sidebar-collapsed {
+  width: 80px;
+  padding: 24px 12px;
 }
 
 .sidebar-brand {
@@ -13,6 +26,7 @@
   align-items: center;
   gap: 12px;
   margin-bottom: 32px;
+  overflow: hidden;
 }
 
 .brand-avatar {
@@ -26,6 +40,7 @@
   color: white;
   font-weight: bold;
   font-size: 18px;
+  flex-shrink: 0;
 }
 
 .sidebar-brand h2 {
@@ -33,18 +48,22 @@
   font-size: 16px;
   font-weight: 700;
   color: #1f2937;
+  white-space: nowrap;
 }
 
 .sidebar-brand p {
   margin: 0;
   font-size: 12px;
   color: #6b7280;
+  white-space: nowrap;
 }
 
 .sidebar-menu {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  flex: 1;
+  overflow-y: auto;
 }
 
 .menu-item {
@@ -61,6 +80,12 @@
   color: #4b5563;
   transition: all 0.3s ease;
   text-align: left;
+  white-space: nowrap;
+}
+
+.sidebar-collapsed .menu-item {
+  justify-content: center;
+  padding: 12px;
 }
 
 .menu-item:hover {
@@ -71,6 +96,27 @@
   background: linear-gradient(90deg, #ef4444 0%, #dc2626 100%);
   color: white;
   box-shadow: 0 4px 6px rgba(239, 68, 68, 0.3);
+}
+
+.sidebar-collapse-btn {
+  width: 100%;
+  padding: 12px;
+  margin-top: auto;
+  border: none;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(102, 126, 234, 0.3);
+}
+
+.sidebar-collapse-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(102, 126, 234, 0.4);
 }
 
 @media (max-width: 768px) {

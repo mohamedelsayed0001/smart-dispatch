@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.sql.SQLException;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/location")
@@ -28,5 +29,19 @@ public class LocationTrackController {
         catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
-}
+    }
+
+    @GetMapping("/live/all")
+    public ResponseEntity<?> getAllLiveLocations() {
+        try {
+            Map<String, String> liveLocations = service.getAllLiveLocations();
+            if (liveLocations.isEmpty()) {
+                return ResponseEntity.ok(Map.of("message", "No live locations available"));
+            }
+            return ResponseEntity.ok(liveLocations);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Failed to retrieve live locations"));
+        }
+    }
 }

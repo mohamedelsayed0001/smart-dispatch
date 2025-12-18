@@ -30,8 +30,23 @@ public class LocationTrackService {
         return locationDao.findNewestByVehicleId(id);
     }
 
+    public Map<String, String> getAllLiveLocations() {
+        Map<Object, Object> entries = 
+                redisTemplate.opsForHash().entries(VehicleLocationInitializer.VEHICLE_LOCATIONS_KEY);
+        
+        Map<String, String> liveLocations = new java.util.HashMap<>();
+        
+        for (var entry : entries.entrySet()) {
+            String vehicleId = entry.getKey().toString();
+            String coordinates = entry.getValue().toString();
+            liveLocations.put(vehicleId, coordinates);
+        }
+        
+        return liveLocations;
+    }
+
     // TODO optimize by saving only dirty locations
-    @Scheduled(fixedRate = 5000)
+    @Scheduled(fixedRate = 500000000)
     public void saveLiveLocations() {
 
         Map<Object, Object> entries =
@@ -59,57 +74,57 @@ public class LocationTrackService {
         locationDao.saveBatch(locations);
     }
 
-    @Scheduled(fixedRate = 2000)
-    public void monitorAndBroadcastNewLocations() {
-        try {
-            List<Long> carIds = locationDao.findAllDistinctCarIds();
+    // @Scheduled(fixedRate = 2000)
+    // public void monitorAndBroadcastNewLocations() {
+    //     try {
+    //         List<Long> carIds = locationDao.findAllDistinctCarIds();
 
-            if (carIds == null || carIds.isEmpty()) {
-                System.out.println("⚠️ No vehicles found in database");
-                return;
-            }
+    //         if (carIds == null || carIds.isEmpty()) {
+    //             System.out.println("⚠️ No vehicles found in database");
+    //             return;
+    //         }
 
-            // System.out.println("📡 Broadcasting locations for " + carIds.size() + " vehicles");
+    //         // System.out.println("📡 Broadcasting locations for " + carIds.size() + " vehicles");
 
-            for (Long carId : carIds) {
-                try {
-                    detectAndBroadcastNewLocation(carId);
-                } catch (Exception e) {
-                    System.err.println("❌ Error processing vehicle " + carId + ": " + e.getMessage());
-                }
-            }
+    //         for (Long carId : carIds) {
+    //             try {
+    //                 detectAndBroadcastNewLocation(carId);
+    //             } catch (Exception e) {
+    //                 System.err.println("❌ Error processing vehicle " + carId + ": " + e.getMessage());
+    //             }
+    //         }
 
-        } catch (Exception e) {
-            System.err.println("❌ Error monitoring locations: " + e.getMessage());
-            e.printStackTrace();
-        }
-    }
+    //     } catch (Exception e) {
+    //         System.err.println("❌ Error monitoring locations: " + e.getMessage());
+    //         e.printStackTrace();
+    //     }
+    // }
 
-    private void detectAndBroadcastNewLocation(Long vehicleId) throws SQLException {
-        LocationVehicle newest = locationDao.findNewestByVehicleId(vehicleId);
+    // private void detectAndBroadcastNewLocation(Long vehicleId) throws SQLException {
+    //     LocationVehicle newest = locationDao.findNewestByVehicleId(vehicleId);
 
-        if (newest != null) {
-            broadcastLocation(newest);
-        } else {
-            System.out.println("⚠️ No location data for vehicle: " + vehicleId);
-        }
-    }
+    //     if (newest != null) {
+    //         broadcastLocation(newest);
+    //     } else {
+    //         System.out.println("⚠️ No location data for vehicle: " + vehicleId);
+    //     }
+    // }
 
-    private void broadcastLocation(LocationVehicle location) {
-        try {
-            // Broadcast to specific vehicle topic
-            messagingTemplate.convertAndSend(
-                    "/topic/location/" + location.getVehicle_id(),
-                    location
-            );
+    // private void broadcastLocation(LocationVehicle location) {
+    //     try {
+    //         // Broadcast to specific vehicle topic
+    //         messagingTemplate.convertAndSend(
+    //                 "/topic/location/" + location.getVehicle_id(),
+    //                 location
+    //         );
 
-            // Broadcast to all vehicles topic
-            messagingTemplate.convertAndSend("/topic/locations/all", location);
+    //         // Broadcast to all vehicles topic
+    //         messagingTemplate.convertAndSend("/topic/locations/all", location);
 
 
-                    } catch (Exception e) {
-            // System.err.println("❌ Error broadcasting location: " + e.getMessage());
-            e.printStackTrace();
-        }
-    }
+    //                 } catch (Exception e) {
+    //         // System.err.println("❌ Error broadcasting location: " + e.getMessage());
+    //         e.printStackTrace();
+    //     }
+    // }
 }

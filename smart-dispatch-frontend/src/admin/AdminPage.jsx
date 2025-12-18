@@ -3,7 +3,8 @@ import AdminSidebar from './components/AdminSidebar';
 import Dashboard from './components/Dashboard';
 import SystemUsers from './components/SystemUsers';
 import Vehicles from './components/Vehicles';
-import VehicleLocations from './components/VehicleLocations'; // Add this
+import VehicleLocations from './components/VehicleLocations';
+import LiveMap from './components/LiveMap';
 import Reports from './components/Reports';
 import Analysis from './components/Analysis';
 import { fetchDashboardData, fetchUsers, fetchReports } from './api.js';
@@ -20,6 +21,7 @@ const AdminPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const stompClientRef = useRef(null);
 
   useEffect(() => {
@@ -78,9 +80,14 @@ const AdminPage = () => {
 
   return (
     <div className="admin-container">
-      <AdminSidebar activeMenu={activeMenu} setActiveMenu={setActiveMenu} />
+      <AdminSidebar 
+        activeMenu={activeMenu} 
+        setActiveMenu={setActiveMenu}
+        collapsed={sidebarCollapsed}
+        setCollapsed={setSidebarCollapsed}
+      />
       
-      <div className="admin-main">
+      <div className="admin-main" style={{ marginLeft: sidebarCollapsed ? '80px' : '250px', transition: 'margin-left 0.3s ease' }}>
         <div className="admin-content">
           {activeMenu === 'dashboard' && <Dashboard dashboardData={dashboardData} />}
           {activeMenu === 'users' && (
@@ -97,7 +104,8 @@ const AdminPage = () => {
             />
           )}
           {activeMenu === 'vehicles' && <Vehicles />}
-          {activeMenu === 'locations' && <VehicleLocations />}  
+          {activeMenu === 'locations' && <VehicleLocations />}
+          {activeMenu === 'livemap' && <LiveMap />}
           {activeMenu === 'reports' && (
             <Reports
               reports={reports}
