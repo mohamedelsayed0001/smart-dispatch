@@ -2,15 +2,18 @@ package com.smartdispatch.security.service;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
 
 import org.springframework.stereotype.Service;
 
 import com.smartdispatch.security.model.AppUserDetails;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.crypto.SecretKey;
 
 @Service
 public class JwtService {
@@ -25,12 +28,14 @@ public class JwtService {
         claims.put("email", email);
         claims.put("role", role);
 
+        SecretKey key = Keys.hmacShaKeyFor(SECRET.getBytes(StandardCharsets.UTF_8));
+
         return Jwts.builder()
-                .setClaims(claims)
-                .setSubject(userId.toString())
-                .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_MS))
-                .signWith(SignatureAlgorithm.HS256, SECRET.getBytes())
+                .claims(claims)
+                .subject(userId.toString())
+                .issuedAt(new Date(System.currentTimeMillis()))
+                .expiration(new Date(System.currentTimeMillis() + EXPIRATION_MS))
+                .signWith(key)
                 .compact();
     }
 
@@ -57,11 +62,13 @@ public class JwtService {
 
     private Claims extractAllClaims(String token) {
         try {
+            SecretKey key = Keys.hmacShaKeyFor(SECRET.getBytes(StandardCharsets.UTF_8));
+
             return Jwts.parser()
-                    .setSigningKey(SECRET.getBytes())
+                    .verifyWith(key)
                     .build()
-                    .parseClaimsJws(token)
-                    .getBody();
+                    .parseSignedClaims(token)
+                    .getPayload();
         }
         catch (Exception e) {
             return null;
