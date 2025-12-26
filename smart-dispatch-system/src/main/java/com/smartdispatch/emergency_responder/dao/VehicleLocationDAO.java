@@ -8,7 +8,6 @@ import org.springframework.stereotype.Repository;
 import com.smartdispatch.emergency_responder.model.*;
 
 import java.sql.Timestamp;
-import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -40,6 +39,7 @@ public class VehicleLocationDAO {
     return location;
   };
 
+  @SuppressWarnings("null")
   public Optional<VehicleLocation> findTopByVehicleIdOrderByTimeStampDesc(Integer vehicleId) {
     try {
       VehicleLocation location = jdbcTemplate.queryForObject(

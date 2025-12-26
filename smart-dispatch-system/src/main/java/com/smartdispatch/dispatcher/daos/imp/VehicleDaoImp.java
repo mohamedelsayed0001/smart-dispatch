@@ -1,7 +1,6 @@
 package com.smartdispatch.dispatcher.daos.imp;
 
 import com.smartdispatch.dispatcher.daos.VehicleDao;
-import com.smartdispatch.dispatcher.domains.entities.Incident;
 import com.smartdispatch.dispatcher.domains.entities.Vehicle;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -19,24 +18,27 @@ public class VehicleDaoImp implements VehicleDao {
         this.jdbcTemplate = jdbcTemplate;
     }
 
+    @SuppressWarnings("null")
     @Override
     public List<Vehicle> findAvailableVehiclesByType(String type) {
         String sql = "SELECT v.*, " +
-                "(SELECT latitude FROM vehicle_location vl WHERE vl.vehicle_id = v.id ORDER BY time_stamp DESC LIMIT 1) AS currentLatitude, " +
-                "(SELECT longitude FROM vehicle_location vl WHERE vl.vehicle_id = v.id ORDER BY time_stamp DESC LIMIT 1) AS currentLongitude " +
-                "FROM Vehicle v WHERE status ='AVAILABLE' AND type = ?";
+        "(SELECT latitude FROM vehicle_location vl WHERE vl.vehicle_id = v.id ORDER BY time_stamp DESC LIMIT 1) AS currentLatitude, " +
+        "(SELECT longitude FROM vehicle_location vl WHERE vl.vehicle_id = v.id ORDER BY time_stamp DESC LIMIT 1) AS currentLongitude " +
+        "FROM Vehicle v WHERE status ='AVAILABLE' AND type = ?";
         return jdbcTemplate.query(sql,VEHICLE_ROW_MAPPER,type);
     }
-
+    
+    @SuppressWarnings("null")
     @Override
     public List<Vehicle> findAvailableVehicles() {
         String sql = "SELECT v.*, " +
-                "(SELECT latitude FROM vehicle_location vl WHERE vl.vehicle_id = v.id ORDER BY time_stamp DESC LIMIT 1) AS currentLatitude, " +
-                "(SELECT longitude FROM vehicle_location vl WHERE vl.vehicle_id = v.id ORDER BY time_stamp DESC LIMIT 1) AS currentLongitude " +
-                "FROM Vehicle v WHERE status = 'AVAILABLE'";
+        "(SELECT latitude FROM vehicle_location vl WHERE vl.vehicle_id = v.id ORDER BY time_stamp DESC LIMIT 1) AS currentLatitude, " +
+        "(SELECT longitude FROM vehicle_location vl WHERE vl.vehicle_id = v.id ORDER BY time_stamp DESC LIMIT 1) AS currentLongitude " +
+        "FROM Vehicle v WHERE status = 'AVAILABLE'";
         return jdbcTemplate.query(sql,VEHICLE_ROW_MAPPER);
     }
-
+    
+    @SuppressWarnings("null")
     @Override
     public List<Vehicle> findAllVehicles() {
         String sql = "SELECT v.*, " +
@@ -54,6 +56,7 @@ public class VehicleDaoImp implements VehicleDao {
     }
 
 
+    @SuppressWarnings("null")
     @Override
     public Vehicle findById(Integer id) {
         String sql = "SELECT * FROM Vehicle WHERE id = ?";

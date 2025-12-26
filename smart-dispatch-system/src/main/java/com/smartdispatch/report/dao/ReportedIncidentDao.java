@@ -46,6 +46,7 @@ public class ReportedIncidentDao {
         return key != null ? key.intValue() : -1;
     }
 
+    @SuppressWarnings("deprecation")
     public AdminIncidentReportDto getIncidentById(int id) {
         final String sql = "SELECT i.id, i.type, i.level, i.description, i.latitude, i.longitude, i.status, i.time_reported, i.time_resolved, u.name AS reporter_name "
                 + "FROM Incident i LEFT JOIN `User` u ON i.citizen_id = u.id WHERE i.id = ?";
@@ -90,6 +91,7 @@ public class ReportedIncidentDao {
         });
     }
 
+    @SuppressWarnings({ "deprecation", "null" })
     public List<AdminIncidentReportDto> getAllIncidents(Integer id, String status, String type, String level, String text) {
         StringBuilder sql = new StringBuilder(
             "SELECT i.id, i.type, i.level, i.description, i.latitude, i.longitude, i.status, i.time_reported, i.time_resolved, u.name AS reporter_name "

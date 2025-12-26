@@ -9,7 +9,7 @@ import com.smartdispatch.vehiclemanagement.model.LocationVehicle;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
+// import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -23,7 +23,7 @@ import java.util.Map;
 public class LocationTrackService {
 
     private final LocationDao locationDao;
-    private final SimpMessagingTemplate messagingTemplate;
+    // private final SimpMessagingTemplate messagingTemplate;
     private final RedisTemplate<String, String> redisTemplate;
 
     public LocationVehicle getNewestLocation(Long id) throws SQLException {

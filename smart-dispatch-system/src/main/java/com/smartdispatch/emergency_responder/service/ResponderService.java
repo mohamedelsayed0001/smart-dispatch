@@ -239,8 +239,8 @@ public class ResponderService {
       throw new RuntimeException("Not authorized for this assignment");
     }
 
-    Incident incident = incidentDAO.findById(assignment.getIncidentId())
-        .orElseThrow(() -> new RuntimeException("Incident not found"));
+    // Incident incident = incidentDAO.findById(assignment.getIncidentId())
+    //     .orElseThrow(() -> new RuntimeException("Incident not found"));
 
     if ("ACCEPTED".equalsIgnoreCase(response)) {
       // ACCEPT: Update statuses

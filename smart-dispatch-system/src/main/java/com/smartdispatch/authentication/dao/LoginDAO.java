@@ -33,6 +33,7 @@ public class LoginDAO {
             WHERE email = ?
             """;
 
+    @SuppressWarnings("null")
     public long createUser(User user) {
 
         KeyHolder keyHolder = new GeneratedKeyHolder();
@@ -56,6 +57,7 @@ public class LoginDAO {
     }
 
 
+    @SuppressWarnings("null")
     public Optional<User> findByEmail(String email) {
         var users = jdbcTemplate.query(GET_USER_BY_EMAIL, this.userRowMapper, email);
         return users.stream().findFirst();

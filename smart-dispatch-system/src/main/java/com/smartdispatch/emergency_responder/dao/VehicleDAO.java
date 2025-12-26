@@ -7,7 +7,6 @@ import org.springframework.stereotype.Repository;
 
 import com.smartdispatch.emergency_responder.model.*;
 
-import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -19,8 +18,6 @@ public class VehicleDAO {
   private static final String SELECT_BY_ID = "SELECT id, type, status, capacity, operator_id FROM Vehicle WHERE id = ?";
 
   private static final String SELECT_BY_OPERATOR = "SELECT id, type, status, capacity, operator_id FROM Vehicle WHERE operator_id = ?";
-
-  private static final String SELECT_BY_STATUS = "SELECT id, type, status, capacity, operator_id FROM Vehicle WHERE status = ?";
 
   private static final String UPDATE_STATUS = "UPDATE Vehicle SET status = ? WHERE id = ?";
 
@@ -39,6 +36,7 @@ public class VehicleDAO {
     return vehicle;
   };
 
+  @SuppressWarnings("null")
   public Optional<Vehicle> findById(Integer id) {
     try {
       Vehicle vehicle = jdbcTemplate.queryForObject(SELECT_BY_ID, vehicleRowMapper, id);
@@ -48,6 +46,7 @@ public class VehicleDAO {
     }
   }
 
+  @SuppressWarnings("null")
   public Optional<Vehicle> findByOperatorId(Integer operatorId) {
     try {
       Vehicle vehicle = jdbcTemplate.queryForObject(SELECT_BY_OPERATOR, vehicleRowMapper, operatorId);

@@ -8,7 +8,6 @@ import org.springframework.stereotype.Repository;
 import com.smartdispatch.emergency_responder.model.*;
 
 import java.sql.Timestamp;
-import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -52,6 +51,7 @@ public class IncidentDAO {
         return incident;
     };
 
+    @SuppressWarnings("null")
     public Optional<Incident> findById(Integer id) {
         try {
             Incident incident = jdbcTemplate.queryForObject(SELECT_BY_ID, incidentRowMapper, id);

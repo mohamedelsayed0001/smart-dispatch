@@ -26,6 +26,7 @@ public class NotificationDAO {
         return notification;
     };
 
+    @SuppressWarnings("null")
     public List<Notification> findPendingByNotifiedId(Integer notifiedId, int limit, int offset) {
         String sql = "SELECT * FROM Notification WHERE notified_id = ? " +
                     "AND time_delivered IS NULL " +

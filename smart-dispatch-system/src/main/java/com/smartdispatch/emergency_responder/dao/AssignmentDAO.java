@@ -47,6 +47,7 @@ public class AssignmentDAO {
 
   public Optional<Assignment> findById(Integer id) {
     try {
+      @SuppressWarnings("null")
       Assignment assignment = jdbcTemplate.queryForObject(SELECT_BY_ID, assignmentRowMapper, id);
       return Optional.ofNullable(assignment);
     } catch (Exception e) {
@@ -54,6 +55,7 @@ public class AssignmentDAO {
     }
   }
 
+  @SuppressWarnings("null")
   public List<Assignment> findByVehicleIdOrderByTimeAssignedDesc(Integer vehicleId) {
     String sql = "SELECT * FROM Assignment WHERE vehicle_id = ? " +
         "ORDER BY time_assigned DESC";

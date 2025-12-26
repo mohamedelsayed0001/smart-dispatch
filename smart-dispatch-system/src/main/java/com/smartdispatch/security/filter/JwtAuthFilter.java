@@ -3,7 +3,6 @@ package com.smartdispatch.security.filter;
 import java.io.IOException;
 
 import com.smartdispatch.security.service.JwtService;
-import org.springframework.core.env.Environment;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
