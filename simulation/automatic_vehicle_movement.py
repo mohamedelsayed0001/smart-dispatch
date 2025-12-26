@@ -9,7 +9,7 @@ import random
 # Configuration
 BACKEND_URL = "http://localhost:8080"
 LOGIN_ENDPOINT = f"{BACKEND_URL}/api/auth/login"
-LOCATION_ENDPOINT = "/api/responder/locations"
+LOCATION_ENDPOINT = "/api/responder/location"
 STATUS_ENDPOINT = "/api/responder/status"
 
 # Simulation parameters
@@ -110,20 +110,20 @@ def vehicle_simulator(operator):
                 print(f"[Vehicle {vehicle_id:03d}] Location update failed: {loc_response.status_code}")
             
             # Randomly change status sometimes
-            if update_count % 10 == 0 and random.random() > 0.7:
-                new_status = random.choice(["AVAILABLE", "ON_DUTY", "UNAVAILABLE"])
-                status_payload = {"status": new_status}
+            # if update_count % 10 == 0 and random.random() > 0.7:
+            #     new_status = random.choice(["AVAILABLE", "ON_DUTY", "UNAVAILABLE"])
+            #     status_payload = {"status": new_status}
                 
-                status_response = requests.post(
-                    f"{BACKEND_URL}{STATUS_ENDPOINT}",
-                    json=status_payload,
-                    headers=headers,
-                    timeout=5
-                )
+            #     status_response = requests.post(
+            #         f"{BACKEND_URL}{STATUS_ENDPOINT}",
+            #         json=status_payload,
+            #         headers=headers,
+            #         timeout=5
+            #     )
                 
-                if status_response.status_code in [200, 201]:
-                    status = new_status
-                    print(f"[Vehicle {vehicle_id:03d}] Status updated to {status}")
+            #     if status_response.status_code in [200, 201]:
+            #         status = new_status
+            #         print(f"[Vehicle {vehicle_id:03d}] Status updated to {status}")
             
             update_count += 1
             
