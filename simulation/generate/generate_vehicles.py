@@ -1,14 +1,21 @@
 import pathlib
 import sys
+import random
+
+LAT_MAX = 30.175387750587074
+LAT_MIN = 29.775256780776914
+LON_MAX = 31.5624047385323
+LON_MIN = 30.996555009635973
 
 if len(sys.argv) != 2:
-    print("Usage: python generate_users.py <N>")
+    print("Usage: python generate_vehicles.py <N>")
     sys.exit(1)
 
 N = int(sys.argv[1])
 
 out = []
 
+# Insert N operators
 users_values = []
 for i in range(1, N + 1):
     name = f"Operator {i:03d}"
@@ -29,6 +36,7 @@ SET @first_new_user_id = LAST_INSERT_ID();
 SET @num = {N};
 """)
 
+# Insert N vehicles
 out.append(f"""
 SET @r := -1;
 INSERT INTO Vehicle (type, status, capacity, operator_id)
@@ -51,7 +59,26 @@ ORDER BY u.id
 LIMIT {N};
 """)
 
-# Resolve path relative to repo root (go up from simulation/generate to smart-dispatch root)
+# Generate initial vehicle locations (randomized within Cairo boundaries)
+print(f"Generating {N} initial vehicle locations within Cairo boundaries...")
+location_values = []
+for i in range(1, N + 1):
+    lat = round(random.uniform(LAT_MIN, LAT_MAX), 8)
+    lon = round(random.uniform(LON_MIN, LON_MAX), 8)
+    location_values.append(f"({i}, {lon}, {lat}, CURRENT_TIMESTAMP)")
+
+# Insert locations in batches of 100
+BATCH_SIZE = 100
+for batch_start in range(0, len(location_values), BATCH_SIZE):
+    batch_end = min(batch_start + BATCH_SIZE, len(location_values))
+    batch_vals = ",\n  ".join(location_values[batch_start:batch_end])
+    out.append(
+        "INSERT INTO vehicle_location (vehicle_id, longitude, latitude, time_stamp) VALUES\n  "
+        + batch_vals
+        + ";"
+    )
+
+# Resolve path relative to repo root
 p = pathlib.Path(__file__).parent.parent.parent / "smart-dispatch-system" / "src" / "main" / "resources" / "data.sql"
 p.write_text("\n".join(out), encoding="utf-8")
-print(f"Wrote {p.resolve()} (N={N})")
+print(f"✓ Wrote {p.resolve()} ({N} operators, {N} vehicles, {N} locations)")
