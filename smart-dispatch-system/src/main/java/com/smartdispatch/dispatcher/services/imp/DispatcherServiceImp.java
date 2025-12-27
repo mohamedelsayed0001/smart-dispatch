@@ -132,7 +132,7 @@ public class DispatcherServiceImp implements DispatcherService {
 
         notificationService.notifyNewAssignment(new NewAssignmentDto(assignmentDto, incident, vehicle),
                 vehicle.getOperatorId());
-        notificationService.notifyNewAssignmentToAdmin(assignmentDto);
+        //notificationService.notifyNewAssignmentToAdmin(assignmentDto);
 
         return assignmentDto;
 
@@ -187,7 +187,7 @@ public class DispatcherServiceImp implements DispatcherService {
         dto.setCurrentLongitude(newVehicle.getCurrentLongitude());
         Vehicle vehicle = vehicleDao.findById(updated.getVehicleId());
         notificationService.notifyNewAssignment(new NewAssignmentDto(dto, incident, vehicle), vehicle.getOperatorId());
-        notificationService.notifyNewAssignmentToAdmin(dto);
+        //notificationService.notifyNewAssignmentToAdmin(dto);
 
         return dto;
     }
@@ -222,16 +222,16 @@ public class DispatcherServiceImp implements DispatcherService {
                 .dispatcherId(13) 
                 .vehicleId(closestVehicle.getId())
                 .incidentId(incidentId)
-                .status("ACTIVE")
+                .status("PENDING")
                 .build();
 
         Integer assignmentId = assignmentDao.createAssignment(assignment);
         assignment.setId(assignmentId);
         
-        incidentDao.updateStatus(incidentId, "ASSIGNED");
+        incidentDao.updateStatus(incidentId, "PENDING");
         vehicleDao.updateStatus(closestVehicle.getId(), "ONROUTE");
         
-        incident.setStatus("ASSIGNED");
+        incident.setStatus("PENDING");
         closestVehicle.setStatus("ONROUTE");
 
         AssignmentDto assignmentDto = assignmentMapper.mapTO(assignment);
@@ -242,7 +242,7 @@ public class DispatcherServiceImp implements DispatcherService {
 
         notificationService.notifyNewAssignment(new NewAssignmentDto(assignmentDto, incident, closestVehicle),
                 closestVehicle.getOperatorId());
-        notificationService.notifyNewAssignmentToAdmin(assignmentDto);
+        // notificationService.notifyNewAssignmentToAdmin(assignmentDto);
 
         return assignmentDto;
     }
@@ -266,16 +266,16 @@ public class DispatcherServiceImp implements DispatcherService {
                 .dispatcherId(13) 
                 .vehicleId(vehicleId)
                 .incidentId(closestIncident.getId())
-                .status("ACTIVE")
+                .status("PENDING")
                 .build();
 
         Integer assignmentId = assignmentDao.createAssignment(assignment);
         assignment.setId(assignmentId);
 
-        incidentDao.updateStatus(closestIncident.getId(), "ASSIGNED");
+        incidentDao.updateStatus(closestIncident.getId(), "PENDING");
         vehicleDao.updateStatus(vehicleId, "ONROUTE");
 
-        closestIncident.setStatus("ASSIGNED");
+        closestIncident.setStatus("PENDING");
         vehicle.setStatus("ONROUTE");
 
         AssignmentDto assignmentDto = assignmentMapper.mapTO(assignment);
@@ -286,7 +286,7 @@ public class DispatcherServiceImp implements DispatcherService {
 
         notificationService.notifyNewAssignment(new NewAssignmentDto(assignmentDto, closestIncident, vehicle),
                 vehicle.getOperatorId());
-        notificationService.notifyNewAssignmentToAdmin(assignmentDto);
+        // notificationService.notifyNewAssignmentToAdmin(assignmentDto);
 
         return assignmentDto;
     }

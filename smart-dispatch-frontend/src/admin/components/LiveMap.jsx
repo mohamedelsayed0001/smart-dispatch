@@ -375,42 +375,41 @@ const LiveMap = () => {
       });
 
       // Subscribe to new admin assignments
-      client.subscribe('/topic/assignment/admin/new', (message) => {
-        try {
-          const assignment = JSON.parse(message.body);
-          addNotification('assignment', 1);
+    //   client.subscribe('/topic/assignment/admin/new', (message) => {
+    //     try {
+    //       const assignment = JSON.parse(message.body);
+    //       addNotification('assignment', 1);
 
-          // Update incident status
-          if (assignment.incidentId) {
-            console.log('📋 New Admin Assignment:', assignment);
-            setIncidents(prev => {
-              const index = prev.findIndex(i => i.id === assignment.incidentId);
-              if (index !== -1) {
-                const updated = [...prev];
-                updated[index] = { ...updated[index], status: 'ASSIGNED' };
-                return updated;
-              }
-              return prev;
-            });
-          }
+    //       // Update incident status
+    //       if (assignment.incidentId) {
+    //         setIncidents(prev => {
+    //           const index = prev.findIndex(i => i.id === assignment.incidentId);
+    //           if (index !== -1) {
+    //             const updated = [...prev];
+    //             updated[index] = { ...updated[index], status: 'PENDING' };
+    //             return updated;
+    //           }
+    //           return prev;
+    //         });
+    //       }
 
-          // Update vehicle status
-          if (assignment.vehicleId) {
-            setVehicles(prev => {
-              const index = prev.findIndex(v => v.id === assignment.vehicleId);
-              if (index !== -1) {
-                const updated = [...prev];
-                updated[index] = { ...updated[index], status: 'ONROUTE' };
-                return updated;
-              }
-              return prev;
-            });
-          }
+    //       // Update vehicle status
+    //       if (assignment.vehicleId) {
+    //         setVehicles(prev => {
+    //           const index = prev.findIndex(v => v.id === assignment.vehicleId);
+    //           if (index !== -1) {
+    //             const updated = [...prev];
+    //             updated[index] = { ...updated[index], status: 'ONROUTE' };
+    //             return updated;
+    //           }
+    //           return prev;
+    //         });
+    //       }
 
-        } catch (e) {
-          console.error('Error parsing admin assignment:', e);
-        }
-      });
+    //     } catch (e) {
+    //       console.error('Error parsing admin assignment:', e);
+    //     }
+    //   });
     };
 
     client.onStompError = (frame) => {

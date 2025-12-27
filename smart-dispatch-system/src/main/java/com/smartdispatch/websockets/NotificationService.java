@@ -42,7 +42,7 @@ public class NotificationService {
         notifyChannel("assignment/new/" + userId, assignmentDto);
     }
 
-    public void notifyNewAssignmentToAdmin(com.smartdispatch.dispatcher.domains.dtos.AssignmentDto assignmentDto) {
-        notifyChannel("assignment/admin/new", assignmentDto);
-    }
+    // public void notifyNewAssignmentToAdmin(com.smartdispatch.dispatcher.domains.dtos.AssignmentDto assignmentDto) {
+    //     notifyChannel("assignment/admin/new", assignmentDto);
+    // }
 }
