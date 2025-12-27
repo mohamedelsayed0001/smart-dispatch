@@ -2,6 +2,7 @@ package com.smartdispatch.admin.controller;
 
 import com.smartdispatch.admin.dto.AvgTimeResolved;
 import com.smartdispatch.admin.dto.IncidentStatsDto;
+import com.smartdispatch.admin.dto.VehicleTypeCount;
 import com.smartdispatch.admin.service.AnalysisService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -26,4 +27,10 @@ public class AnalysisController {
     public List<AvgTimeResolved> getAvgResolved() {
         return analysisService.getAvgTimeResolved();
     }
+    @GetMapping("/vehicle-count")
+    @PreAuthorize("hasRole('ADMIN')")
+    public List<VehicleTypeCount> getVehicleCount() {
+        return analysisService.getVehicleCountByType();
+    }
+
 }

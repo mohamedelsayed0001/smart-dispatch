@@ -24,6 +24,7 @@ ChartJS.register(
 const Analysis = () => {
   const [incidentStats, setIncidentStats] = useState([]);
   const [avgResolved, setAvgResolved] = useState([]);
+  const [vehicleCounts, setVehicleCounts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -67,11 +68,30 @@ const Analysis = () => {
           } catch (e) {
             throw new Error('Response is not valid JSON.');
           }
+        }),
+      fetch(`/api/admin/analysis/vehicle-count`, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': token ? `Bearer ${token}` : ''
+        }
+      })
+        .then(async res => {
+          if (!res.ok) throw new Error('Failed to fetch vehicle count');
+          const text = await res.text();
+          if (text.trim().startsWith('<!doctype') || text.trim().startsWith('<html')) {
+            throw new Error('Server returned HTML instead of JSON. Possible backend/API error.');
+          }
+          try {
+            return JSON.parse(text);
+          } catch (e) {
+            throw new Error('Response is not valid JSON.');
+          }
         })
     ])
-      .then(([incidentData, avgResolvedData]) => {
+      .then(([incidentData, avgResolvedData, vehicleCountData]) => {
         setIncidentStats(incidentData);
         setAvgResolved(avgResolvedData);
+        setVehicleCounts(vehicleCountData);
         setLoading(false);
       })
       .catch(err => {
@@ -221,7 +241,7 @@ const Analysis = () => {
         ) : (
           <>
             {/* Summary Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
               <div className="bg-white rounded-lg shadow p-6">
                 <h3 className="text-sm font-medium text-gray-500 mb-1">Total Incidents</h3>
                 <p className="text-3xl font-bold text-gray-900">{totalIncidents}</p>
@@ -229,6 +249,21 @@ const Analysis = () => {
               <div className="bg-white rounded-lg shadow p-6">
                 <h3 className="text-sm font-medium text-gray-500 mb-1">Months Tracked</h3>
                 <p className="text-3xl font-bold text-gray-900">{months.length}</p>
+              </div>
+              <div className="bg-white rounded-lg shadow p-6">
+                <h3 className="text-sm font-medium text-gray-500 mb-1">Vehicle Count by Type</h3>
+                <ul>
+                  {vehicleCounts && vehicleCounts.length > 0 ? (
+                    vehicleCounts.map(vc => (
+                      <li key={vc.type} className="flex justify-between text-gray-700">
+                        <span className="font-medium">{vc.type}</span>
+                        <span className="font-bold">{vc.count}</span>
+                      </li>
+                    ))
+                  ) : (
+                    <li className="text-gray-400">No data</li>
+                  )}
+                </ul>
               </div>
             </div>
 

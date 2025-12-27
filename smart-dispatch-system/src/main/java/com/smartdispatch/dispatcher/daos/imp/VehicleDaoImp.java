@@ -1,5 +1,7 @@
 package com.smartdispatch.dispatcher.daos.imp;
 
+import com.smartdispatch.admin.dto.AvgTimeResolved;
+import com.smartdispatch.admin.dto.VehicleTypeCount;
 import com.smartdispatch.dispatcher.daos.VehicleDao;
 import com.smartdispatch.dispatcher.domains.entities.Vehicle;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -62,6 +64,18 @@ public class VehicleDaoImp implements VehicleDao {
         String sql = "SELECT * FROM Vehicle WHERE id = ?";
         List<Vehicle> results = jdbcTemplate.query(sql, VEHICLE_ROW_MAPPER, id);
         return results.isEmpty() ? null : results.get(0);
+    }
+
+    @Override
+    public List<VehicleTypeCount> findCountOfVehiclesByType() {
+        String sql = "SELECT type, COUNT(*) AS count FROM Vehicle GROUP BY type";
+        return jdbcTemplate.query(sql, (rs, rowNum) ->
+                new VehicleTypeCount(
+                        rs.getString("type"),
+                        rs.getInt("count")
+                )
+        );
+
     }
 
     @Override
