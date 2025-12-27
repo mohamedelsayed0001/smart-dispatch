@@ -12,6 +12,7 @@ import com.smartdispatch.emergency_responder.model.*;
 import com.smartdispatch.vehiclemanagement.init.VehicleLocationInitializer;
 import com.smartdispatch.websockets.NotificationService;
 import com.smartdispatch.websockets.websocketDto.*;
+import com.smartdispatch.dispatcher.domains.dtos.AssignmentDto;
 
 import java.util.List;
 import java.util.Map;
@@ -29,7 +30,8 @@ public class ResponderService {
   private final VehicleLocationDAO vehicleLocationDAO;
   private final NotificationService notificationService;
   private final RedisTemplate<String, String> redisTemplate;
-
+  private final com.smartdispatch.dispatcher.services.DispatcherService dispatcherService;
+  
   public Map<String, Object> getResponderProfile(Integer responderId) {
     User responder = userDAO.findById(responderId)
         .orElseThrow(() -> new RuntimeException("Responder not found"));
@@ -196,8 +198,13 @@ public class ResponderService {
 
         incidentDAO.updateTimeResolved(assignment.getIncidentId(), "RESOLVED");
 
-        // Return vehicle to available
         vehicleDAO.updateStatus(vehicle.getId(), "AVAILABLE");
+        
+        try {
+            dispatcherService.autoAssignPendingIncidentToVehicle(vehicle.getId());
+        } catch (Exception e) {
+            System.err.println("Failed to auto-assign pending incident: " + e.getMessage());
+        }
       }
 
       assignmentDAO.updateStatusWithCurrentTime(assignmentId, statusDTO.getAssignmentStatus());

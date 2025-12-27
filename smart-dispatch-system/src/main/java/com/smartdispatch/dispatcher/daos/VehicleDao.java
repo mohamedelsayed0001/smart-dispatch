@@ -10,4 +10,5 @@ public interface VehicleDao {
     List<Vehicle> findAllVehicles();
     boolean updateStatus(Integer vehicleId, String status);
     Vehicle findById(Integer id);
+    Vehicle findClosestAvailableVehicle(String type, double latitude, double longitude);
 }

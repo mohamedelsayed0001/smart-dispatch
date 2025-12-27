@@ -9,16 +9,19 @@ import com.smartdispatch.report.dao.ReportedIncidentDao;
 import com.smartdispatch.report.dto.ReportedIncidentDto;
 import com.smartdispatch.websockets.NotificationService;
 import com.smartdispatch.report.dto.AdminIncidentReportDto;
+import com.smartdispatch.dispatcher.domains.dtos.AssignmentDto;
 
 @Service
 public class IncidentService {
 
     private final ReportedIncidentDao reportedIncidentDao;
     private final NotificationService notificationService;
+    private final com.smartdispatch.dispatcher.services.DispatcherService dispatcherService;
 
-    IncidentService(ReportedIncidentDao reportedIncidentDao, NotificationService notificationService) {
+    IncidentService(ReportedIncidentDao reportedIncidentDao, NotificationService notificationService, com.smartdispatch.dispatcher.services.DispatcherService dispatcherService) {
         this.reportedIncidentDao = reportedIncidentDao;
         this.notificationService = notificationService;
+        this.dispatcherService = dispatcherService;
     }
 
     public boolean addIncident(ReportedIncidentDto dto, int userId, String userName) {
@@ -41,8 +44,9 @@ public class IncidentService {
             );
             try {
                 notificationService.notifyChannel("reports", created);
+                dispatcherService.autoAssignClosestVehicle(id);
             } catch (Exception e) {
-                System.out.println("Failed to broadcast new incident: " + e.getMessage());
+                System.out.println("Failed to broadcast new incident or auto-assign: " + e.getMessage());
             }
         }
         catch (Exception e) {

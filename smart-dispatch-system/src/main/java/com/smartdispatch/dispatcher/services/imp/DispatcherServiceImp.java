@@ -132,6 +132,7 @@ public class DispatcherServiceImp implements DispatcherService {
 
         notificationService.notifyNewAssignment(new NewAssignmentDto(assignmentDto, incident, vehicle),
                 vehicle.getOperatorId());
+        notificationService.notifyNewAssignmentToAdmin(assignmentDto);
 
         return assignmentDto;
 
@@ -186,7 +187,123 @@ public class DispatcherServiceImp implements DispatcherService {
         dto.setCurrentLongitude(newVehicle.getCurrentLongitude());
         Vehicle vehicle = vehicleDao.findById(updated.getVehicleId());
         notificationService.notifyNewAssignment(new NewAssignmentDto(dto, incident, vehicle), vehicle.getOperatorId());
+        notificationService.notifyNewAssignmentToAdmin(dto);
 
         return dto;
     }
+
+    @Override
+    @Transactional(isolation = Isolation.SERIALIZABLE)
+    public AssignmentDto autoAssignClosestVehicle(Integer incidentId) {
+        Incident incident = incidentDao.findById(incidentId);
+        if (incident == null) {
+            // throw new IllegalArgumentException("Incident not found");
+            return null; 
+        }
+        
+        // If not pending, nothing to do
+        if (!"PENDING".equalsIgnoreCase(incident.getStatus())) {
+            return null;
+        }
+
+        String targetVehicleType = mapIncidentTypeToVehicleType(incident.getType());
+        
+        Vehicle closestVehicle = vehicleDao.findClosestAvailableVehicle(
+            targetVehicleType, 
+            incident.getLatitude(), 
+            incident.getLongitude()
+        );
+
+        if (closestVehicle == null) {
+            return null;
+        }
+
+        Assignment assignment = Assignment.builder()
+                .dispatcherId(13) 
+                .vehicleId(closestVehicle.getId())
+                .incidentId(incidentId)
+                .status("ACTIVE")
+                .build();
+
+        Integer assignmentId = assignmentDao.createAssignment(assignment);
+        assignment.setId(assignmentId);
+        
+        incidentDao.updateStatus(incidentId, "ASSIGNED");
+        vehicleDao.updateStatus(closestVehicle.getId(), "ONROUTE");
+        
+        incident.setStatus("ASSIGNED");
+        closestVehicle.setStatus("ONROUTE");
+
+        AssignmentDto assignmentDto = assignmentMapper.mapTO(assignment);
+        assignmentDto.setIncidentType(incident.getType());
+        assignmentDto.setDescription(incident.getDescription());
+        assignmentDto.setCurrentLatitude(closestVehicle.getCurrentLatitude());
+        assignmentDto.setCurrentLongitude(closestVehicle.getCurrentLongitude());
+
+        notificationService.notifyNewAssignment(new NewAssignmentDto(assignmentDto, incident, closestVehicle),
+                closestVehicle.getOperatorId());
+        notificationService.notifyNewAssignmentToAdmin(assignmentDto);
+
+        return assignmentDto;
+    }
+
+    @Override
+    @Transactional(isolation = Isolation.SERIALIZABLE)
+    public AssignmentDto autoAssignPendingIncidentToVehicle(Integer vehicleId) {
+        Vehicle vehicle = vehicleDao.findById(vehicleId);
+        String targetIncidentType = mapVehicleTypeToIncidentType(vehicle.getType());
+        
+        Incident closestIncident = incidentDao.findClosestPendingIncident(
+            targetIncidentType,
+            vehicle.getCurrentLatitude(),
+            vehicle.getCurrentLongitude()
+        );
+
+        if (closestIncident == null) {
+            return null;
+        }
+        Assignment assignment = Assignment.builder()
+                .dispatcherId(13) 
+                .vehicleId(vehicleId)
+                .incidentId(closestIncident.getId())
+                .status("ACTIVE")
+                .build();
+
+        Integer assignmentId = assignmentDao.createAssignment(assignment);
+        assignment.setId(assignmentId);
+
+        incidentDao.updateStatus(closestIncident.getId(), "ASSIGNED");
+        vehicleDao.updateStatus(vehicleId, "ONROUTE");
+
+        closestIncident.setStatus("ASSIGNED");
+        vehicle.setStatus("ONROUTE");
+
+        AssignmentDto assignmentDto = assignmentMapper.mapTO(assignment);
+        assignmentDto.setIncidentType(closestIncident.getType());
+        assignmentDto.setDescription(closestIncident.getDescription());
+        assignmentDto.setCurrentLatitude(vehicle.getCurrentLatitude());
+        assignmentDto.setCurrentLongitude(vehicle.getCurrentLongitude());
+
+        notificationService.notifyNewAssignment(new NewAssignmentDto(assignmentDto, closestIncident, vehicle),
+                vehicle.getOperatorId());
+        notificationService.notifyNewAssignmentToAdmin(assignmentDto);
+
+        return assignmentDto;
+    }
+
+    private String mapIncidentTypeToVehicleType(String incidentType) {
+        if ("FIRE".equalsIgnoreCase(incidentType)) return "FIRETRUCK";
+        if ("MEDICAL".equalsIgnoreCase(incidentType)) return "AMBULANCE";
+        if ("CRIME".equalsIgnoreCase(incidentType)) return "POLICE";
+        return "???"; 
+    }
+    
+    private String mapVehicleTypeToIncidentType(String vehicleType) {
+        if ("FIRETRUCK".equalsIgnoreCase(vehicleType)) return "FIRE";
+        if ("AMBULANCE".equalsIgnoreCase(vehicleType)) return "MEDICAL";
+        if ("POLICE".equalsIgnoreCase(vehicleType)) return "CRIME";
+        return "???";
+    }
 }
+
+

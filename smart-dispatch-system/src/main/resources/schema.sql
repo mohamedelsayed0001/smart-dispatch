@@ -50,7 +50,8 @@ CREATE TABLE Vehicle (
     FOREIGN KEY (operator_id) REFERENCES User(id) ON DELETE SET NULL,
     INDEX idx_vehicle_status (status),
     INDEX idx_vehicle_operator (operator_id),
-    INDEX idx_vehicle_type (type)
+    INDEX idx_vehicle_type (type),
+    INDEX idx_vehicle_status_type (status, type)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE vehicle_location (

@@ -10,5 +10,5 @@ public interface IncidentDao {
     List<Incident> getAllIncidents();
     boolean updateStatus(Integer incidentId, String status);
     Incident findById(Integer id);
-
+    Incident findClosestPendingIncident(String type, double latitude, double longitude);
 }

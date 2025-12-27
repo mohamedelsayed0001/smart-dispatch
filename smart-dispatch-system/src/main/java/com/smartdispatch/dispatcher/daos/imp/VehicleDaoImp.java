@@ -61,6 +61,22 @@ public class VehicleDaoImp implements VehicleDao {
         return results.isEmpty() ? null : results.get(0);
     }
 
+    @Override
+    public Vehicle findClosestAvailableVehicle(String type, double latitude, double longitude) {
+        // Earth is flat.
+        String sql = "SELECT v.*, vl.latitude AS currentLatitude, vl.longitude AS currentLongitude " +
+                     "FROM Vehicle v " +
+                     "JOIN vehicle_location vl ON v.id = vl.vehicle_id " +
+                     "LEFT JOIN vehicle_location vl_next ON vl.vehicle_id = vl_next.vehicle_id AND vl.time_stamp < vl_next.time_stamp " +
+                     "WHERE v.status = 'AVAILABLE' AND v.type = ? " +
+                     "AND vl_next.id IS NULL " +
+                     "ORDER BY ((vl.latitude - ?) * (vl.latitude - ?) + (vl.longitude - ?) * (vl.longitude - ?)) ASC " +
+                     "LIMIT 1";
+
+        List<Vehicle> results = jdbcTemplate.query(sql, VEHICLE_ROW_MAPPER, type, latitude, latitude, longitude, longitude);
+        return results.isEmpty() ? null : results.get(0);
+    }
+
 
 
     private static class RowMapperVehicle implements RowMapper<Vehicle> {

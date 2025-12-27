@@ -44,6 +44,26 @@ public class IncidentDaoImp implements IncidentDao {
         return results.isEmpty() ? null : results.get(0);
     }
 
+    @Override
+    public Incident findClosestPendingIncident(String type, double latitude, double longitude) {
+        String sql = "SELECT * FROM Incident " +
+                     "WHERE status = 'PENDING' AND type = ? " +
+                     "ORDER BY (POWER(latitude - ?, 2) + POWER(longitude - ?, 2)) ASC " +
+                     "LIMIT 1";
+        
+        // Optimize using simple multiplication if preferred, but keeping POWER for consistency with Request 65 if they accepted it, 
+        // OR using multiplication as per Request 79. User wanted multiplication.
+        // Let's use multiplication for consistency with the VehicleDao change request.
+        
+         sql = "SELECT * FROM Incident " +
+                     "WHERE status = 'PENDING' AND type = ? " +
+                     "ORDER BY ((latitude - ?) * (latitude - ?) + (longitude - ?) * (longitude - ?)) ASC " +
+                     "LIMIT 1";
+
+        List<Incident> results = jdbcTemplate.query(sql, INCIDENT_ROW_MAPPER, type, latitude, latitude, longitude, longitude);
+        return results.isEmpty() ? null : results.get(0);
+    }
+
     private static class RowMapperIncident implements RowMapper<Incident> {
 
         @Override

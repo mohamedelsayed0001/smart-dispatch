@@ -112,6 +112,17 @@ export function connect({ onMessage, onVehicle, onIncident, onAssignment, onNoti
       }
     })
 
+    // Subscribe to new assignments for admin
+    client.subscribe('/topic/assignment/admin/new', (msg) => {
+      try {
+        console.log('[stomp] New assignment message:', msg.body)
+        const body = JSON.parse(msg.body)
+        triggerCallbacks('onAssignment', body)
+      } catch (e) {
+        console.error('[stomp] Error parsing new assignment message:', e)
+      }
+    })
+
     // Subscribe to incidents (keeping existing)
     client.subscribe('/topic/incident/update', (msg) => {
       try {

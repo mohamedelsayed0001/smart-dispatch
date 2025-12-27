@@ -22,4 +22,8 @@ public interface DispatcherService {
   AssignmentDto reassignAssignment(ReassignRequest request);
 
   List<IncidentDto> getAllIncidents();
+
+  AssignmentDto autoAssignClosestVehicle(Integer incidentId);
+  
+  AssignmentDto autoAssignPendingIncidentToVehicle(Integer vehicleId);
 }

@@ -43,7 +43,7 @@ const createIncidentIcon = (type, status) => {
   let bgColor = '#ef4444'; // red for pending
   if (status === 'ASSIGNED') bgColor = '#eab308'; // yellow for assigned
   else if (status === 'RESOLVED') bgColor = '#22c55e'; // green for resolved
-  
+
   return L.divIcon({
     html: `
       <div class="map-marker-pin" style="--pin-color: ${bgColor};">
@@ -65,7 +65,7 @@ const createVehicleIcon = (type, status) => {
   if (status === 'AVAILABLE') bgColor = '#22c55e'; // green
   else if (status === 'ON_ROUTE' || status === 'ONROUTE') bgColor = '#f59e0b'; // orange
   else if (status === 'RESOLVING' || status === 'BUSY') bgColor = '#ef4444'; // red
-  
+
   return L.divIcon({
     html: `
       <div class="map-marker-pin" style="--pin-color: ${bgColor};">
@@ -83,7 +83,7 @@ const createVehicleIcon = (type, status) => {
 // Floating detail window component
 const DetailWindow = ({ item, type, onClose }) => {
   if (!item) return null;
-  
+
   return (
     <div className="livemap-detail-window">
       <div className="livemap-detail-header">
@@ -155,7 +155,7 @@ const DetailWindow = ({ item, type, onClose }) => {
             <div className="livemap-detail-row">
               <span className="livemap-detail-label">Location:</span>
               <span className="livemap-detail-value">
-                {item.latitude?.toFixed(6) || item.lat?.toFixed(6)}, 
+                {item.latitude?.toFixed(6) || item.lat?.toFixed(6)},
                 {item.longitude?.toFixed(6) || item.lng?.toFixed(6)}
               </span>
             </div>
@@ -265,7 +265,7 @@ const LiveMap = () => {
         try {
           const updateDto = JSON.parse(message.body);
           console.log('🚗 Vehicle update:', updateDto);
-          
+
           setVehicles(prev => {
             const index = prev.findIndex(v => v.id === updateDto.vehicleId);
             if (index >= 0) {
@@ -282,7 +282,7 @@ const LiveMap = () => {
             // Vehicle doesn't exist, don't add incomplete vehicle
             return prev;
           });
-          
+
           // Also update live locations
           if (updateDto.vehicleId && updateDto.latitude && updateDto.longitude) {
             setLiveLocations(prev => ({
@@ -304,13 +304,13 @@ const LiveMap = () => {
         try {
           const incident = JSON.parse(message.body);
           console.log('🚨 Incident update:', incident);
-          
+
           // Add notification for incident update
           const existingIncident = incidents.find(i => i.id === incident.id);
           if (!existingIncident && (incident.status === 'PENDING' || incident.status === 'ASSIGNED')) {
             addNotification('incident', 1);
           }
-          
+
           setIncidents(prev => {
             const index = prev.findIndex(i => i.id === incident.id);
             // Only show pending or assigned incidents
@@ -321,7 +321,7 @@ const LiveMap = () => {
               }
               return prev;
             }
-            
+
             if (index >= 0) {
               const updated = [...prev];
               updated[index] = { ...updated[index], ...incident };
@@ -339,10 +339,10 @@ const LiveMap = () => {
         try {
           const updateDto = JSON.parse(message.body);
           console.log('📋 Assignment update:', updateDto);
-          
+
           // Add notification for assignment response (ACCEPTED, REJECTED, CANCELED)
           addNotification('assignment', 1);
-          
+
           // Note: This DTO only contains responderId, assignmentId, and response
           // The actual vehicle/incident status updates come through /topic/vehicle/update
           // and /topic/incident/update channels
@@ -373,6 +373,44 @@ const LiveMap = () => {
           console.error('Error parsing report:', e);
         }
       });
+
+      // Subscribe to new admin assignments
+      client.subscribe('/topic/assignment/admin/new', (message) => {
+        try {
+          const assignment = JSON.parse(message.body);
+          addNotification('assignment', 1);
+
+          // Update incident status
+          if (assignment.incidentId) {
+            console.log('📋 New Admin Assignment:', assignment);
+            setIncidents(prev => {
+              const index = prev.findIndex(i => i.id === assignment.incidentId);
+              if (index !== -1) {
+                const updated = [...prev];
+                updated[index] = { ...updated[index], status: 'ASSIGNED' };
+                return updated;
+              }
+              return prev;
+            });
+          }
+
+          // Update vehicle status
+          if (assignment.vehicleId) {
+            setVehicles(prev => {
+              const index = prev.findIndex(v => v.id === assignment.vehicleId);
+              if (index !== -1) {
+                const updated = [...prev];
+                updated[index] = { ...updated[index], status: 'ONROUTE' };
+                return updated;
+              }
+              return prev;
+            });
+          }
+
+        } catch (e) {
+          console.error('Error parsing admin assignment:', e);
+        }
+      });
     };
 
     client.onStompError = (frame) => {
@@ -398,15 +436,15 @@ const LiveMap = () => {
     setNotifications(prev => {
       const existing = prev.find(n => n.type === type);
       if (existing) {
-        return prev.map(n => 
-          n.type === type 
+        return prev.map(n =>
+          n.type === type
             ? { ...n, count: n.count + count, timestamp: Date.now() }
             : n
         );
       }
       return [...prev, { type, count, timestamp: Date.now(), id: Date.now() }];
     });
-    
+
     // Auto-remove after 5 seconds
     setTimeout(() => {
       setNotifications(prev => prev.filter(n => Date.now() - n.timestamp > 5000 ? false : true));
@@ -419,14 +457,14 @@ const LiveMap = () => {
 
   // Calculate bounds for all markers
   const allBounds = [];
-  
+
   // Add incident locations
   incidents.forEach(incident => {
     if (incident.latitude && incident.longitude) {
       allBounds.push([incident.latitude, incident.longitude]);
     }
   });
-  
+
   // Add vehicle locations (prefer live locations, fallback to vehicle data)
   vehicles.forEach(vehicle => {
     const liveLocation = liveLocations[vehicle.id];
@@ -465,7 +503,7 @@ const LiveMap = () => {
         <div className="livemap-notifications-container">
           {notifications.map(notif => (
             <div key={notif.id} className="livemap-notification-popup">
-              <button 
+              <button
                 className="livemap-notification-close"
                 onClick={() => removeNotification(notif.id)}
               >
@@ -520,7 +558,7 @@ const LiveMap = () => {
               </span>
             </label>
           </div>
-          
+
           <div className="livemap-legend-section">
             <h4 className="livemap-control-section-title">Legend</h4>
             <div className="livemap-legend-items-compact">
@@ -562,7 +600,7 @@ const LiveMap = () => {
           {/* Render incidents */}
           {showIncidents && incidents.map((incident) => {
             if (!incident.latitude || !incident.longitude) return null;
-            
+
             return (
               <Marker
                 key={`incident-${incident.id}`}
@@ -593,9 +631,9 @@ const LiveMap = () => {
             const liveLocation = liveLocations[vehicle.id];
             const lat = liveLocation?.lat || vehicle.latitude;
             const lng = liveLocation?.lng || vehicle.longitude;
-            
+
             if (!lat || !lng) return null;
-            
+
             // Merge vehicle data with live location
             const vehicleData = {
               ...vehicle,
@@ -603,7 +641,7 @@ const LiveMap = () => {
               longitude: lng,
               timestamp: liveLocation?.timestamp || vehicle.lastUpdate
             };
-            
+
             return (
               <Marker
                 key={`vehicle-${vehicle.id}`}
