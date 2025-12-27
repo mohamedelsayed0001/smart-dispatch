@@ -6,11 +6,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.smartdispatch.dispatcher.domains.dtos.AssignmentDto;
+import com.smartdispatch.dispatcher.domains.dtos.IncidentDto;
 import com.smartdispatch.emergency_responder.dto.*;
 import com.smartdispatch.emergency_responder.service.ResponderService;
 import com.smartdispatch.security.model.AppUserDetails;
+import com.smartdispatch.websockets.websocketDto.VehicleUpdateDto;
 
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+
 import java.util.List;
 import java.util.Map;
 
@@ -33,37 +37,38 @@ public class ResponderController {
         return ResponseEntity.ok(profile);
     }
 
-    @GetMapping("/assignments/{assignmentId}")
-    public ResponseEntity<AssignmentDTO> getAssignmentDetails(
-            @AuthenticationPrincipal AppUserDetails userDetails,
-            @PathVariable Integer assignmentId) {
+    @GetMapping("/incidents/{incidentId}")
+    public ResponseEntity<IncidentDto> getIncidentDetails(
+    @AuthenticationPrincipal AppUserDetails userDetails,
+    @PathVariable Integer incidentId) {
 
-        Integer responderId = userDetails.getId().intValue();
-        AssignmentDTO assignment = responderService.getAssignmentDetails(assignmentId, responderId);
+    IncidentDto incident =
+    responderService.getIncidentDetails(incidentId);
 
-        return ResponseEntity.ok(assignment);
-    }
-
-    @GetMapping("/assignments/{assignmentId}/locations")
-    public ResponseEntity<LocationsResponseDTO> getAssignmentLocations(
-            @AuthenticationPrincipal AppUserDetails userDetails,
-            @PathVariable Integer assignmentId) {
-
-        Integer responderId = userDetails.getId().intValue();
-        LocationsResponseDTO locations = responderService.getAssignmentLocations(assignmentId, responderId);
-
-        return ResponseEntity.ok(locations);
+    return ResponseEntity.ok(incident);
     }
 
     @PostMapping("/location")
     public ResponseEntity<Void> updateLocation(
             @AuthenticationPrincipal AppUserDetails userDetails,
-            @RequestBody LocationDTO locationDTO) {
+            @RequestBody VehicleUpdateDto locationDTO) {
 
         Integer responderId = userDetails.getId().intValue();
         responderService.updateVehicleLocation(responderId, locationDTO);
 
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/assignments")
+    public ResponseEntity<List<AssignmentDto>> getAllAssignments(
+            @AuthenticationPrincipal AppUserDetails userDetails,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+
+        Integer responderId = userDetails.getId().intValue();
+        List<AssignmentDto> assignments = responderService.getAllAssignments(responderId, page, size);
+
+        return ResponseEntity.ok(assignments);
     }
 
     @PutMapping("/assignments/{assignmentId}/status")
@@ -72,78 +77,8 @@ public class ResponderController {
             @PathVariable Integer assignmentId,
             @RequestBody StatusUpdateDTO statusDTO) {
 
-        Integer responderId = userDetails.getId().intValue();
-        responderService.updateStatus(assignmentId, responderId, statusDTO);
+        responderService.updateStatus(assignmentId, statusDTO);
 
         return ResponseEntity.ok().build();
-    }
-
-    @PostMapping("/assignments/{assignmentId}/arrive")
-    public ResponseEntity<Void> markArrival(
-            @AuthenticationPrincipal AppUserDetails userDetails,
-            @PathVariable Integer assignmentId) {
-
-        Integer responderId = userDetails.getId().intValue();
-
-        StatusUpdateDTO statusDTO = new StatusUpdateDTO();
-        statusDTO.setVehicleStatus("Resolving");
-
-        responderService.updateStatus(assignmentId, responderId, statusDTO);
-
-        return ResponseEntity.ok().build();
-    }
-
-    @PostMapping("/assignments/{assignmentId}/complete")
-    public ResponseEntity<Void> completeAssignment(
-            @AuthenticationPrincipal AppUserDetails userDetails,
-            @PathVariable Integer assignmentId) {
-
-        Integer responderId = userDetails.getId().intValue();
-
-        StatusUpdateDTO statusDTO = new StatusUpdateDTO();
-        statusDTO.setAssignmentStatus("completed");
-
-        responderService.updateStatus(assignmentId, responderId, statusDTO);
-
-        return ResponseEntity.ok().build();
-    }
-
-    @GetMapping("/assignments")
-    public ResponseEntity<List<AssignmentDTO>> getAllAssignments(
-            @AuthenticationPrincipal AppUserDetails userDetails,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
-
-        Integer responderId = userDetails.getId().intValue();
-        List<AssignmentDTO> assignments = responderService.getAllAssignments(responderId, page, size);
-
-        return ResponseEntity.ok(assignments);
-    }
-
-    @PostMapping("/assignments/{assignmentId}/respond")
-    public ResponseEntity<AssignmentActionResponseDTO> respondToAssignment(
-            @AuthenticationPrincipal AppUserDetails userDetails,
-            @PathVariable Integer assignmentId,
-            @RequestBody AssignmentResponseDTO responseDTO) {
-
-        Integer responderId = userDetails.getId().intValue();
-
-        AssignmentActionResponseDTO response =
-                responderService.respondToAssignment(assignmentId, responderId, responseDTO.getResponse());
-
-        return ResponseEntity.ok(response);
-    }
-
-    @PostMapping("/assignments/{assignmentId}/cancel")
-    public ResponseEntity<AssignmentActionResponseDTO> cancelAssignment(
-            @AuthenticationPrincipal AppUserDetails userDetails,
-            @PathVariable Integer assignmentId) {
-
-        Integer responderId = userDetails.getId().intValue();
-
-        AssignmentActionResponseDTO result =
-                responderService.cancelAssignment(assignmentId, responderId);
-
-        return ResponseEntity.ok(result);
     }
 }

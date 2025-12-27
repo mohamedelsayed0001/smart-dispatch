@@ -22,7 +22,6 @@ import com.smartdispatch.dispatcher.mappers.imp.IncidentMapper;
 import com.smartdispatch.dispatcher.mappers.imp.VehicleMapper;
 import com.smartdispatch.dispatcher.services.DispatcherService;
 import com.smartdispatch.websockets.NotificationService;
-import com.smartdispatch.websockets.websocketDto.NewAssignmentDto;
 
 @Service
 public class DispatcherServiceImp implements DispatcherService {
@@ -130,9 +129,7 @@ public class DispatcherServiceImp implements DispatcherService {
         assignmentDto.setCurrentLatitude(vehicle.getCurrentLatitude());
         assignmentDto.setCurrentLongitude(vehicle.getCurrentLongitude());
 
-        notificationService.notifyNewAssignment(new NewAssignmentDto(assignmentDto, incident, vehicle),
-                vehicle.getOperatorId());
-        //notificationService.notifyNewAssignmentToAdmin(assignmentDto);
+        notificationService.notifyNewAssignment(vehicle.getOperatorId(), assignmentDto);
 
         return assignmentDto;
 
@@ -185,9 +182,8 @@ public class DispatcherServiceImp implements DispatcherService {
         dto.setDescription(incident.getDescription());
         dto.setCurrentLatitude(newVehicle.getCurrentLatitude());
         dto.setCurrentLongitude(newVehicle.getCurrentLongitude());
-        Vehicle vehicle = vehicleDao.findById(updated.getVehicleId());
-        notificationService.notifyNewAssignment(new NewAssignmentDto(dto, incident, vehicle), vehicle.getOperatorId());
-        //notificationService.notifyNewAssignmentToAdmin(dto);
+
+        notificationService.notifyNewAssignment(newVehicle.getOperatorId(), dto);
 
         return dto;
     }

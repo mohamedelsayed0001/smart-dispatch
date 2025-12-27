@@ -3,6 +3,7 @@ package com.smartdispatch.websockets;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
+import com.smartdispatch.dispatcher.domains.dtos.AssignmentDto;
 import com.smartdispatch.dispatcher.domains.dtos.IncidentDto;
 import com.smartdispatch.websockets.websocketDto.*;
 
@@ -38,8 +39,8 @@ public class NotificationService {
         notifyChannel("assignment/update", assignmentUpdateDto);
     }
 
-    public void notifyNewAssignment(NewAssignmentDto assignmentDto, Integer userId) {
-        notifyChannel("assignment/new/" + userId, assignmentDto);
+    public void notifyNewAssignment(Integer operatorId, AssignmentDto assignmentDto) {
+        notifyChannel("assignment/new/" + operatorId, assignmentDto);
     }
 
     // public void notifyNewAssignmentToAdmin(com.smartdispatch.dispatcher.domains.dtos.AssignmentDto assignmentDto) {

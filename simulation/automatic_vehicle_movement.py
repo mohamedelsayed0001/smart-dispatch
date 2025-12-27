@@ -5,178 +5,311 @@ import threading
 import time
 from datetime import datetime
 import random
+import logging
+import websocket
 
 # Configuration
 BACKEND_URL = "http://localhost:8080"
 LOGIN_ENDPOINT = f"{BACKEND_URL}/api/auth/login"
-LOCATION_ENDPOINT = "/api/responder/location"
-STATUS_ENDPOINT = "/api/responder/status"
+PROFILE_ENDPOINT = f"{BACKEND_URL}/api/responder/info"
+OSRM_ENDPOINT = "https://router.project-osrm.org/route/v1/driving"
+
+# WebSocket configuration
+WS_URL = "ws://localhost:8080/ws-raw"
+
+# Cairo boundaries
+LAT_MAX = 30.175387750587074
+LAT_MIN = 29.775256780776914
+LON_MAX = 31.5624047385323
+LON_MIN = 30.996555009635973
+
+RESOLVING_TIME = 10
 
 # Simulation parameters
 OPERATORS = []
 THREADS = []
 RUNNING = True
+UPDATE_INTERVAL = 2
+
+# Suppress debug logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+class StompWSClient:
+    """A minimal STOMP over WebSocket client."""
+    def __init__(self, url, headers=None, on_message=None):
+        self.url = url
+        self.headers = headers or {}
+        self.on_message_callback = on_message
+        self.ws = None
+        self.connected = False
+        
+    def connect(self):
+        self.ws = websocket.WebSocketApp(
+            self.url,
+            on_open=self._on_open,
+            on_message=self._on_message,
+            on_error=self._on_error,
+            on_close=self._on_close
+        )
+        self.wst = threading.Thread(target=self.ws.run_forever)
+        self.wst.daemon = True
+        self.wst.start()
+        
+        # Wait for connection
+        timeout = 5
+        start_time = time.time()
+        while not self.connected and time.time() - start_time < timeout:
+            time.sleep(0.1)
+        return self.connected
+
+    def _on_open(self, ws):
+        # Send STOMP CONNECT frame
+        headers = {
+            "accept-version": "1.1,1.2",
+            "heart-beat": "10000,10000"
+        }
+        headers.update(self.headers)
+        self.send_frame("CONNECT", headers)
+
+    def _on_message(self, ws, message):
+        if message == "\n": return # Heartbeat
+        
+        parts = message.split("\n\n", 1)
+        header_part = parts[0]
+        body = parts[1].strip("\x00") if len(parts) > 1 else ""
+        
+        lines = header_part.split("\n")
+        command = lines[0].strip()
+        if not command: return
+        
+        headers = {}
+        for line in lines[1:]:
+            if ":" in line:
+                k, v = line.split(":", 1)
+                headers[k.strip()] = v.strip()
+        
+        if command == "CONNECTED":
+            self.connected = True
+            logger.debug("STOMP Connected")
+        elif command == "MESSAGE":
+            if self.on_message_callback:
+                self.on_message_callback(headers, body)
+
+    def _on_error(self, ws, error):
+        logger.error(f"WebSocket Error: {error}")
+
+    def _on_close(self, ws, close_status_code, close_msg):
+        self.connected = False
+        logger.info("WebSocket Closed")
+
+    def send_frame(self, command, headers=None, body=""):
+        frame = f"{command}\n"
+        if headers:
+            for k, v in headers.items():
+                frame += f"{k}:{v}\n"
+        frame += "\n" + body + "\x00"
+        self.ws.send(frame)
+
+    def subscribe(self, destination, sub_id):
+        self.send_frame("SUBSCRIBE", {"destination": destination, "id": sub_id, "ack": "auto"})
+
+    def disconnect(self):
+        if self.ws:
+            self.ws.close()
+
+class VehicleSimulator:
+    def __init__(self, operator):
+        self.operator = operator
+        self.responder_id = operator["id"]
+        v_info = operator.get("assignedVehicle", {})
+        
+        if not v_info:
+            print(f"[Responder {self.responder_id:03d}] Error: No vehicle assigned!")
+            self.vehicle_id = None
+        else:
+            self.vehicle_id = v_info.get("id")
+            
+        self.token = operator["token"]
+        self.current_lat = v_info.get("currentLatitude")
+        self.current_lon = v_info.get("currentLongitude")
+        self.status = v_info.get("status")
+        self.current_assignment = None
+        
+        self.route_points = []
+        self.route_index = 0
+        self.stomp = None
+        self.running = True
+        
+    def connect_websocket(self):
+        try:
+            headers = {"Authorization": f"Bearer {self.token}"}
+            self.stomp = StompWSClient(WS_URL, headers=headers, on_message=self.on_stomp_message)
+            
+            if self.stomp.connect():
+                destination = f'/topic/assignment/new/{self.responder_id}'
+                self.stomp.subscribe(destination, f'sub-{self.responder_id}')
+                print(f"[Vehicle {self.vehicle_id:03d}] WebSocket connected and subscribed to {destination}")
+                return True
+            return False
+        except Exception as e:
+            print(f"[Vehicle {self.vehicle_id:03d}] WebSocket connection error: {e}")
+            return False
+    
+    def on_stomp_message(self, headers, body):
+        try:
+            message = json.loads(body)
+            print(f"[Vehicle {self.vehicle_id:03d}] Received assignment message")
+            
+            if not self.current_assignment:
+                self.current_assignment = message
+                assignment_id = message.get("id")
+                incident_id = message.get("incidentId")
+                print(f"[Vehicle {self.vehicle_id:03d}] Accepted assignment #{assignment_id}")
+                
+                self.update_status(assignment_id, vehicle_status="ONROUTE", assignment_status="ACTIVE", incident_status="ASSIGNED")
+                
+                incident_details = self.get_incident_details(incident_id)
+                if incident_details:
+                    incident_lat = incident_details.get("latitude")
+                    incident_lon = incident_details.get("longitude")
+                
+                if incident_lat and incident_lon:
+                    route = self.get_route(self.current_lon, self.current_lat, incident_lon, incident_lat)
+                    if route:
+                        self.route_points = route
+                        self.route_index = 0
+                        print(f"[Vehicle {self.vehicle_id:03d}] Route calculated: {len(route)} points")
+                    else:
+                        print(f"[Vehicle {self.vehicle_id:03d}] Failed to calculate route")
+                else:
+                    print(f"[Vehicle {self.vehicle_id:03d}] Error: Missing incident coordinates")
+        except Exception as e:
+            print(f"[Vehicle {self.vehicle_id:03d}] Message handling error: {e}")
+
+    def get_incident_details(self, incident_id):
+        try:
+            headers = {"Authorization": f"Bearer {self.token}"}
+            url = f"{BACKEND_URL}/api/responder/incidents/{incident_id}"
+            response = requests.get(url, headers=headers, timeout=5)
+            if response.status_code == 200:
+                return response.json()
+            return None
+        except Exception as e:
+            print(f"[Vehicle {self.vehicle_id:03d}] Error fetching incident {incident_id}: {e}")
+            return None
+
+    def get_route(self, start_lon, start_lat, end_lon, end_lat):
+        try:
+            url = f"{OSRM_ENDPOINT}/{start_lon},{start_lat};{end_lon},{end_lat}?overview=full&geometries=geojson"
+            response = requests.get(url, timeout=5)
+            if response.status_code == 200:
+                data = response.json()
+                if data.get("routes") and len(data["routes"]) > 0:
+                    coords = data["routes"][0]["geometry"]["coordinates"]
+                    return [(coord[1], coord[0]) for coord in coords]
+            return None
+        except Exception as e:
+            print(f"[Vehicle {self.vehicle_id:03d}] Route error: {e}")
+            return None
+    
+    def update_location(self, lat, lon):
+        try:
+            headers = {"Authorization": f"Bearer {self.token}", "Content-Type": "application/json"}
+            payload = {
+                "vehicleId": self.vehicle_id,
+                "newStatus": self.status,
+                "latitude": round(lat, 8),
+                "longitude": round(lon, 8)
+            }
+            requests.post(f"{BACKEND_URL}/api/responder/location", json=payload, headers=headers, timeout=5)
+        except: pass
+    
+    def update_status(self, assignment_id, vehicle_status=None, assignment_status=None, incident_status=None):
+        try:
+            headers = {"Authorization": f"Bearer {self.token}", "Content-Type": "application/json"}
+            payload = {}
+            if vehicle_status: payload["vehicleStatus"] = vehicle_status; self.status = vehicle_status
+            if assignment_status: payload["assignmentStatus"] = assignment_status
+            if incident_status: payload["incidentStatus"] = incident_status
+            
+            response = requests.put(f"{BACKEND_URL}/api/responder/assignments/{assignment_id}/status", 
+                                  json=payload, headers=headers, timeout=5)
+            return response.status_code in [200, 201]
+        except: return False
+    
+    def run(self):
+        if not self.vehicle_id or not self.connect_websocket():
+            return
+        
+        print(f"[Vehicle {self.vehicle_id:03d}] Started simulation")
+        try:
+            while self.running and RUNNING:
+                if self.current_assignment and self.route_points:
+                    assignment_id = self.current_assignment.get("id")
+                    if self.route_index < len(self.route_points):
+                        point = self.route_points[self.route_index]
+                        self.current_lat, self.current_lon = point
+                        self.route_index += 1
+                        self.update_location(self.current_lat, self.current_lon)
+                        
+                        if self.route_index == int(len(self.route_points) * 0.95):
+                            self.update_status(assignment_id, vehicle_status="RESOLVING")
+                    else:
+                        print(f"[Vehicle {self.vehicle_id:03d}] Reached site. Resolving...")
+                        time.sleep(RESOLVING_TIME)
+                        if self.update_status(assignment_id, vehicle_status="AVAILABLE", 
+                                             assignment_status="COMPLETED", incident_status="RESOLVED"):
+                            self.current_assignment = None; self.route_points = []; self.route_index = 0
+                time.sleep(UPDATE_INTERVAL)
+        except Exception as e:
+            print(f"[Vehicle {self.vehicle_id:03d}] Simulation error: {e}")
+        finally:
+            if self.stomp: self.stomp.disconnect()
 
 def load_operators(n):
-    """Generate operator credentials for N operators."""
-    operators = []
-    for i in range(1, n + 1):
-        operators.append({
-            "id": i,
-            "email": f"operator{i:03d}@sim.local",
-            "password": "password",
-            "token": None,
-            "vehicle_id": None
-        })
-    return operators
+    return [{"id": i, "email": f"operator{i:03d}@sim.local", "password": "password", "token": None} for i in range(1, n + 1)]
 
-def login_operator(operator):
-    """Login operator and store token."""
+def login_and_get_profile(operator):
     try:
-        payload = {
-            "email": operator["email"],
-            "password": operator["password"]
-        }
+        payload = {"email": operator["email"], "password": operator["password"]}
         response = requests.post(LOGIN_ENDPOINT, json=payload, timeout=5)
         if response.status_code == 200:
-            data = response.json()
-            operator["token"] = data.get("token")
-            print(f"✓ Operator {operator['id']:03d} logged in: {operator['token'][:20]}...")
-            return True
-        else:
-            print(f"✗ Operator {operator['id']:03d} login failed: {response.status_code}")
-            return False
-    except Exception as e:
-        print(f"✗ Operator {operator['id']:03d} login error: {e}")
+            token = response.json().get("token")
+            operator["token"] = token
+            profile = requests.get(PROFILE_ENDPOINT, headers={"Authorization": f"Bearer {token}"}, timeout=5)
+            if profile.status_code == 200:
+                operator.update(profile.json())
+                print(f"✓ Operator {operator['email']} ready")
+                return True
         return False
-
-def get_all_tokens(operators):
-    """Login all operators concurrently."""
-    threads = []
-    for op in operators:
-        t = threading.Thread(target=login_operator, args=(op,))
-        t.start()
-        threads.append(t)
-    
-    for t in threads:
-        t.join()
-    
-    success_count = sum(1 for op in operators if op["token"])
-    print(f"\n✓ {success_count}/{len(operators)} operators logged in successfully\n")
-    return [op for op in operators if op["token"]]
-
-def vehicle_simulator(operator):
-    """Simulate a vehicle for an operator (location updates, status changes)."""
-    vehicle_id = operator["id"]
-    token = operator["token"]
-    
-    # Initial location (Cairo area with small random offset)
-    base_lat, base_lon = 30.0444, 31.2357
-    lat = base_lat + random.uniform(-0.05, 0.05)
-    lon = base_lon + random.uniform(-0.05, 0.05)
-    
-    status = "AVAILABLE"
-    update_count = 0
-    
-    headers = {
-        "Authorization": f"Bearer {token}",
-        "Content-Type": "application/json"
-    }
-    
-    print(f"[Vehicle {vehicle_id:03d}] Started simulation (token: {token[:15]}...)")
-    
-    while RUNNING:
-        try:
-            # Random walk: move vehicle slightly
-            lat += random.uniform(-0.001, 0.001)
-            lon += random.uniform(-0.001, 0.001)
-            
-            # Send location update
-            location_payload = {
-                "latitude": round(lat, 6),
-                "longitude": round(lon, 6),
-                "accuracy": random.uniform(50, 200),
-                "timestamp": datetime.utcnow().isoformat() + "Z"
-            }
-            
-            loc_response = requests.post(
-                f"{BACKEND_URL}{LOCATION_ENDPOINT}",
-                json=location_payload,
-                headers=headers,
-                timeout=5
-            )
-            
-            if loc_response.status_code not in [200, 201]:
-                print(f"[Vehicle {vehicle_id:03d}] Location update failed: {loc_response.status_code}")
-            
-            # Randomly change status sometimes
-            # if update_count % 10 == 0 and random.random() > 0.7:
-            #     new_status = random.choice(["AVAILABLE", "ON_DUTY", "UNAVAILABLE"])
-            #     status_payload = {"status": new_status}
-                
-            #     status_response = requests.post(
-            #         f"{BACKEND_URL}{STATUS_ENDPOINT}",
-            #         json=status_payload,
-            #         headers=headers,
-            #         timeout=5
-            #     )
-                
-            #     if status_response.status_code in [200, 201]:
-            #         status = new_status
-            #         print(f"[Vehicle {vehicle_id:03d}] Status updated to {status}")
-            
-            update_count += 1
-            
-            # Update every 5 seconds
-            time.sleep(5)
-            
-        except Exception as e:
-            print(f"[Vehicle {vehicle_id:03d}] Error: {e}")
-            time.sleep(5)
-    
-    print(f"[Vehicle {vehicle_id:03d}] Simulation stopped after {update_count} updates")
+    except: return False
 
 def main():
-    global RUNNING, OPERATORS, THREADS
-    
-    if len(sys.argv) != 2:
-        print("Usage: python vehicle_simulator.py <N>")
-        print("  N: number of operators to simulate")
-        sys.exit(1)
-    
+    global RUNNING
+    if len(sys.argv) != 2: sys.exit(1)
     n = int(sys.argv[1])
-    print(f"Starting vehicle simulator for {n} operators...\n")
+    operators = load_operators(n)
     
-    # Load operators
-    OPERATORS = load_operators(n)
-    print(f"Loaded {len(OPERATORS)} operators\n")
+    threads = []
+    for op in operators:
+        t = threading.Thread(target=login_and_get_profile, args=(op,))
+        t.start(); threads.append(t)
+    for t in threads: t.join()
     
-    # Login all operators
-    print("Logging in operators...")
-    active_operators = get_all_tokens(OPERATORS)
+    active = [op for op in operators if op.get("token")]
+    print(f"\n✓ {len(active)} operators ready\n")
     
-    if not active_operators:
-        print("No operators logged in. Exiting.")
-        sys.exit(1)
+    for op in active:
+        simulator = VehicleSimulator(op)
+        threading.Thread(target=simulator.run, daemon=True).start()
+        time.sleep(0.1)
     
-    # Start vehicle simulation threads
-    print(f"Starting {len(active_operators)} vehicle simulation threads...\n")
-    for op in active_operators:
-        t = threading.Thread(target=vehicle_simulator, args=(op,), daemon=True)
-        t.start()
-        THREADS.append(t)
-        time.sleep(0.1)  # Stagger thread starts
-    
-    # Keep main thread alive
     try:
-        while RUNNING:
-            time.sleep(1)
+        while RUNNING: time.sleep(1)
     except KeyboardInterrupt:
-        print("\n\nShutting down...")
         RUNNING = False
-        for t in THREADS:
-            t.join(timeout=2)
-        print("Simulator stopped.")
+        time.sleep(1)
 
 if __name__ == "__main__":
     main()

@@ -21,9 +21,11 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws-car-location")
                 .setAllowedOriginPatterns("*")
-                .withSockJS(); 
+                .withSockJS();
         registry.addEndpoint("/ws")
                 .setAllowedOriginPatterns("*")
                 .withSockJS();
+        registry.addEndpoint("/ws-raw")
+                .setAllowedOriginPatterns("*");
     }
 }
