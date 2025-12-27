@@ -42,8 +42,4 @@ public class NotificationService {
     public void notifyNewAssignment(Integer operatorId, AssignmentDto assignmentDto) {
         notifyChannel("assignment/new/" + operatorId, assignmentDto);
     }
-
-    // public void notifyNewAssignmentToAdmin(com.smartdispatch.dispatcher.domains.dtos.AssignmentDto assignmentDto) {
-    //     notifyChannel("assignment/admin/new", assignmentDto);
-    // }
 }
