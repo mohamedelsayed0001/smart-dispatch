@@ -1,7 +1,6 @@
 package com.smartdispatch.dispatcher.daos.imp;
 
 import com.smartdispatch.dispatcher.daos.IncidentDao;
-import com.smartdispatch.dispatcher.domains.entities.Assignment;
 import com.smartdispatch.dispatcher.domains.entities.Incident;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -18,12 +17,14 @@ public class IncidentDaoImp implements IncidentDao {
         this.jdbcTemplate = jdbcTemplate;
     }
 
+    @SuppressWarnings("null")
     @Override
     public List<Incident> getAllPendingIncidents() {
         String sql = "SELECT * FROM Incident WHERE status ='PENDING'";
         return jdbcTemplate.query(sql,INCIDENT_ROW_MAPPER);
     }
 
+    @SuppressWarnings("null")
     @Override
     public List<Incident> getAllIncidents() {
         String sql = "SELECT * FROM Incident";
@@ -37,6 +38,7 @@ public class IncidentDaoImp implements IncidentDao {
         return rowsAffected > 0;
     }
 
+    @SuppressWarnings("null")
     @Override
     public Incident findById(Integer id) {
         String sql = "SELECT * FROM Incident WHERE id = ?";

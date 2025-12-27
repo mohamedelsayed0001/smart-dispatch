@@ -21,6 +21,7 @@ public class UserDAO {
 
   private final RowMapper<User> userRowMapper=new RowMapper<User>(){@Override public User mapRow(ResultSet rs,int rowNum)throws SQLException{User user=new User();user.setId(rs.getInt("id"));user.setName(rs.getString("name"));user.setPassword(rs.getString("password"));user.setEmail(rs.getString("email"));user.setRole(rs.getString("role"));user.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());return user;}};
 
+  @SuppressWarnings("null")
   public Optional<User> findById(Integer id) {
     try {
       User user = jdbcTemplate.queryForObject(SELECT_BY_ID, userRowMapper, id);

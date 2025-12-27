@@ -8,6 +8,7 @@ import javax.sql.DataSource;
 
 @Configuration
 public class DataBaseConfig {
+    @SuppressWarnings("null")
     @Bean
     public JdbcTemplate jdbcTemplate(final DataSource dataSource){
         return new JdbcTemplate(dataSource);

@@ -25,6 +25,7 @@ public class AssignmentDaoImp implements AssignmentDao {
         this.jdbcTemplate = jdbcTemplate;
     }
 
+    @SuppressWarnings("null")
     @Override
     public List<Assignment> getAllAssignments() {
         String sql = "SELECT * FROM Assignment ";
@@ -55,6 +56,7 @@ public class AssignmentDaoImp implements AssignmentDao {
         return rowsAffected > 0;
     }
 
+    @SuppressWarnings("null")
     @Override
     public Assignment findById(Integer id) {
         String sql = "SELECT * FROM Assignment WHERE id = ?";

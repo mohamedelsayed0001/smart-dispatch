@@ -13,6 +13,7 @@ public class AdminUserDAO {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
+    @SuppressWarnings({ "deprecation", "null" })
     public List<User> getAllUsers(int page, int pageSize, String role, String search) {
         int offset = (page - 1) * pageSize;
         
@@ -79,6 +80,7 @@ public class AdminUserDAO {
         
         System.out.println("[UserDAO] Count query: " + sql.toString());
         
+        @SuppressWarnings({ "deprecation", "null" })
         Long count = jdbcTemplate.queryForObject(
             sql.toString(),
             params.toArray(),
@@ -91,6 +93,7 @@ public class AdminUserDAO {
     /**
      * Get user by ID
      */
+    @SuppressWarnings("deprecation")
     public User getUserById(Long id) {
         String sql = "SELECT id, name, email, password, role, DATE_FORMAT(created_at, '%Y-%m-%d') as joinedDate " +
                      "FROM User WHERE id = ?";

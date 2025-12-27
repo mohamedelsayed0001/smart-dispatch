@@ -53,7 +53,7 @@ public class JwtService {
     // Validate token
     public boolean isTokenValid(String jwt) {
         try {
-            Claims claims = extractAllClaims(jwt);
+            extractAllClaims(jwt);
             return true;
         } catch (Exception e) {
             return false;

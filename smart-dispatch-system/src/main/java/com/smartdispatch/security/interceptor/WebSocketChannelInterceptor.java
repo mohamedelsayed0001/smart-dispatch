@@ -24,6 +24,7 @@ public class WebSocketChannelInterceptor implements ChannelInterceptor, Ordered 
     @Autowired
     private JwtService jwtService;
 
+    @SuppressWarnings("null")
     @Override
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(message);

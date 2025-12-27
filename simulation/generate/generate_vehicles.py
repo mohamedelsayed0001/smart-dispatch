@@ -1,0 +1,88 @@
+import pathlib
+import sys
+import random
+
+# LAT_MAX = 30.175387750587074
+# LAT_MIN = 29.775256780776914
+# LON_MAX = 31.5624047385323
+# LON_MIN = 30.996555009635973
+LAT_MAX = 32
+LAT_MIN = 28
+LON_MAX = 32
+LON_MIN = 28
+
+if len(sys.argv) != 2:
+    print("Usage: python generate_vehicles.py <N>")
+    sys.exit(1)
+
+N = int(sys.argv[1])
+
+out = []
+
+# Insert N operators
+users_values = []
+for i in range(1, N + 1):
+    name = f"Operator {i:03d}"
+    email = f"operator{i:03d}@sim.local"
+    password = "password"
+    role = "OPERATOR"
+    users_values.append(f"('{name}', '{email}', '{password}', '{role}')")
+
+out.append(
+    "INSERT INTO `User` (name, email, password, role) VALUES\n  "
+    + ",\n  ".join(users_values)
+    + ";"
+)
+
+out.append(f"""
+-- Capture first inserted user id
+SET @first_new_user_id = LAST_INSERT_ID();
+SET @num = {N};
+""")
+
+# Insert N vehicles
+out.append(f"""
+SET @r := -1;
+INSERT INTO Vehicle (type, status, capacity, operator_id)
+SELECT
+  CASE MOD(@r := @r + 1, 3)
+    WHEN 0 THEN 'AMBULANCE'
+    WHEN 1 THEN 'FIRETRUCK'
+    ELSE 'POLICE'
+  END AS type,
+  'AVAILABLE' AS status,
+  CASE MOD(@r, 3)
+    WHEN 0 THEN 2
+    WHEN 1 THEN 8
+    ELSE 4
+  END AS capacity,
+  u.id AS operator_id
+FROM `User` u
+WHERE u.email LIKE 'operator%@sim.local'
+ORDER BY u.id
+LIMIT {N};
+""")
+
+# Generate initial vehicle locations (randomized within Cairo boundaries)
+print(f"Generating {N} initial vehicle locations within Cairo boundaries...")
+location_values = []
+for i in range(1, N + 1):
+    lat = round(random.uniform(LAT_MIN, LAT_MAX), 8)
+    lon = round(random.uniform(LON_MIN, LON_MAX), 8)
+    location_values.append(f"({i}, {lon}, {lat}, CURRENT_TIMESTAMP)")
+
+# Insert locations in batches of 100
+BATCH_SIZE = 100
+for batch_start in range(0, len(location_values), BATCH_SIZE):
+    batch_end = min(batch_start + BATCH_SIZE, len(location_values))
+    batch_vals = ",\n  ".join(location_values[batch_start:batch_end])
+    out.append(
+        "INSERT INTO vehicle_location (vehicle_id, longitude, latitude, time_stamp) VALUES\n  "
+        + batch_vals
+        + ";"
+    )
+
+# Resolve path relative to repo root
+p = pathlib.Path(__file__).parent.parent.parent / "smart-dispatch-system" / "src" / "main" / "resources" / "data.sql"
+p.write_text("\n".join(out), encoding="utf-8")
+print(f"✓ Wrote {p.resolve()} ({N} operators, {N} vehicles, {N} locations)")

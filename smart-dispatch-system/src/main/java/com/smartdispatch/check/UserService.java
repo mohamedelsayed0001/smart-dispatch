@@ -31,6 +31,7 @@ public class UserService {
     /**
      * Get a specific user by ID
      */
+    @SuppressWarnings("deprecation")
     public UserDTO getUserById(Long id) {
         String sql = "SELECT id, name, email, password, role FROM User WHERE id = ?";
         List<UserDTO> users = jdbcTemplate.query(sql, new Object[]{id}, (rs, rowNum) -> {

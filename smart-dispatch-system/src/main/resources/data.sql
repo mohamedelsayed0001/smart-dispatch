@@ -1,221 +1,126 @@
--- --------------------
--- TEST DATA (adjusted)
--- --------------------
+INSERT INTO `User` (name, email, password, role) VALUES
+  ('Operator 001', 'operator001@sim.local', 'password', 'OPERATOR'),
+  ('Operator 002', 'operator002@sim.local', 'password', 'OPERATOR'),
+  ('Operator 003', 'operator003@sim.local', 'password', 'OPERATOR'),
+  ('Operator 004', 'operator004@sim.local', 'password', 'OPERATOR'),
+  ('Operator 005', 'operator005@sim.local', 'password', 'OPERATOR'),
+  ('Operator 006', 'operator006@sim.local', 'password', 'OPERATOR'),
+  ('Operator 007', 'operator007@sim.local', 'password', 'OPERATOR'),
+  ('Operator 008', 'operator008@sim.local', 'password', 'OPERATOR'),
+  ('Operator 009', 'operator009@sim.local', 'password', 'OPERATOR'),
+  ('Operator 010', 'operator010@sim.local', 'password', 'OPERATOR'),
+  ('Operator 011', 'operator011@sim.local', 'password', 'OPERATOR'),
+  ('Operator 012', 'operator012@sim.local', 'password', 'OPERATOR'),
+  ('Operator 013', 'operator013@sim.local', 'password', 'OPERATOR'),
+  ('Operator 014', 'operator014@sim.local', 'password', 'OPERATOR'),
+  ('Operator 015', 'operator015@sim.local', 'password', 'OPERATOR'),
+  ('Operator 016', 'operator016@sim.local', 'password', 'OPERATOR'),
+  ('Operator 017', 'operator017@sim.local', 'password', 'OPERATOR'),
+  ('Operator 018', 'operator018@sim.local', 'password', 'OPERATOR'),
+  ('Operator 019', 'operator019@sim.local', 'password', 'OPERATOR'),
+  ('Operator 020', 'operator020@sim.local', 'password', 'OPERATOR'),
+  ('Operator 021', 'operator021@sim.local', 'password', 'OPERATOR'),
+  ('Operator 022', 'operator022@sim.local', 'password', 'OPERATOR'),
+  ('Operator 023', 'operator023@sim.local', 'password', 'OPERATOR'),
+  ('Operator 024', 'operator024@sim.local', 'password', 'OPERATOR'),
+  ('Operator 025', 'operator025@sim.local', 'password', 'OPERATOR'),
+  ('Operator 026', 'operator026@sim.local', 'password', 'OPERATOR'),
+  ('Operator 027', 'operator027@sim.local', 'password', 'OPERATOR'),
+  ('Operator 028', 'operator028@sim.local', 'password', 'OPERATOR'),
+  ('Operator 029', 'operator029@sim.local', 'password', 'OPERATOR'),
+  ('Operator 030', 'operator030@sim.local', 'password', 'OPERATOR'),
+  ('Operator 031', 'operator031@sim.local', 'password', 'OPERATOR'),
+  ('Operator 032', 'operator032@sim.local', 'password', 'OPERATOR'),
+  ('Operator 033', 'operator033@sim.local', 'password', 'OPERATOR'),
+  ('Operator 034', 'operator034@sim.local', 'password', 'OPERATOR'),
+  ('Operator 035', 'operator035@sim.local', 'password', 'OPERATOR'),
+  ('Operator 036', 'operator036@sim.local', 'password', 'OPERATOR'),
+  ('Operator 037', 'operator037@sim.local', 'password', 'OPERATOR'),
+  ('Operator 038', 'operator038@sim.local', 'password', 'OPERATOR'),
+  ('Operator 039', 'operator039@sim.local', 'password', 'OPERATOR'),
+  ('Operator 040', 'operator040@sim.local', 'password', 'OPERATOR'),
+  ('Operator 041', 'operator041@sim.local', 'password', 'OPERATOR'),
+  ('Operator 042', 'operator042@sim.local', 'password', 'OPERATOR'),
+  ('Operator 043', 'operator043@sim.local', 'password', 'OPERATOR'),
+  ('Operator 044', 'operator044@sim.local', 'password', 'OPERATOR'),
+  ('Operator 045', 'operator045@sim.local', 'password', 'OPERATOR'),
+  ('Operator 046', 'operator046@sim.local', 'password', 'OPERATOR'),
+  ('Operator 047', 'operator047@sim.local', 'password', 'OPERATOR'),
+  ('Operator 048', 'operator048@sim.local', 'password', 'OPERATOR'),
+  ('Operator 049', 'operator049@sim.local', 'password', 'OPERATOR'),
+  ('Operator 050', 'operator050@sim.local', 'password', 'OPERATOR'),
+  ('Operator 051', 'operator051@sim.local', 'password', 'OPERATOR'),
+  ('Operator 052', 'operator052@sim.local', 'password', 'OPERATOR'),
+  ('Operator 053', 'operator053@sim.local', 'password', 'OPERATOR'),
+  ('Operator 054', 'operator054@sim.local', 'password', 'OPERATOR'),
+  ('Operator 055', 'operator055@sim.local', 'password', 'OPERATOR'),
+  ('Operator 056', 'operator056@sim.local', 'password', 'OPERATOR'),
+  ('Operator 057', 'operator057@sim.local', 'password', 'OPERATOR'),
+  ('Operator 058', 'operator058@sim.local', 'password', 'OPERATOR'),
+  ('Operator 059', 'operator059@sim.local', 'password', 'OPERATOR'),
+  ('Operator 060', 'operator060@sim.local', 'password', 'OPERATOR'),
+  ('Operator 061', 'operator061@sim.local', 'password', 'OPERATOR'),
+  ('Operator 062', 'operator062@sim.local', 'password', 'OPERATOR'),
+  ('Operator 063', 'operator063@sim.local', 'password', 'OPERATOR'),
+  ('Operator 064', 'operator064@sim.local', 'password', 'OPERATOR'),
+  ('Operator 065', 'operator065@sim.local', 'password', 'OPERATOR'),
+  ('Operator 066', 'operator066@sim.local', 'password', 'OPERATOR'),
+  ('Operator 067', 'operator067@sim.local', 'password', 'OPERATOR'),
+  ('Operator 068', 'operator068@sim.local', 'password', 'OPERATOR'),
+  ('Operator 069', 'operator069@sim.local', 'password', 'OPERATOR'),
+  ('Operator 070', 'operator070@sim.local', 'password', 'OPERATOR'),
+  ('Operator 071', 'operator071@sim.local', 'password', 'OPERATOR'),
+  ('Operator 072', 'operator072@sim.local', 'password', 'OPERATOR'),
+  ('Operator 073', 'operator073@sim.local', 'password', 'OPERATOR'),
+  ('Operator 074', 'operator074@sim.local', 'password', 'OPERATOR'),
+  ('Operator 075', 'operator075@sim.local', 'password', 'OPERATOR'),
+  ('Operator 076', 'operator076@sim.local', 'password', 'OPERATOR'),
+  ('Operator 077', 'operator077@sim.local', 'password', 'OPERATOR'),
+  ('Operator 078', 'operator078@sim.local', 'password', 'OPERATOR'),
+  ('Operator 079', 'operator079@sim.local', 'password', 'OPERATOR'),
+  ('Operator 080', 'operator080@sim.local', 'password', 'OPERATOR'),
+  ('Operator 081', 'operator081@sim.local', 'password', 'OPERATOR'),
+  ('Operator 082', 'operator082@sim.local', 'password', 'OPERATOR'),
+  ('Operator 083', 'operator083@sim.local', 'password', 'OPERATOR'),
+  ('Operator 084', 'operator084@sim.local', 'password', 'OPERATOR'),
+  ('Operator 085', 'operator085@sim.local', 'password', 'OPERATOR'),
+  ('Operator 086', 'operator086@sim.local', 'password', 'OPERATOR'),
+  ('Operator 087', 'operator087@sim.local', 'password', 'OPERATOR'),
+  ('Operator 088', 'operator088@sim.local', 'password', 'OPERATOR'),
+  ('Operator 089', 'operator089@sim.local', 'password', 'OPERATOR'),
+  ('Operator 090', 'operator090@sim.local', 'password', 'OPERATOR'),
+  ('Operator 091', 'operator091@sim.local', 'password', 'OPERATOR'),
+  ('Operator 092', 'operator092@sim.local', 'password', 'OPERATOR'),
+  ('Operator 093', 'operator093@sim.local', 'password', 'OPERATOR'),
+  ('Operator 094', 'operator094@sim.local', 'password', 'OPERATOR'),
+  ('Operator 095', 'operator095@sim.local', 'password', 'OPERATOR'),
+  ('Operator 096', 'operator096@sim.local', 'password', 'OPERATOR'),
+  ('Operator 097', 'operator097@sim.local', 'password', 'OPERATOR'),
+  ('Operator 098', 'operator098@sim.local', 'password', 'OPERATOR'),
+  ('Operator 099', 'operator099@sim.local', 'password', 'OPERATOR'),
+  ('Operator 100', 'operator100@sim.local', 'password', 'OPERATOR');
 
-SET FOREIGN_KEY_CHECKS = 0;
+-- Capture first inserted user id
+SET @first_new_user_id = LAST_INSERT_ID();
+SET @num = 100;
 
-TRUNCATE TABLE Assignment;
-TRUNCATE TABLE Notification;
-TRUNCATE TABLE vehicle_location;
-TRUNCATE TABLE Vehicle;
-TRUNCATE TABLE Incident;
-TRUNCATE TABLE User;
 
-SET FOREIGN_KEY_CHECKS = 1;
-
--- ==================== USER DATA ====================
-INSERT INTO User (name, email, password, role) VALUES
-('John Smith', 'john.smith@emergency.gov', 'hashed_pass_1', 'OPERATOR'),
-('María García', 'maria.garcia@emergency.gov', 'hashed_pass_2', 'OPERATOR'),
-('李明 (Li Ming)', 'li.ming@emergency.gov', 'hashed_pass_3', 'OPERATOR'),
-('Sarah O''Connor', 'sarah.oconnor@emergency.gov', 'hashed_pass_4', 'OPERATOR'),
-('Inactive Operator', 'inactive.operator@emergency.gov', 'hashed_pass_5', 'OPERATOR'),
-('Alice Johnson', 'alice.j@gmail.com', 'hashed_pass_6', 'CITIZEN'),
-('Bob Brown', 'bob.brown@yahoo.com', 'hashed_pass_7', 'CITIZEN'),
-('Charlie Davis-Wilson', 'charlie+test@email.com', 'hashed_pass_8', 'CITIZEN'),
-('Deleted User Name', 'deleted@email.com', 'hashed_pass_9', 'CITIZEN'),
-('Anonymous Reporter', 'anon123@protonmail.com', 'hashed_pass_10', 'CITIZEN'),
-('Test Citizen', 'test.citizen@test.com', 'hashed_pass_11', 'CITIZEN'),
-('José Hernández', 'jose.hernandez@mail.com', 'hashed_pass_12', 'CITIZEN'),
-('Emma Wilson', 'emma.wilson@dispatch.gov', 'hashed_pass_13', 'DISPATCHER'),
-('Michael Chen', 'michael.chen@dispatch.gov', 'hashed_pass_14', 'DISPATCHER'),
-('Rebecca Taylor', 'rebecca.taylor@dispatch.gov', 'hashed_pass_15', 'DISPATCHER'),
-('David Kim', 'david.kim@dispatch.gov', 'hashed_pass_16', 'DISPATCHER'),
-('fff', 'bomb@gmail.com', '123', 'ADMIN');
-
--- ==================== INCIDENT DATA (Alexandria, EGYPT) ====================
--- Note: Incident.type limited to ('FIRE','MEDICAL','CRIME') in schema.
--- I mapped non-supported types to the closest allowed type:
---   Accident -> MEDICAL, Flood -> MEDICAL, Gas Leak -> FIRE, Other -> MEDICAL
-
-INSERT INTO Incident (type, level, description, latitude, longitude, status, time_reported, time_resolved, citizen_id) VALUES
--- Pending incidents
-('FIRE', 'HIGH', 'Large building fire, multiple floors affected', 31.2100, 29.9550, 'PENDING', DATE_SUB(NOW(), INTERVAL 10 MINUTE), NULL, 6),
-('MEDICAL', 'HIGH', 'Heart attack patient, needs immediate attention', 31.2058, 29.9537, 'PENDING', DATE_SUB(NOW(), INTERVAL 5 MINUTE), NULL, 7),
-('MEDICAL', 'MEDIUM', 'Vehicle collision at intersection', 31.2190, 29.9488, 'PENDING', DATE_SUB(NOW(), INTERVAL 15 MINUTE), NULL, 8),
-('CRIME', 'HIGH', 'Armed robbery in progress', 31.2009, 29.9187, 'PENDING', DATE_SUB(NOW(), INTERVAL 2 MINUTE), NULL, NULL), -- Anonymous report
-
--- Assigned incidents
-('FIRE', 'HIGH', 'Apartment fire, 3rd floor', 31.2360, 29.9760, 'ASSIGNED', DATE_SUB(NOW(), INTERVAL 30 MINUTE), NULL, 9),
-('MEDICAL', 'HIGH', 'Multiple casualty accident', 31.2620, 29.9678, 'ASSIGNED', DATE_SUB(NOW(), INTERVAL 20 MINUTE), NULL, 10),
-('MEDICAL', 'MEDIUM', 'Water main break, street flooding (mapped to MEDICAL for schema)', 31.2410, 29.9660, 'ASSIGNED', DATE_SUB(NOW(), INTERVAL 45 MINUTE), NULL, 11),
-('FIRE', 'HIGH', 'Natural gas odor reported, building evacuated (mapped to FIRE)', 31.2390, 29.9700, 'ASSIGNED', DATE_SUB(NOW(), INTERVAL 25 MINUTE), NULL, 12),
-
--- Resolved incidents
-('FIRE', 'LOW', 'Small kitchen fire, extinguished', 31.2149, 29.9258, 'RESOLVED', DATE_SUB(NOW(), INTERVAL 2 HOUR), DATE_SUB(NOW(), INTERVAL 90 MINUTE), 6),
-('MEDICAL', 'MEDIUM', 'Elderly person fallen, minor injuries', 31.2001, 29.9219, 'RESOLVED', DATE_SUB(NOW(), INTERVAL 3 HOUR), DATE_SUB(NOW(), INTERVAL 2 HOUR), 7),
-('MEDICAL', 'LOW', 'Minor fender bender', 31.2190, 29.9488, 'RESOLVED', DATE_SUB(NOW(), INTERVAL 5 HOUR), DATE_SUB(NOW(), INTERVAL 4 HOUR), 8),
-('CRIME', 'MEDIUM', 'Theft reported at store', 31.2050, 29.9480, 'RESOLVED', DATE_SUB(NOW(), INTERVAL 1 DAY), DATE_SUB(NOW(), INTERVAL 23 HOUR), 11),
-
--- Edge cases: Multiple incidents at same location
-('MEDICAL', 'LOW', 'Person feeling faint', 31.2050, 29.9480, 'PENDING', DATE_SUB(NOW(), INTERVAL 3 MINUTE), NULL, 12),
-
--- Edge cases: "extreme" coordinates mapped inside Alex bounds
-('MEDICAL', 'MEDIUM', 'Incident near northern Alexandria boundary', 31.30000000, 29.70000000, 'PENDING', DATE_SUB(NOW(), INTERVAL 1 HOUR), NULL, 6),
-('MEDICAL', 'HIGH', 'Incident near southern Alexandria boundary', 31.00000000, 30.00000000, 'PENDING', DATE_SUB(NOW(), INTERVAL 30 MINUTE), NULL, 7),
-
--- Edge cases: Very old incident (recently resolved)
-('FIRE', 'HIGH', 'Historical incident - warehouse fire', 31.2415, 29.9665, 'RESOLVED', DATE_SUB(NOW(), INTERVAL 30 DAY), DATE_SUB(NOW(), INTERVAL 29 DAY), 8),
-
--- Edge cases: Long description
-('MEDICAL', 'MEDIUM', 'This is an incident with a very long description that goes into extensive detail about the situation. The reporter has provided multiple paragraphs of information including the exact sequence of events, all parties involved, potential hazards, and specific requests for assistance. This tests how the system handles larger text fields and ensures that database character limits are appropriate for real-world usage scenarios.', 31.2395, 29.9710, 'PENDING', DATE_SUB(NOW(), INTERVAL 8 MINUTE), NULL, 10),
-
--- Edge cases: Minimal description
-('MEDICAL', 'LOW', 'Help', 31.2360, 29.9760, 'RESOLVED', DATE_SUB(NOW(), INTERVAL 6 HOUR), DATE_SUB(NOW(), INTERVAL 345 MINUTE), 11),
-
--- Edge cases: NULL description
-('MEDICAL', 'MEDIUM', NULL, 31.2195, 29.9480, 'PENDING', DATE_SUB(NOW(), INTERVAL 12 MINUTE), NULL, 12);
-
--- ==================== VEHICLE DATA ====================
--- Normalize vehicle type/status values to schema ENUMs (all uppercase where required)
-UPDATE Vehicle SET type = 'AMBULANCE' WHERE type IN ('Ambulance', 'ambulance');
-UPDATE Vehicle SET type = 'FIRETRUCK' WHERE type IN ('Fire Truck', 'FireTruck', 'firetruck');
-UPDATE Vehicle SET type = 'POLICE' WHERE type IN ('Police Car', 'Police', 'police');
-
-DELETE FROM Vehicle WHERE type NOT IN ('AMBULANCE', 'FIRETRUCK', 'POLICE');
-
-INSERT INTO Vehicle (type, status, capacity, operator_id) VALUES
-('AMBULANCE', 'AVAILABLE', 2, 1),
-('AMBULANCE', 'AVAILABLE', 2, 4),
-('AMBULANCE', 'AVAILABLE', 2, NULL),
-('AMBULANCE', 'ONROUTE', 2, 4),
-('AMBULANCE', 'ONROUTE', 4, 3),
-
-('FIRETRUCK', 'AVAILABLE', 8, NULL),
-('FIRETRUCK', 'AVAILABLE', 6, NULL),
-('FIRETRUCK', 'ONROUTE', 6, 2),
-('FIRETRUCK', 'ONROUTE', 4, NULL),
-('FIRETRUCK', 'RESOLVING', 6, NULL),
-
-('POLICE', 'AVAILABLE', 4, 3),
-('POLICE', 'AVAILABLE', 4, NULL),
-('POLICE', 'AVAILABLE', 2, 2),
-('POLICE', 'AVAILABLE', 10, NULL),
-('POLICE', 'RESOLVING', 4, 3);
-
--- ==================== VEHICLE LOCATION DATA (Alexandria) ====================
-INSERT INTO vehicle_location (vehicle_id, longitude, latitude, time_stamp) VALUES
--- Vehicle 1 (Ambulance) tracking history (Downtown / Sidi Gaber area)
-(1, 29.9550, 31.2100, DATE_SUB(NOW(), INTERVAL 1 HOUR)),
-(1, 29.9540, 31.2110, DATE_SUB(NOW(), INTERVAL 45 MINUTE)),
-(1, 29.9530, 31.2120, DATE_SUB(NOW(), INTERVAL 30 MINUTE)),
-(1, 29.9520, 31.2130, DATE_SUB(NOW(), INTERVAL 15 MINUTE)),
-(1, 29.9510, 31.2140, NOW()),
-
--- Vehicle 2 (Fire Truck) tracking - on route to incident (Smouha / Gleem)
-(2, 29.9537, 31.2058, DATE_SUB(NOW(), INTERVAL 30 MINUTE)),
-(2, 29.9527, 31.2048, DATE_SUB(NOW(), INTERVAL 25 MINUTE)),
-(2, 29.9517, 31.2038, DATE_SUB(NOW(), INTERVAL 20 MINUTE)),
-(2, 29.9760, 31.2360, NOW()), -- At incident location (Stanley/Gleem area)
-
--- Vehicle 3 (Police Car) - stationary (near Alexandria center)
-(3, 29.9488, 31.2190, DATE_SUB(NOW(), INTERVAL 2 HOUR)),
-(3, 29.9488, 31.2190, DATE_SUB(NOW(), INTERVAL 1 HOUR)),
-(3, 29.9488, 31.2190, NOW()),
-
--- Vehicle 4 (Ambulance) - rapid movement (Miami / Montaza corridor)
-(4, 29.9678, 31.2620, DATE_SUB(NOW(), INTERVAL 10 MINUTE)),
-(4, 29.9688, 31.2610, DATE_SUB(NOW(), INTERVAL 8 MINUTE)),
-(4, 29.9698, 31.2600, DATE_SUB(NOW(), INTERVAL 6 MINUTE)),
-(4, 29.9708, 31.2590, DATE_SUB(NOW(), INTERVAL 4 MINUTE)),
-(4, 29.9718, 31.2580, DATE_SUB(NOW(), INTERVAL 2 MINUTE)),
-(4, 29.9700, 31.2390, NOW()),
-
--- Vehicles 5-10 - current locations only (various neighborhoods)
-(5, 29.9660, 31.2410, NOW()),
-(6, 29.9258, 31.2149, DATE_SUB(NOW(), INTERVAL 3 DAY)), -- Old location for maintenance vehicle
-(7, 29.9765, 31.2354, DATE_SUB(NOW(), INTERVAL 5 DAY)), -- Old location for maintenance vehicle
-(8, 29.9710, 31.2395, DATE_SUB(NOW(), INTERVAL 10 DAY)), -- Very old location for out_of_service
-(9, 29.9488, 31.2190, NOW()),
-(10, 29.9678, 31.2620, NOW()),
-
--- Edge case: "extreme" coordinates kept inside Alexandria bounding area
-(11, 29.70000000, 31.30000000, NOW()),
-(12, 30.00000000, 31.00000000, NOW()),
-
--- Multiple vehicles at same station (downtown)
-(13, 29.9550, 31.2100, NOW()),
-(14, 29.9550, 31.2100, NOW()),
-(15, 29.9550, 31.2100, NOW());
-
--- ==================== NOTIFICATION DATA ====================
--- Normalize notification_type values to schema ENUMs (uppercase)
-INSERT INTO Notification (notified_id, notification_type, content, time_sent, time_delivered) VALUES
-(6, 'INCIDENT_ALERT', 'Your reported fire incident has been assigned to Fire Truck #2', DATE_SUB(NOW(), INTERVAL 25 MINUTE), DATE_SUB(NOW(), INTERVAL 25 MINUTE)),
-(7, 'INCIDENT_ALERT', 'Medical emergency assigned. Ambulance en route.', DATE_SUB(NOW(), INTERVAL 18 MINUTE), DATE_SUB(NOW(), INTERVAL 18 MINUTE)),
-(8, 'INCIDENT_ALERT', 'Your accident report is being processed', DATE_SUB(NOW(), INTERVAL 12 MINUTE), NULL), -- Undelivered
-
-(1, 'ASSIGNMENT_REQUEST', 'New assignment: Fire incident at 31.2360, 29.9760', DATE_SUB(NOW(), INTERVAL 30 MINUTE), DATE_SUB(NOW(), INTERVAL 29 MINUTE)),
-(2, 'ASSIGNMENT_REQUEST', 'Emergency medical response needed at intersection', DATE_SUB(NOW(), INTERVAL 20 MINUTE), DATE_SUB(NOW(), INTERVAL 19 MINUTE)),
-(3, 'ASSIGNMENT_REQUEST', 'Crime in progress - immediate response required', DATE_SUB(NOW(), INTERVAL 2 MINUTE), NULL), -- Just sent
-(4, 'ASSIGNMENT_REQUEST', 'Gas leak emergency - proceed to location', DATE_SUB(NOW(), INTERVAL 25 MINUTE), DATE_SUB(NOW(), INTERVAL 24 MINUTE)),
-
-(13, 'ASSIGNMENT_RESPONSE', 'Operator John Smith accepted assignment #1', DATE_SUB(NOW(), INTERVAL 29 MINUTE), DATE_SUB(NOW(), INTERVAL 29 MINUTE)),
-(14, 'ASSIGNMENT_RESPONSE', 'Assignment #2 completed successfully', DATE_SUB(NOW(), INTERVAL 10 MINUTE), DATE_SUB(NOW(), INTERVAL 10 MINUTE)),
-(15, 'ASSIGNMENT_RESPONSE', 'Assignment #3 rejected by operator - vehicle unavailable', DATE_SUB(NOW(), INTERVAL 5 MINUTE), DATE_SUB(NOW(), INTERVAL 5 MINUTE)),
-
-(1, 'GENERAL', 'System maintenance scheduled for tonight at 2 AM', DATE_SUB(NOW(), INTERVAL 5 HOUR), DATE_SUB(NOW(), INTERVAL 4 HOUR)),
-(13, 'GENERAL', 'New dispatch protocol effective immediately', DATE_SUB(NOW(), INTERVAL 1 DAY), DATE_SUB(NOW(), INTERVAL 23 HOUR)),
-(14, 'GENERAL', 'Training session scheduled for next week', DATE_SUB(NOW(), INTERVAL 2 DAY), NULL), -- Unread
-
-(6, 'GENERAL', 'This is a notification with extensive content that provides detailed information about multiple topics. It includes instructions, warnings, procedural updates, and contact information. This tests the system''s ability to handle longer notification messages that might be sent during complex emergency situations or for administrative purposes that require detailed explanations.', DATE_SUB(NOW(), INTERVAL 30 MINUTE), DATE_SUB(NOW(), INTERVAL 25 MINUTE)),
-
-(1, 'ASSIGNMENT_REQUEST', 'Additional assignment - backup requested', DATE_SUB(NOW(), INTERVAL 15 MINUTE), DATE_SUB(NOW(), INTERVAL 14 MINUTE)),
-(1, 'ASSIGNMENT_REQUEST', 'Priority assignment - update on previous incident', DATE_SUB(NOW(), INTERVAL 10 MINUTE), DATE_SUB(NOW(), INTERVAL 9 MINUTE)),
-(1, 'GENERAL', 'Shift change reminder', DATE_SUB(NOW(), INTERVAL 1 HOUR), NULL),
-
-(2, 'INCIDENT_ALERT', 'Notification sent but delayed', DATE_SUB(NOW(), INTERVAL 1 HOUR), DATE_SUB(NOW(), INTERVAL 30 MINUTE)), -- 30 min delay
-(3, 'GENERAL', 'System alert', DATE_SUB(NOW(), INTERVAL 2 HOUR), DATE_SUB(NOW(), INTERVAL 10 MINUTE)), -- Very delayed
-
-(10, 'INCIDENT_ALERT', 'Incident status update 1', DATE_SUB(NOW(), INTERVAL 5 MINUTE), DATE_SUB(NOW(), INTERVAL 5 MINUTE)),
-(10, 'INCIDENT_ALERT', 'Incident status update 2', DATE_SUB(NOW(), INTERVAL 4 MINUTE), DATE_SUB(NOW(), INTERVAL 4 MINUTE)),
-(10, 'INCIDENT_ALERT', 'Incident status update 3', DATE_SUB(NOW(), INTERVAL 3 MINUTE), DATE_SUB(NOW(), INTERVAL 3 MINUTE));
-
--- ==================== ASSIGNMENT DATA ====================
--- Normalize assignment.status to schema ENUMs (uppercase)
-INSERT INTO Assignment (dispatcher_id, incident_id, vehicle_id, time_assigned, time_resolved, status) VALUES
-(13, 5, 2, DATE_SUB(NOW(), INTERVAL 30 MINUTE), NULL, 'ACTIVE'),
-(14, 6, 4, DATE_SUB(NOW(), INTERVAL 20 MINUTE), NULL, 'ACTIVE'),
-(15, 7, 9, DATE_SUB(NOW(), INTERVAL 45 MINUTE), NULL, 'ACTIVE'),
-(16, 8, 15, DATE_SUB(NOW(), INTERVAL 25 MINUTE), NULL, 'ACTIVE'),
-
-(13, 9, 1, DATE_SUB(NOW(), INTERVAL 2 HOUR), DATE_SUB(NOW(), INTERVAL 90 MINUTE), 'COMPLETED'),
-(14, 10, 3, DATE_SUB(NOW(), INTERVAL 3 HOUR), DATE_SUB(NOW(), INTERVAL 2 HOUR), 'COMPLETED'),
-(15, 11, 5, DATE_SUB(NOW(), INTERVAL 5 HOUR), DATE_SUB(NOW(), INTERVAL 4 HOUR), 'COMPLETED'),
-(16, 12, 10, DATE_SUB(NOW(), INTERVAL 1 DAY), DATE_SUB(NOW(), INTERVAL 23 HOUR), 'COMPLETED'),
-
-(13, 1, 6, DATE_SUB(NOW(), INTERVAL 15 MINUTE), DATE_SUB(NOW(), INTERVAL 10 MINUTE), 'CANCELED'), -- Vehicle went to maintenance
-(14, 2, 7, DATE_SUB(NOW(), INTERVAL 8 MINUTE), DATE_SUB(NOW(), INTERVAL 5 MINUTE), 'CANCELED'), -- Incident resolved by others
-
-(15, 3, 8, DATE_SUB(NOW(), INTERVAL 20 MINUTE), DATE_SUB(NOW(), INTERVAL 18 MINUTE), 'REJECTED'), -- Operator rejected
-(16, 4, 11, DATE_SUB(NOW(), INTERVAL 3 MINUTE), DATE_SUB(NOW(), INTERVAL 2 MINUTE), 'REJECTED'), -- Vehicle not suitable
-
-(13, 1, 1, DATE_SUB(NOW(), INTERVAL 5 MINUTE), NULL, 'ACTIVE'), -- Re-assigned after cancellation
-
-(13, 16, 1, DATE_SUB(NOW(), INTERVAL 6 HOUR), DATE_SUB(NOW(), INTERVAL 345 MINUTE), 'COMPLETED'),
-
-(14, 18, 3, DATE_SUB(NOW(), INTERVAL 30 MINUTE), DATE_SUB(NOW(), INTERVAL 28 MINUTE), 'COMPLETED'), -- 2 min response
-
-(15, 16, 2, DATE_SUB(NOW(), INTERVAL 30 DAY), DATE_SUB(NOW(), INTERVAL 29 DAY), 'COMPLETED'),
-
-(16, 13, 12, DATE_SUB(NOW(), INTERVAL 3 MINUTE), NULL, 'ACTIVE'),
-
-(13, 14, 14, DATE_SUB(NOW(), INTERVAL 1 HOUR), DATE_SUB(NOW(), INTERVAL 59 MINUTE), 'COMPLETED'),
-(13, 15, 14, DATE_SUB(NOW(), INTERVAL 2 HOUR), DATE_SUB(NOW(), INTERVAL 90 MINUTE), 'COMPLETED');
-
--- ==================== VERIFICATION QUERIES (optional) ====================
--- SELECT role, COUNT(*) as count FROM User GROUP BY role;
--- SELECT status, COUNT(*) as count FROM Incident GROUP BY status;
--- SELECT status, COUNT(*) as count FROM Vehicle GROUP BY status;
--- SELECT notification_type, COUNT(*) as count FROM Notification GROUP BY notification_type;
--- SELECT status, COUNT(*) as count FROM Assignment GROUP BY status;
+SET @r := -1;
+INSERT INTO Vehicle (type, status, capacity, operator_id)
+SELECT
+  CASE MOD(@r := @r + 1, 3)
+    WHEN 0 THEN 'AMBULANCE'
+    WHEN 1 THEN 'FIRETRUCK'
+    ELSE 'POLICE'
+  END AS type,
+  'AVAILABLE' AS status,
+  CASE MOD(@r, 3)
+    WHEN 0 THEN 2
+    WHEN 1 THEN 8
+    ELSE 4
+  END AS capacity,
+  u.id AS operator_id
+FROM `User` u
+WHERE u.email LIKE 'operator%@sim.local'
+ORDER BY u.id
+LIMIT 100;
