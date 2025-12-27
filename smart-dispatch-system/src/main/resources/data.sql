@@ -1,133 +1,61 @@
 INSERT INTO `User` (name, email, password, role) VALUES
-                                                     ('Operator 001', 'operator001@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 002', 'operator002@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 003', 'operator003@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 004', 'operator004@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 005', 'operator005@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 006', 'operator006@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 007', 'operator007@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 008', 'operator008@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 009', 'operator009@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 010', 'operator010@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 011', 'operator011@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 012', 'operator012@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 013', 'operator013@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 014', 'operator014@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 015', 'operator015@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 016', 'operator016@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 017', 'operator017@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 018', 'operator018@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 019', 'operator019@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 020', 'operator020@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 021', 'operator021@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 022', 'operator022@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 023', 'operator023@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 024', 'operator024@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 025', 'operator025@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 026', 'operator026@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 027', 'operator027@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 028', 'operator028@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 029', 'operator029@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 030', 'operator030@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 031', 'operator031@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 032', 'operator032@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 033', 'operator033@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 034', 'operator034@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 035', 'operator035@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 036', 'operator036@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 037', 'operator037@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 038', 'operator038@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 039', 'operator039@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 040', 'operator040@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 041', 'operator041@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 042', 'operator042@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 043', 'operator043@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 044', 'operator044@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 045', 'operator045@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 046', 'operator046@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 047', 'operator047@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 048', 'operator048@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 049', 'operator049@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 050', 'operator050@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 051', 'operator051@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 052', 'operator052@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 053', 'operator053@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 054', 'operator054@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 055', 'operator055@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 056', 'operator056@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 057', 'operator057@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 058', 'operator058@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 059', 'operator059@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 060', 'operator060@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 061', 'operator061@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 062', 'operator062@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 063', 'operator063@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 064', 'operator064@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 065', 'operator065@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 066', 'operator066@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 067', 'operator067@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 068', 'operator068@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 069', 'operator069@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 070', 'operator070@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 071', 'operator071@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 072', 'operator072@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 073', 'operator073@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 074', 'operator074@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 075', 'operator075@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 076', 'operator076@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 077', 'operator077@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 078', 'operator078@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 079', 'operator079@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 080', 'operator080@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 081', 'operator081@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 082', 'operator082@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 083', 'operator083@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 084', 'operator084@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 085', 'operator085@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 086', 'operator086@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 087', 'operator087@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 088', 'operator088@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 089', 'operator089@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 090', 'operator090@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 091', 'operator091@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 092', 'operator092@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 093', 'operator093@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 094', 'operator094@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 095', 'operator095@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 096', 'operator096@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 097', 'operator097@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 098', 'operator098@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 099', 'operator099@sim.local', 'password', 'OPERATOR'),
-                                                     ('Operator 100', 'operator100@sim.local', 'password', 'ADMIN');
+  ('Operator 001', 'operator001@sim.local', 'password', 'OPERATOR'),
+  ('Operator 002', 'operator002@sim.local', 'password', 'OPERATOR'),
+  ('Operator 003', 'operator003@sim.local', 'password', 'OPERATOR'),
+  ('Operator 004', 'operator004@sim.local', 'password', 'OPERATOR'),
+  ('Operator 005', 'operator005@sim.local', 'password', 'OPERATOR'),
+  ('Operator 006', 'operator006@sim.local', 'password', 'OPERATOR'),
+  ('Operator 007', 'operator007@sim.local', 'password', 'OPERATOR'),
+  ('Operator 008', 'operator008@sim.local', 'password', 'OPERATOR'),
+  ('Operator 009', 'operator009@sim.local', 'password', 'OPERATOR'),
+  ('Operator 010', 'operator010@sim.local', 'password', 'OPERATOR');
 
 -- Capture first inserted user id
 SET @first_new_user_id = LAST_INSERT_ID();
-SET @num = 100;
+SET @num = 10;
+
+
+INSERT INTO `User` (name, email, password, role) VALUES
+('admin', 'admin@sim.local', 'password', 'ADMIN'),
+('citizen', 'citizen@sim.local', 'password', 'CITIZEN'),
+('dispatcher', 'dispatcher@sim.local', 'password', 'DISPATCHER');
 
 
 SET @r := -1;
 INSERT INTO Vehicle (type, status, capacity, operator_id)
 SELECT
-    CASE MOD(@r := @r + 1, 3)
-        WHEN 0 THEN 'AMBULANCE'
-        WHEN 1 THEN 'FIRETRUCK'
-        ELSE 'POLICE'
-        END AS type,
-    'AVAILABLE' AS status,
-    CASE MOD(@r, 3)
-        WHEN 0 THEN 2
-        WHEN 1 THEN 8
-        ELSE 4
-        END AS capacity,
-    u.id AS operator_id
+  CASE MOD(@r := @r + 1, 3)
+    WHEN 0 THEN 'AMBULANCE'
+    WHEN 1 THEN 'FIRETRUCK'
+    ELSE 'POLICE'
+  END AS type,
+  'AVAILABLE' AS status,
+  CASE MOD(@r, 3)
+    WHEN 0 THEN 2
+    WHEN 1 THEN 8
+    ELSE 4
+  END AS capacity,
+  u.id AS operator_id
 FROM `User` u
 WHERE u.email LIKE 'operator%@sim.local'
 ORDER BY u.id
-    LIMIT 100;
--- Insert sample incidents for analysis chart (12 months of data: Jan-Dec 2024)
--- Generates varied incident types with realistic distribution
+LIMIT 10;
 
-SET @citizen_id = NULL;
+INSERT INTO vehicle_location (vehicle_id, longitude, latitude, time_stamp) VALUES
+  (1, 28.34975251, 28.86929154, CURRENT_TIMESTAMP),
+  (2, 28.04430201, 31.20815448, CURRENT_TIMESTAMP),
+  (3, 31.63917331, 28.4480296, CURRENT_TIMESTAMP),
+  (4, 28.38344461, 29.24073351, CURRENT_TIMESTAMP),
+  (5, 31.3472012, 30.07794806, CURRENT_TIMESTAMP),
+  (6, 29.66618017, 29.84979814, CURRENT_TIMESTAMP),
+  (7, 28.93508486, 31.39965681, CURRENT_TIMESTAMP),
+  (8, 29.52671987, 28.13256366, CURRENT_TIMESTAMP),
+  (9, 29.63084463, 29.13196177, CURRENT_TIMESTAMP),
+  (10, 29.63802443, 28.5853754, CURRENT_TIMESTAMP);
+
+
+
+  SET @citizen_id = NULL;
 
 -- Batch insert for all incidents (optimized for performance)
 INSERT INTO Incident (type, level, description, latitude, longitude, status, time_reported, time_resolved, citizen_id) VALUES
@@ -266,4 +194,3 @@ INSERT INTO Incident (type, level, description, latitude, longitude, status, tim
 ('MEDICAL', 'MEDIUM', 'Anxiety attack', 30.0555, 31.2280, 'RESOLVED', '2024-08-28 15:00:00', '2024-08-28 15:45:00', @citizen_id),
 ('MEDICAL', 'MEDIUM', 'Elderly fall', 30.0876, 31.3421, 'RESOLVED', '2024-08-20 10:30:00', '2024-08-20 11:30:00', @citizen_id),
 ('CRIME', 'HIGH', 'Armed robbery at store', 30.0626, 31.2497, 'RESOLVED', '2024-08-10 22:15:00', '2024-08-11 00:00:00', @citizen_id);
-

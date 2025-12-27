@@ -9,7 +9,6 @@ import com.smartdispatch.report.dao.ReportedIncidentDao;
 import com.smartdispatch.report.dto.ReportedIncidentDto;
 import com.smartdispatch.websockets.NotificationService;
 import com.smartdispatch.report.dto.AdminIncidentReportDto;
-import com.smartdispatch.dispatcher.domains.dtos.AssignmentDto;
 
 @Service
 public class IncidentService {
@@ -26,7 +25,7 @@ public class IncidentService {
 
     public boolean addIncident(ReportedIncidentDto dto, int userId, String userName) {
         try {
-            int id = reportedIncidentDao.addIncident(dto, userId);
+            Long id = reportedIncidentDao.addIncident(dto, userId);
             if (id <= 0) return false;
             // fetch the created incident and broadcast to reports channel
             // AdminIncidentReportDto created = reportedIncidentDao.getIncidentById(id);

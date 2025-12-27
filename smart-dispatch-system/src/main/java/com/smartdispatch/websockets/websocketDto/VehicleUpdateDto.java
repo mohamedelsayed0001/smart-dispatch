@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class VehicleUpdateDto {
-  private Integer vehicleId;
+  private Long vehicleId;
   private String newStatus;
   private double latitude;
   private double longitude;

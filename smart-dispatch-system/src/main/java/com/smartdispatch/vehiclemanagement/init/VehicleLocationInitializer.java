@@ -11,7 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
-import com.smartdispatch.vehiclemanagement.Dao.LocationDao;
+import com.smartdispatch.dao.ILocationDao;
 import com.smartdispatch.vehiclemanagement.Dto.VehicleLiveLocationDto;
 
 @Component
@@ -19,7 +19,7 @@ import com.smartdispatch.vehiclemanagement.Dto.VehicleLiveLocationDto;
 public class VehicleLocationInitializer {
 
     private final RedisTemplate<String, String> redisTemplate;
-    private final LocationDao locationDao;
+    private final ILocationDao locationDao;
 
     public static final String VEHICLE_LOCATIONS_KEY = "vehicles:locations";
 
@@ -31,9 +31,8 @@ public class VehicleLocationInitializer {
 
         for (VehicleLiveLocationDto v : vehicles) {
             map.put(
-                v.getVehicleId().toString(),
-                v.getLongitude() + "," + v.getLatitude()
-            );
+                    v.getVehicleId().toString(),
+                    v.getLongitude() + "," + v.getLatitude());
         }
 
         redisTemplate.opsForHash().putAll(VEHICLE_LOCATIONS_KEY, map);

@@ -116,35 +116,29 @@ const ResponderDashboard = () => {
 
   const handleAcceptAssignment = async (assignment) => {
     try {
-
-      // assignment.status = "ACTIVE";
-      await responderAPI.respondToAssignment(assignment, "ACCEPTED");
-
+      await responderAPI.updateStatus(assignment.id, {
+        vehicleStatus: "ONROUTE",
+        assignmentStatus: "ACTIVE",
+        incidentStatus: "ASSIGNED"
+      });
       await loadAssignments();
-
     } catch (error) {
-      if (error.name === 'CanceledError' || error.code === 'ECONNABORTED') {
-        return;
-      }
       console.error('Error accepting assignment:', error);
-      alert('Failed to accept assignment. Please try again.');
+      alert('Failed to accept assignment.');
     }
   };
 
   const handleRejectAssignment = async (assignment) => {
     try {
-
-      // assignment.status = "REJECTED";
-      await responderAPI.respondToAssignment(assignment, "REJECTED");
-
+      await responderAPI.updateStatus(assignment.id, {
+        vehicleStatus: "AVAILABLE",
+        assignmentStatus: "REJECTED",
+        incidentStatus: "PENDING"
+      });
       await loadAssignments();
-
     } catch (error) {
-      if (error.name === 'CanceledError' || error.code === 'ECONNABORTED') {
-        return;
-      }
       console.error('Error rejecting assignment:', error);
-      alert('Failed to reject assignment. Please try again.');
+      alert('Failed to reject assignment.');
     }
   };
 
@@ -200,7 +194,8 @@ const ResponderDashboard = () => {
     return (
       <div className="responder-dashboard">
         <AssignmentDetails
-          assignmentId={selectedAssignment.id}
+          assignment={selectedAssignment}
+          profile={profile}
           onBack={handleBackToDashboard}
         />
       </div>

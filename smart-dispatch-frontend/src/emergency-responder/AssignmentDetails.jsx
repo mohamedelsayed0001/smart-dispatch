@@ -6,8 +6,9 @@ import NavigationPanel from './NavigationPanel';
 import locationService from './service/locationService';
 import './css/responder.css';
 
-const AssignmentDetails = ({ assignmentId, onBack }) => {
-  const [assignment, setAssignment] = useState(null);
+const AssignmentDetails = ({ assignment: initialAssignment, profile, onBack }) => {
+  const [assignment, setAssignment] = useState(initialAssignment);
+  const [incident, setIncident] = useState(null);
   const [locations, setLocations] = useState(null);
   const [route, setRoute] = useState(null);
   const [currentLocation, setCurrentLocation] = useState(null);
@@ -26,7 +27,7 @@ const AssignmentDetails = ({ assignmentId, onBack }) => {
     // Create new AbortController
     abortControllerRef.current = new AbortController();
 
-    loadAssignmentDetails(abortControllerRef.current.signal);
+    loadData(abortControllerRef.current.signal);
 
     if (!trackingStarted.current) {
       startLocationTracking();
@@ -41,38 +42,49 @@ const AssignmentDetails = ({ assignmentId, onBack }) => {
       stopLocationTracking();
       trackingStarted.current = false;
     };
-  }, [assignmentId]);
+  }, [initialAssignment.id]);
 
-  const loadAssignmentDetails = async (signal) => {
+  const loadData = async (signal) => {
     try {
       setLoading(true);
-      const [assignmentRes, locationsRes] = await Promise.all([
-        responderAPI.getAssignmentDetails(assignmentId, signal),
-        responderAPI.getAssignmentLocations(assignmentId, signal),
-      ]);
 
-      // Check if request was aborted
+      // Fetch incident details to get coordinates (not in flat DTO)
+      const incidentRes = await responderAPI.getIncidentDetails(assignment.incidentId, signal);
+
       if (signal.aborted) return;
 
-      setAssignment(assignmentRes.data);
-      setLocations(locationsRes.data);
+      const incidentData = incidentRes.data;
+      setIncident(incidentData);
+
+      // Reconstruct locations object for MapView/NavigationPanel
+      const vehicleLoc = {
+        latitude: profile.assignedVehicle?.currentLatitude || assignment.currentLatitude,
+        longitude: profile.assignedVehicle?.currentLongitude || assignment.currentLongitude,
+        timestamp: new Date().toISOString()
+      };
+
+      const incidentLoc = {
+        latitude: incidentData.latitude,
+        longitude: incidentData.longitude,
+        timestamp: incidentData.timeReported || new Date().toISOString()
+      };
+
+      setLocations({
+        vehicle: { id: assignment.vehicleId, location: vehicleLoc },
+        incident: { id: incidentData.id, location: incidentLoc }
+      });
+
       setLoading(false);
     } catch (err) {
-      // Ignore cancelled requests
-      if (err.name === 'CanceledError' || err.code === 'ECONNABORTED') {
-        console.log('Request was cancelled');
-        return;
-      }
-
-      console.error('Error loading assignment:', err);
-      setError('Failed to load assignment details');
+      if (err.name === 'CanceledError' || err.code === 'ECONNABORTED') return;
+      console.error('Error loading details:', err);
+      setError('Failed to load incident details');
       setLoading(false);
     }
   };
 
   const startLocationTracking = () => {
     if (isTracking) return;
-
     locationService.startTracking(
       (location) => {
         setCurrentLocation(location);
@@ -94,19 +106,18 @@ const AssignmentDetails = ({ assignmentId, onBack }) => {
   const handleStatusChange = async (statusData) => {
     try {
       setStatusLoading(true);
-      await responderAPI.updateStatus(assignmentId, statusData);
+      await responderAPI.updateStatus(assignment.id, statusData);
 
-      // Reload assignment details to get updated status
-      const abortController = new AbortController();
-      await loadAssignmentDetails(abortController.signal);
+      // Update local state
+      setAssignment(prev => ({
+        ...prev,
+        status: statusData.assignmentStatus || prev.status,
+        vehicleStatus: statusData.vehicleStatus || prev.vehicleStatus
+      }));
 
       setStatusLoading(false);
     } catch (err) {
-      // Ignore cancelled requests
-      if (err.name === 'CanceledError' || err.code === 'ECONNABORTED') {
-        return;
-      }
-
+      if (err.name === 'CanceledError' || err.code === 'ECONNABORTED') return;
       console.error('Error updating status:', err);
       setStatusLoading(false);
       throw err;
@@ -117,21 +128,20 @@ const AssignmentDetails = ({ assignmentId, onBack }) => {
     try {
       setCancelLoading(true);
 
-      await responderAPI.cancelAssignment(assignmentId);
+      // Cancel is just a status update now
+      await responderAPI.updateStatus(assignment.id, {
+        vehicleStatus: "AVAILABLE",
+        assignmentStatus: "CANCELED",
+        incidentStatus: "PENDING"
+      });
 
       setCancelLoading(false);
       setShowCancelConfirm(false);
-
       onBack();
     } catch (err) {
-      if (err.name === 'CanceledError' || err.code === 'ECONNABORTED') {
-        return;
-      }
-
       console.error('Error cancelling assignment:', err);
-      alert('Failed to cancel assignment. Please try again.');
+      alert('Failed to cancel assignment.');
       setCancelLoading(false);
-      setShowCancelConfirm(false);
     }
   };
 
@@ -172,11 +182,15 @@ const AssignmentDetails = ({ assignmentId, onBack }) => {
     );
   }
 
-  if (!assignment) {
+  if (!assignment || !incident) {
     return null;
   }
 
-  const { incident, vehicle } = assignment;
+  const vehicle = {
+    id: assignment.vehicleId,
+    type: profile.assignedVehicle?.type || 'Vehicle',
+    status: profile.assignedVehicle?.status || 'Active'
+  };
 
   return (
     <div className="assignment-details">
@@ -190,7 +204,7 @@ const AssignmentDetails = ({ assignmentId, onBack }) => {
         </button>
         <h2>Assignment #{assignment.id} Details</h2>
         <div className="header-actions">
-          <button 
+          <button
             className="btn btn-danger-outline"
             onClick={() => setShowCancelConfirm(true)}
             disabled={cancelLoading}
@@ -208,7 +222,7 @@ const AssignmentDetails = ({ assignmentId, onBack }) => {
         {/* Left Column - Map */}
         <div className="details-map-section">
           <MapView
-            assignment={assignment}
+            assignment={{ ...assignment, incident, vehicle }}
             onLocationUpdate={setCurrentLocation}
             onRouteLoaded={handleRouteLoaded}
           />
@@ -296,15 +310,15 @@ const AssignmentDetails = ({ assignmentId, onBack }) => {
               </p>
             </div>
             <div className="confirm-footer">
-              <button 
-                className="btn btn-secondary" 
+              <button
+                className="btn btn-secondary"
                 onClick={() => setShowCancelConfirm(false)}
                 disabled={cancelLoading}
               >
                 Keep Assignment
               </button>
-              <button 
-                className="btn btn-danger" 
+              <button
+                className="btn btn-danger"
                 onClick={handleCancelAssignment}
                 disabled={cancelLoading}
               >

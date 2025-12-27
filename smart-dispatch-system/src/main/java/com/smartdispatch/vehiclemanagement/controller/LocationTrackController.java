@@ -1,5 +1,5 @@
 package com.smartdispatch.vehiclemanagement.controller;
-import com.smartdispatch.vehiclemanagement.model.LocationVehicle;
+import com.smartdispatch.model.VehicleLocation;
 import com.smartdispatch.vehiclemanagement.service.LocationTrackService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -18,10 +18,10 @@ public class LocationTrackController {
 
 
     @GetMapping("/newest/{carId}")
-    public ResponseEntity<LocationVehicle> getNewestLocation(@PathVariable Long carId) throws SQLException {
-        try{    LocationVehicle locationVehicle=service.getNewestLocation(carId);
-           if (locationVehicle!=null)
-            return ResponseEntity.ok(locationVehicle);
+    public ResponseEntity<VehicleLocation> getNewestLocation(@PathVariable Long carId) throws SQLException {
+        try{    VehicleLocation vehicleLocation=service.getNewestLocation(carId);
+           if (vehicleLocation!=null)
+            return ResponseEntity.ok(vehicleLocation);
          else {
             return ResponseEntity.notFound().build();
         }

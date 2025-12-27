@@ -200,6 +200,7 @@ class VehicleSimulator:
             return None
 
     def get_route(self, start_lon, start_lat, end_lon, end_lat):
+        print(f"[Vehicle {self.vehicle_id:03d}] Calculating route from {start_lon},{start_lat} to {end_lon},{end_lat}")
         try:
             url = f"{OSRM_ENDPOINT}/{start_lon},{start_lat};{end_lon},{end_lat}?overview=full&geometries=geojson"
             response = requests.get(url, timeout=5)

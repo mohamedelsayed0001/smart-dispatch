@@ -4,10 +4,11 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.smartdispatch.vehiclemanagement.Dao.VehicleDaoImpl;
+import com.smartdispatch.dao.IVehicleDao;
+import com.smartdispatch.model.Vehicle;
+import com.smartdispatch.model.enums.VehicleStatus;
+import com.smartdispatch.model.enums.VehicleType;
 import com.smartdispatch.vehiclemanagement.Dto.VehicleDto;
-import com.smartdispatch.vehiclemanagement.model.VehicleEntity;
-import com.smartdispatch.vehiclemanagement.rowmapper.DtoMapper;
 import org.springframework.stereotype.Service;
 
 import javax.management.ServiceNotFoundException;
@@ -15,34 +16,30 @@ import javax.management.ServiceNotFoundException;
 @Service
 public class VehicleService {
 
-    private final DtoMapper dtoMapper;
-    private final VehicleDaoImpl vehicleDao;
+    private final IVehicleDao vehicleDao;
 
-    public VehicleService(DtoMapper dtoMapper, VehicleDaoImpl vehicleDao) {
-        this.dtoMapper = dtoMapper;
+    public VehicleService(IVehicleDao vehicleDao) {
         this.vehicleDao = vehicleDao;
     }
 
     public void createService(VehicleDto vehicleDto) throws Exception {
-        if(!vehicleDao.isOperatorCorrect(vehicleDto.getOperatorId())){
+        if (!vehicleDao.isOperatorCorrect(vehicleDto.getOperatorId())) {
             throw new Exception("Invalid operator ID: No operator found with ID " + vehicleDto.getOperatorId());
         }
-        VehicleEntity vehicle = dtoMapper.mapFromDto(vehicleDto);
+        Vehicle vehicle = mapToEntity(vehicleDto);
         vehicleDao.save(vehicle);
     }
-    
+
     public void editService(long id, VehicleDto vehicleDto) throws Exception {
         if (!vehicleDao.isOperatorCorrect(vehicleDto.getOperatorId())) {
             throw new Exception("Invalid operator ID: No operator found with ID " + vehicleDto.getOperatorId());
         }
 
-        VehicleEntity existingVehicle = vehicleDao.findById(id);
-        if (existingVehicle == null) {
+        if (vehicleDao.findById(id) == null) {
             throw new Exception("Vehicle with ID " + id + " not found");
         }
 
-
-        VehicleEntity vehicle = dtoMapper.mapFromDto(vehicleDto);
+        Vehicle vehicle = mapToEntity(vehicleDto);
         vehicleDao.update(id, vehicle);
     }
 
@@ -58,15 +55,35 @@ public class VehicleService {
     }
 
     public List<VehicleDto> getAllService() throws SQLException {
-        List<VehicleEntity> entities = vehicleDao.getAll();
+        List<Vehicle> entities = vehicleDao.getAllVehicles();
         List<VehicleDto> dtos = new ArrayList<>(entities.size());
-        for (VehicleEntity e : entities)
-            dtos.add(dtoMapper.mapToDto(e));
+        for (Vehicle e : entities)
+            dtos.add(mapToDto(e));
         return dtos;
     }
 
     public VehicleDto getDetails(long id) throws SQLException {
-        VehicleEntity vehicle = vehicleDao.get(id);
-        return dtoMapper.mapToDto(vehicle);
+        Vehicle vehicle = vehicleDao.findById(id);
+        return vehicle != null ? mapToDto(vehicle) : null;
+    }
+
+    private Vehicle mapToEntity(VehicleDto dto) {
+        Vehicle vehicle = new Vehicle();
+        vehicle.setId(dto.getId());
+        vehicle.setType(VehicleType.valueOf(dto.getType().name()));
+        vehicle.setStatus(VehicleStatus.valueOf(dto.getStatus().name()));
+        vehicle.setCapacity(dto.getCapacity());
+        vehicle.setOperatorId(dto.getOperatorId());
+        return vehicle;
+    }
+
+    private VehicleDto mapToDto(Vehicle entity) {
+        VehicleDto dto = new VehicleDto();
+        dto.setId(entity.getId());
+        dto.setType(VehicleType.valueOf(entity.getType().name()));
+        dto.setStatus(VehicleStatus.valueOf(entity.getStatus().name()));
+        dto.setCapacity(entity.getCapacity());
+        dto.setOperatorId(entity.getOperatorId());
+        return dto;
     }
 }

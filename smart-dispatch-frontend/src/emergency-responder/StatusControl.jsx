@@ -23,6 +23,7 @@ const StatusControl = ({
       icon: '✓',
       vehicleStatus: 'ONROUTE',
       assignmentStatus: 'ACTIVE',
+      incidentStatus: 'ASSIGNED',
       color: 'var(--status-available)',
       confirmMessage: 'Accept this assignment and start heading to the incident?',
     },
@@ -30,12 +31,16 @@ const StatusControl = ({
       label: 'Mark Arrival',
       icon: '📍',
       vehicleStatus: 'RESOLVING',
+      assignmentStatus: 'ACTIVE',
+      incidentStatus: 'ASSIGNED',
       confirmMessage: 'Mark that you have arrived at the scene?',
     },
     complete: {
       label: 'Complete Assignment',
       icon: '✓',
+      vehicleStatus: 'AVAILABLE',
       assignmentStatus: 'COMPLETED',
+      incidentStatus: 'RESOLVED',
       color: 'var(--status-available)',
       confirmMessage: 'Mark this assignment as completed? This will resolve the incident.',
     },
@@ -43,16 +48,19 @@ const StatusControl = ({
 
   const getAvailableActions = () => {
     const available = [];
+    const assStatus = assignmentStatus?.toUpperCase();
+    const vehStatus = currentStatus?.toUpperCase();
 
-    if (assignmentStatus === 'assigned' || !assignmentStatus) {
+    // If it's a new assignment card in the list, it's pending/assigned
+    if (assStatus === 'ASSIGNED' || assStatus === 'PENDING' || !assStatus) {
       available.push(actions.accept);
     }
 
-    if (currentStatus === 'ONROUTE' && assignmentStatus === 'ACTIVE') {
+    if (vehStatus === 'ONROUTE' && assStatus === 'ACTIVE') {
       available.push(actions.arrive);
     }
 
-    if (currentStatus === 'RESOLVING' && assignmentStatus === 'ACTIVE') {
+    if (vehStatus === 'RESOLVING' && assStatus === 'ACTIVE') {
       available.push(actions.complete);
     }
 
@@ -71,6 +79,7 @@ const StatusControl = ({
       await onStatusChange({
         vehicleStatus: pendingAction.vehicleStatus,
         assignmentStatus: pendingAction.assignmentStatus,
+        incidentStatus: pendingAction.incidentStatus,
       });
       setShowConfirm(false);
       setPendingAction(null);

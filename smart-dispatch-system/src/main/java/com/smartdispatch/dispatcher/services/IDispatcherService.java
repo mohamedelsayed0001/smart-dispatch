@@ -2,11 +2,11 @@ package com.smartdispatch.dispatcher.services;
 
 import java.util.List;
 
-import com.smartdispatch.dispatcher.domains.dtos.AssignmentDto;
-import com.smartdispatch.dispatcher.domains.dtos.AssignmentRequest;
-import com.smartdispatch.dispatcher.domains.dtos.IncidentDto;
-import com.smartdispatch.dispatcher.domains.dtos.ReassignRequest;
-import com.smartdispatch.dispatcher.domains.dtos.VehicleDto;
+import com.smartdispatch.dispatcher.dtos.AssignmentDto;
+import com.smartdispatch.dispatcher.dtos.AssignmentRequest;
+import com.smartdispatch.dispatcher.dtos.IncidentDto;
+import com.smartdispatch.dispatcher.dtos.ReassignRequest;
+import com.smartdispatch.dispatcher.dtos.VehicleDto;
 
 public interface IDispatcherService {
   List<IncidentDto> getPendingIncidents();
@@ -23,7 +23,7 @@ public interface IDispatcherService {
 
   List<IncidentDto> getAllIncidents();
 
-  AssignmentDto autoAssignClosestVehicle(Integer incidentId);
+  AssignmentDto autoAssignClosestVehicle(Long incidentId);
   
-  AssignmentDto autoAssignPendingIncidentToVehicle(Integer vehicleId);
+  AssignmentDto autoAssignPendingIncidentToVehicle(Long vehicleId);
 }

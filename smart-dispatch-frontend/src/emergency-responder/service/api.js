@@ -53,17 +53,9 @@ export const responderAPI = {
       signal
     }),
 
-  // Get assignment details
-  getAssignmentDetails: (assignmentId, signal) =>
-    api.get(`/responder/assignments/${assignmentId}`, { signal }),
-
-  // Get assignment locations (vehicle and incident)
-  getAssignmentLocations: (assignmentId, signal) =>
-    api.get(`/responder/assignments/${assignmentId}/locations`, { signal }),
-
-  // Respond to assignment notification (accept/reject)
-  respondToAssignment: (assignment, response, signal) =>
-    api.post(`/responder/assignments/${assignment.id}/respond`, { response }, { signal }),
+  // Get incident details
+  getIncidentDetails: (incidentId, signal) =>
+    api.get(`/responder/incidents/${incidentId}`, { signal }),
 
   // Update vehicle location
   updateLocation: (locationData, signal) =>
@@ -72,19 +64,6 @@ export const responderAPI = {
   // Update status
   updateStatus: (assignmentId, statusData, signal) =>
     api.put(`/responder/assignments/${assignmentId}/status`, statusData, { signal }),
-
-  // Cancel assignment
-  cancelAssignment: (assignmentId, signal) =>
-    api.post(`/responder/assignments/${assignmentId}/cancel`, {}, { signal }),
-
-  // Mark arrival (legacy)
-  markArrival: (assignmentId, signal) =>
-    api.post(`/responder/assignments/${assignmentId}/arrive`, {}, { signal }),
-
-  // Complete assignment (legacy)
-  completeAssignment: (assignmentId, signal) =>
-    api.post(`/responder/assignments/${assignmentId}/complete`, {}, { signal }),
-
 };
 
 export default api;

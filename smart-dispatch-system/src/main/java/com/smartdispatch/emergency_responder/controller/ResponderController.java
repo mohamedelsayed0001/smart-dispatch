@@ -6,8 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.smartdispatch.dispatcher.domains.dtos.AssignmentDto;
-import com.smartdispatch.dispatcher.domains.dtos.IncidentDto;
+import com.smartdispatch.dispatcher.dtos.AssignmentDto;
+import com.smartdispatch.dispatcher.dtos.IncidentDto;
 import com.smartdispatch.emergency_responder.dto.*;
 import com.smartdispatch.emergency_responder.service.ResponderService;
 import com.smartdispatch.security.model.AppUserDetails;
@@ -31,7 +31,7 @@ public class ResponderController {
     public ResponseEntity<Map<String, Object>> getProfile(
             @AuthenticationPrincipal AppUserDetails userDetails) {
 
-        Integer responderId = userDetails.getId().intValue();
+        Long responderId = userDetails.getId();
         Map<String, Object> profile = responderService.getResponderProfile(responderId);
 
         return ResponseEntity.ok(profile);
@@ -40,7 +40,7 @@ public class ResponderController {
     @GetMapping("/incidents/{incidentId}")
     public ResponseEntity<IncidentDto> getIncidentDetails(
     @AuthenticationPrincipal AppUserDetails userDetails,
-    @PathVariable Integer incidentId) {
+    @PathVariable Long incidentId) {
 
     IncidentDto incident =
     responderService.getIncidentDetails(incidentId);
@@ -53,7 +53,7 @@ public class ResponderController {
             @AuthenticationPrincipal AppUserDetails userDetails,
             @RequestBody VehicleUpdateDto locationDTO) {
 
-        Integer responderId = userDetails.getId().intValue();
+        Long responderId = userDetails.getId();
         responderService.updateVehicleLocation(responderId, locationDTO);
 
         return ResponseEntity.ok().build();
@@ -65,7 +65,7 @@ public class ResponderController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
 
-        Integer responderId = userDetails.getId().intValue();
+        Long responderId = userDetails.getId();
         List<AssignmentDto> assignments = responderService.getAllAssignments(responderId, page, size);
 
         return ResponseEntity.ok(assignments);
@@ -74,7 +74,7 @@ public class ResponderController {
     @PutMapping("/assignments/{assignmentId}/status")
     public ResponseEntity<Void> updateStatus(
             @AuthenticationPrincipal AppUserDetails userDetails,
-            @PathVariable Integer assignmentId,
+            @PathVariable Long assignmentId,
             @RequestBody StatusUpdateDTO statusDTO) {
 
         responderService.updateStatus(assignmentId, statusDTO);

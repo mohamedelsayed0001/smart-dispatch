@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.smartdispatch.authentication.dto.LoginRequestDTO;
 import com.smartdispatch.authentication.dto.LoginResponseDTO;
 import com.smartdispatch.authentication.services.LoginService;
-import com.smartdispatch.authentication.model.User;
+import com.smartdispatch.model.User;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

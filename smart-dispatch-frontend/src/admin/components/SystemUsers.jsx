@@ -81,11 +81,6 @@ const SystemUsers = ({ users, totalPages, currentPage, setCurrentPage, userFilte
                     {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
                   </span>
                 </td>
-                {/* <td>
-                  <span className="badge badge-status">
-                    {user.status}
-                  </span>
-                </td> */}
                 <td>{user.joinedDate}</td>
                 <td>
                   <div className="action-menu">

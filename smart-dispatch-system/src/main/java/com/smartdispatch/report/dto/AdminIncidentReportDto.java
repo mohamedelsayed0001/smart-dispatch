@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Builder
 public class AdminIncidentReportDto {
-    private Integer id;
+    private Long id;
     private String type;
     private String level;
     private String description;

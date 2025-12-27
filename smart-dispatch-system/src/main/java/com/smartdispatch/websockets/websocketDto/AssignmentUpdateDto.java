@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class AssignmentUpdateDto {
-  private int responderId;
-  private int assignmentId;
+  private Long responderId;
+  private Long assignmentId;
   private String response;
 }

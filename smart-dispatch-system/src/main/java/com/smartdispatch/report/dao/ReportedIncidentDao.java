@@ -26,7 +26,7 @@ public class ReportedIncidentDao {
     /**
      * Inserts a new incident and returns the generated id.
      */
-    public int addIncident(ReportedIncidentDto dto, int userId) {
+    public Long addIncident(ReportedIncidentDto dto, int userId) {
         final String sql = "INSERT INTO Incident (type, level, description, latitude, longitude, status, citizen_id) VALUES (?, ?, ?, ?, ?, ?, ?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
@@ -43,7 +43,7 @@ public class ReportedIncidentDao {
         }, keyHolder);
 
         Number key = keyHolder.getKey();
-        return key != null ? key.intValue() : -1;
+        return key != null ? key.longValue() : -1;
     }
 
     @SuppressWarnings("deprecation")
@@ -53,7 +53,7 @@ public class ReportedIncidentDao {
 
         return jdbcTemplate.queryForObject(sql, new Object[] { id }, (rs, rowNum) -> {
             AdminIncidentReportDto dto = new AdminIncidentReportDto();
-            dto.setId(rs.getInt("id"));
+            dto.setId(rs.getLong("id"));
             dto.setType(rs.getString("type"));
             dto.setLevel(rs.getString("level"));
             dto.setDescription(rs.getString("description"));
@@ -75,7 +75,7 @@ public class ReportedIncidentDao {
 
         return jdbcTemplate.query(sql, (rs, rowNum) -> {
             AdminIncidentReportDto dto = new AdminIncidentReportDto();
-            dto.setId(rs.getInt("id"));
+            dto.setId(rs.getLong("id"));
             dto.setType(rs.getString("type"));
             dto.setLevel(rs.getString("level"));
             dto.setDescription(rs.getString("description"));
@@ -131,7 +131,7 @@ public class ReportedIncidentDao {
         
         return jdbcTemplate.query(sql.toString(), params.toArray(), (rs, rowNum) -> {
             AdminIncidentReportDto dto = new AdminIncidentReportDto();
-            dto.setId(rs.getInt("id"));
+            dto.setId(rs.getLong("id"));
             dto.setType(rs.getString("type"));
             dto.setLevel(rs.getString("level"));
             dto.setDescription(rs.getString("description"));
