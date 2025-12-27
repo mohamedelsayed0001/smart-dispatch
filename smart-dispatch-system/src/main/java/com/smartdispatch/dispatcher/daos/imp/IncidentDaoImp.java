@@ -1,5 +1,6 @@
 package com.smartdispatch.dispatcher.daos.imp;
 
+import com.smartdispatch.admin.dto.IncidentStatsDto;
 import com.smartdispatch.dispatcher.daos.IncidentDao;
 import com.smartdispatch.dispatcher.domains.entities.Incident;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -46,6 +47,24 @@ public class IncidentDaoImp implements IncidentDao {
         return results.isEmpty() ? null : results.get(0);
     }
 
+
+    @Override
+    public List<IncidentStatsDto> getIncidentCountPerMonthByType(int limit) {
+        String sql = "SELECT DATE_FORMAT(time_reported, '%Y-%m') AS month, type, COUNT(*) AS count " +
+                "FROM Incident " +
+                "GROUP BY month, type " +
+                "ORDER BY month, type " +
+                "LIMIT ?";
+        return jdbcTemplate.query(
+                sql,
+                new Object[]{limit},
+                (rs, rowNum) -> new IncidentStatsDto(
+                        rs.getString("month"),
+                        rs.getString("type"),
+                        rs.getLong("count")
+                )
+        );
+    }
     @Override
     public Incident findClosestPendingIncident(String type, double latitude, double longitude) {
         String sql = "SELECT * FROM Incident " +
