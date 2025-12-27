@@ -1,6 +1,7 @@
 package com.smartdispatch.admin.service;
 
 import com.smartdispatch.admin.dao.AdminUserDAO;
+import com.smartdispatch.admin.dto.AvgTimeResolved;
 import com.smartdispatch.admin.dto.IncidentStatsDto;
 import com.smartdispatch.dispatcher.daos.IncidentDao;
 import com.smartdispatch.report.model.Incident;
@@ -15,5 +16,9 @@ public class AnalysisService {
     private IncidentDao incidentDao;
    public List<IncidentStatsDto> getIncidentStatsByMonthAndType(int limit){
        return incidentDao.getIncidentCountPerMonthByType(limit);
+   }
+   public List<AvgTimeResolved>getAvgTimeResolved(){
+       return incidentDao.getAvgTimeResolvedByType();
+
    }
 }

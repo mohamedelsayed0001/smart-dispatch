@@ -1,5 +1,6 @@
 package com.smartdispatch.dispatcher.daos.imp;
 
+import com.smartdispatch.admin.dto.AvgTimeResolved;
 import com.smartdispatch.admin.dto.IncidentStatsDto;
 import com.smartdispatch.dispatcher.daos.IncidentDao;
 import com.smartdispatch.dispatcher.domains.entities.Incident;
@@ -46,6 +47,23 @@ public class IncidentDaoImp implements IncidentDao {
         List<Incident> results = jdbcTemplate.query(sql, INCIDENT_ROW_MAPPER, id);
         return results.isEmpty() ? null : results.get(0);
     }
+    @Override
+    public List<AvgTimeResolved> getAvgTimeResolvedByType() {
+        String sql = "SELECT type, " +
+                "AVG(TIMESTAMPDIFF(MINUTE, time_reported, time_resolved)) as avg_minutes " +
+                "FROM Incident " +
+                "WHERE time_resolved IS NOT NULL " +
+                "GROUP BY type " ;
+
+
+        return jdbcTemplate.query(sql, (rs, rowNum) ->
+                new AvgTimeResolved(
+                        rs.getLong("avg_minutes"),
+                        rs.getString("type")
+                )
+        );
+
+    }
 
 
     @Override
@@ -79,6 +97,7 @@ public class IncidentDaoImp implements IncidentDao {
         List<Incident> results = jdbcTemplate.query(sql, INCIDENT_ROW_MAPPER, type, latitude, latitude, longitude, longitude);
         return results.isEmpty() ? null : results.get(0);
     }
+
 
     private static class RowMapperIncident implements RowMapper<Incident> {
 

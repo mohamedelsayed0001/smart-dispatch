@@ -1,5 +1,6 @@
 package com.smartdispatch.admin.controller;
 
+import com.smartdispatch.admin.dto.AvgTimeResolved;
 import com.smartdispatch.admin.dto.IncidentStatsDto;
 import com.smartdispatch.admin.service.AnalysisService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,5 +20,10 @@ public class AnalysisController {
     public List<IncidentStatsDto> getIncidentStats(
             @RequestParam(value = "limit", required = false, defaultValue = "12") int limit) {
         return analysisService.getIncidentStatsByMonthAndType(limit);
+    }
+    @GetMapping("/incident-avg-resolved")
+    @PreAuthorize("hasRole('ADMIN')")
+    public List<AvgTimeResolved> getAvgResolved() {
+        return analysisService.getAvgTimeResolved();
     }
 }

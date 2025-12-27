@@ -20,36 +20,58 @@ ChartJS.register(
   Legend
 );
 
+
 const Analysis = () => {
   const [incidentStats, setIncidentStats] = useState([]);
+  const [avgResolved, setAvgResolved] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
     const LIMIT = 12;
     const token = localStorage.getItem('authToken');
-    fetch(`/api/admin/analysis/incident-stats?limit=${LIMIT}`, {
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': token ? `Bearer ${token}` : ''
-      }
-    })
-      .then(async res => {
-        if (!res.ok) throw new Error('Failed to fetch data');
-        const text = await res.text();
-        // Check if response is HTML (starts with <!doctype or <html)
-        if (text.trim().startsWith('<!doctype') || text.trim().startsWith('<html')) {
-          throw new Error('Server returned HTML instead of JSON. Possible backend/API error.');
-        }
-        try {
-          return JSON.parse(text);
-        } catch (e) {
-          throw new Error('Response is not valid JSON.');
+    setLoading(true);
+    Promise.all([
+      fetch(`/api/admin/analysis/incident-stats?limit=${LIMIT}`, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': token ? `Bearer ${token}` : ''
         }
       })
-      .then(data => {
-        setIncidentStats(data);
-        console.log(data);
+        .then(async res => {
+          if (!res.ok) throw new Error('Failed to fetch data');
+          const text = await res.text();
+          if (text.trim().startsWith('<!doctype') || text.trim().startsWith('<html')) {
+            throw new Error('Server returned HTML instead of JSON. Possible backend/API error.');
+          }
+          try {
+            return JSON.parse(text);
+          } catch (e) {
+            throw new Error('Response is not valid JSON.');
+          }
+        }),
+      fetch(`/api/admin/analysis/incident-avg-resolved`, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': token ? `Bearer ${token}` : ''
+        }
+      })
+        .then(async res => {
+          if (!res.ok) throw new Error('Failed to fetch avg resolved time');
+          const text = await res.text();
+          if (text.trim().startsWith('<!doctype') || text.trim().startsWith('<html')) {
+            throw new Error('Server returned HTML instead of JSON. Possible backend/API error.');
+          }
+          try {
+            return JSON.parse(text);
+          } catch (e) {
+            throw new Error('Response is not valid JSON.');
+          }
+        })
+    ])
+      .then(([incidentData, avgResolvedData]) => {
+        setIncidentStats(incidentData);
+        setAvgResolved(avgResolvedData);
         setLoading(false);
       })
       .catch(err => {
@@ -172,12 +194,13 @@ const Analysis = () => {
 
   // Calculate summary statistics
   const totalIncidents = incidentStats.reduce((sum, item) => sum + (item.count || 0), 0);
-  const typeBreakdown = types.map(type => ({
-    type,
-    total: incidentStats
-      .filter(item => item.type === type)
-      .reduce((sum, item) => sum + (item.count || 0), 0)
-  })).sort((a, b) => b.total - a.total);
+
+
+  // Use avgResolved from API
+  const avgResolvedTimes = types.map(type => {
+    const found = avgResolved.find(item => item.type === type);
+    return { type, avg: found ? found.avgMinutes : null };
+  });
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
@@ -214,11 +237,11 @@ const Analysis = () => {
               <Bar data={chartData} options={chartOptions} />
             </div>
 
-            {/* Type Breakdown */}
+            {/* Average Resolved Time by Type */}
             <div className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-xl font-bold text-gray-800 mb-4">Incident Type Breakdown</h2>
+              <h2 className="text-xl font-bold text-gray-800 mb-4">Average Resolution Time by Incident Type</h2>
               <div className="space-y-3">
-                {typeBreakdown.map((item, index) => (
+                {avgResolvedTimes.map((item, index) => (
                   <div key={item.type} className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div 
@@ -228,9 +251,8 @@ const Analysis = () => {
                       <span className="font-medium text-gray-700">{item.type}</span>
                     </div>
                     <div className="text-right">
-                      <span className="font-bold text-gray-900">{item.total}</span>
-                      <span className="text-sm text-gray-500 ml-2">
-                        ({totalIncidents > 0 ? ((item.total / totalIncidents) * 100).toFixed(1) : 0}%)
+                      <span className="font-bold text-gray-900">
+                        {item.avg !== null ? `${item.avg.toFixed(2)} min` : 'N/A'}
                       </span>
                     </div>
                   </div>
