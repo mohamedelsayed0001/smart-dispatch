@@ -1,7 +1,6 @@
 package com.smartdispatch.admin.rowMapper;
 
 import com.smartdispatch.admin.dto.ResponseTimeDTO;
-import com.smartdispatch.admin.dto.UnitDto;
 import com.smartdispatch.model.enums.VehicleType;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.stereotype.Component;
