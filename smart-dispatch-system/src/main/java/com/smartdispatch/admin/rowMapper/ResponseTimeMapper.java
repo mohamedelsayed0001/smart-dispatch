@@ -20,7 +20,7 @@ public class ResponseTimeMapper implements ResultSetExtractor<List<ResponseTimeD
             list.add(ResponseTimeDTO.builder()
                     .AvgResponseTime(rs.getDouble("AVG_RESPONSE_TIME"))
                     .maxResponseTime(rs.getDouble("MAX_RESPONSE_TIME"))
-                    .minResponseTime(rs.getDouble("MAX_RESPONSE_TIME"))
+                    .minResponseTime(rs.getDouble("MIN_RESPONSE_TIME"))
                     .totalAccidents(rs.getInt("TOTAL_INCIDENTS"))
                     .type(VehicleType.valueOf(rs.getString("vehicle_type"))).build());
         }

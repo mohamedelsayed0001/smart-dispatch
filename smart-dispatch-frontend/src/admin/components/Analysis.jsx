@@ -134,10 +134,10 @@ const Analysis = () => {
 
   // Response Times Chart
   const responseTimeChartData = {
-    labels: responseTimes.map(rt => rt?.vehicleType || 'Unknown'),
+    labels: responseTimes.map(rt => rt?.type || 'Unknown'),
     datasets: [{
       label: 'Average Response Time (minutes)',
-      data: responseTimes.map(rt => rt?.averageResponseTime || 0),
+      data: responseTimes.map(rt => rt?.avgResponseTime || 0),
       backgroundColor: responseTimes.map((_, idx) => colorPalette[idx]?.bg || 'rgba(128, 128, 128, 0.7)'),
       borderColor: responseTimes.map((_, idx) => colorPalette[idx]?.border || 'rgba(128, 128, 128, 1)'),
       borderWidth: 2,
@@ -159,10 +159,10 @@ const Analysis = () => {
             const rt = responseTimes[context.dataIndex];
             if (!rt) return 'No data';
             return [
-              `Avg: ${(rt.averageResponseTime || 0).toFixed(2)} min`,
+              `Avg: ${(rt.avgResponseTime || 0).toFixed(2)} min`,
               `Min: ${(rt.minResponseTime || 0).toFixed(2)} min`,
               `Max: ${(rt.maxResponseTime || 0).toFixed(2)} min`,
-              `Total: ${rt.totalIncidents || 0} incidents`
+              `Total: ${rt.totalAccidents || 0} incidents`
             ];
           }
         }
@@ -201,7 +201,7 @@ const Analysis = () => {
   // Safe calculation for average response time
   const calculateAvgResponseTime = () => {
     if (!responseTimes.length) return 'N/A';
-    const sum = responseTimes.reduce((acc, rt) => acc + (rt?.averageResponseTime || 0), 0);
+    const sum = responseTimes.reduce((acc, rt) => acc + (rt?.avgResponseTime || 0), 0);
     return (sum / responseTimes.length).toFixed(1);
   };
 
@@ -364,18 +364,18 @@ const Analysis = () => {
 
                 {/* Response Time Details */}
                 <div className="mt-6 pt-6 border-t">
-                  <h3 className="font-semibold text-gray-700 mb-3">Response Time Details</h3>
+                  <h3 className="font-semibold text-gray-700 mb-3">Dispatcher Response Time Details</h3>
                   {responseTimes.length > 0 ? (
                     <div className="space-y-3">
                       {responseTimes.map((rt, index) => (
-                        <div key={rt?.vehicleType || index} className="flex justify-between items-center text-sm">
-                          <span className="font-medium text-gray-600">{rt?.vehicleType || 'Unknown'}</span>
+                        <div key={rt?.type || index} className="flex justify-between items-center text-sm">
+                          <span className="font-medium text-gray-600">{rt?.type || 'Unknown'}</span>
                           <div className="text-right">
                             <div className="font-semibold text-gray-800">
-                              {rt?.averageResponseTime ? rt.averageResponseTime.toFixed(1) : 'N/A'} min
+                              {rt?.avgResponseTime ? rt.avgResponseTime.toFixed(1) : 'N/A'} min
                             </div>
                             <div className="text-xs text-gray-500">
-                              {rt?.minResponseTime && rt?.maxResponseTime 
+                              {rt?.minResponseTime >=0 && rt?.maxResponseTime>=0 
                                 ? `${rt.minResponseTime.toFixed(1)} - ${rt.maxResponseTime.toFixed(1)} min range`
                                 : 'No range data'
                               }
