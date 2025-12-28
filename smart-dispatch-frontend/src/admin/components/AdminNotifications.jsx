@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import './AdminNotifications.css';
 
-const NOTIFICATION_LIMIT = 10;
+const DEFAULT_NOTIFICATION_LIMIT = 10;
+const MAX_NOTIFICATION_LIMIT = 40;
 
 export default function AdminNotifications({ 
   notifications = [], 
@@ -10,29 +11,12 @@ export default function AdminNotifications({
   onNewNotification 
 }) {
   const [popupNotif, setPopupNotif] = useState(null);
+  const [notifLimit, setNotifLimit] = useState(DEFAULT_NOTIFICATION_LIMIT);
 
-  // Merge and deduplicate notifications, keeping only the 10 newest
-  const allNotifications = (() => {
-    const notifMap = new Map();
-    
-    // Add all notifications to map with unique key
-    notifications.forEach(notif => {
-      const uniqueKey = `${notif.incidentId}-${notif.time}`;
-      if (!notifMap.has(uniqueKey)) {
-        notifMap.set(uniqueKey, notif);
-      }
-    });
-    
-    // Convert to array and sort by time (newest first)
-    const merged = Array.from(notifMap.values()).sort((a, b) => {
-      const timeA = new Date(a.time).getTime();
-      const timeB = new Date(b.time).getTime();
-      return timeB - timeA; // Descending order
-    });
-    
-    // Return only the 10 newest
-    return merged.slice(0, NOTIFICATION_LIMIT);
-  })();
+  // Sort and limit notifications, keeping only the newest up to notifLimit
+  const allNotifications = [...notifications]
+    .sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime())
+    .slice(0, notifLimit);
 
   const handleNotificationClick = (notif, index) => {
     setPopupNotif(notif);
@@ -41,8 +25,30 @@ export default function AdminNotifications({
     }
   };
 
+  // Handler for limit change
+  const handleLimitChange = (e) => {
+    let value = parseInt(e.target.value, 10);
+    if (isNaN(value) || value < 1) value = 1;
+    if (value > MAX_NOTIFICATION_LIMIT) value = MAX_NOTIFICATION_LIMIT;
+    setNotifLimit(value);
+    if (onMenuOpen) onMenuOpen(value);
+  };
+
   return (
     <>
+      <div style={{ maxWidth: 900, margin: '2em auto', display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
+        <label htmlFor="notif-limit" style={{ marginRight: 8, fontWeight: 500 }}>Show</label>
+        <input
+          id="notif-limit"
+          type="number"
+          min={1}
+          max={MAX_NOTIFICATION_LIMIT}
+          value={notifLimit}
+          onChange={handleLimitChange}
+          style={{ width: 60, marginRight: 8 }}
+        />
+        <span style={{ marginRight: 16 }}>notifications (max {MAX_NOTIFICATION_LIMIT})</span>
+      </div>
       <div className="admin-notifications-list" style={{ maxWidth: 900, margin: '2em auto' }}>
         {allNotifications.length === 0 ? (
           <div 
@@ -100,12 +106,12 @@ export default function AdminNotifications({
                     textTransform: 'capitalize'
                   }}
                 >
-                  {(notif.type || 'Incident')
-                    .replace('INCIDENT_', '')
+                 { console.log(notif.type)}
+                  {( 'Incident Alert')
                     .replace(/_/g, ' ')
-                    .toLowerCase()}
+                    .toUpperCase()}
                 </div>
-                <div 
+                {/* <div 
                   className="notif-status" 
                   style={{
                     padding: '4px 12px',
@@ -116,8 +122,7 @@ export default function AdminNotifications({
                     color: notif.unread ? '#fff' : '#666'
                   }}
                 >
-                  {notif.unread ? 'Unread' : 'Read'}
-                </div>
+                </div> */}
               </div>
               <div 
                 className="notif-msg" 

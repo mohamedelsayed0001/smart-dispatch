@@ -66,7 +66,7 @@ CREATE TABLE vehicle_location (
 
 CREATE TABLE Notification (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    notified_id INT NOT NULL,
+    notified_id INT ,
     notification_type ENUM('INCIDENT_ALERT', 'ASSIGNMENT_REQUEST', 'ASSIGNMENT_RESPONSE', 'GENERAL') NOT NULL,
     content TEXT NOT NULL,
     time_sent TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
