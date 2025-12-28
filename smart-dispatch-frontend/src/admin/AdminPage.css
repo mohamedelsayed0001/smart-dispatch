@@ -23,6 +23,21 @@
 .view-container {
   width: 100%;
 }
+.sidebar-logout-btn {
+  width: 100%;
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  padding: 10px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  border-radius: 8px;
+  font-weight: bold;
+}
+
+.sidebar-logout-btn:hover {
+  background-color: #c0392b;
+}
 
 .page-title {
   font-size: 30px;
