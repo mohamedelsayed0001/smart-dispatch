@@ -77,8 +77,12 @@ def osrm_queue_processor():
                 continue
             except requests.exceptions.ConnectionError as e:
                 logger.error(f"OSRM connection error for {request_id}: {e}")
+                OSRM_REQUEST_QUEUE.put((request_id, start_lon, start_lat, end_lon, end_lat))
+                continue
             except Exception as e:
                 logger.error(f"OSRM request error for {request_id}: {e}")
+                OSRM_REQUEST_QUEUE.put((request_id, start_lon, start_lat, end_lon, end_lat))
+                continue
 
             with OSRM_RESULT_LOCK:
                 OSRM_RESULT_DICT[request_id] = result
