@@ -7,6 +7,7 @@ from datetime import datetime
 import random
 import logging
 import websocket
+import queue
 
 # Configuration
 BACKEND_URL = "http://localhost:8080"
@@ -25,6 +26,14 @@ LON_MIN = 30.996555009635973
 
 RESOLVING_TIME = 10
 
+# OSRM Rate Limiting
+OSRM_REQUEST_QUEUE = queue.Queue()
+OSRM_RESULT_DICT = {}
+OSRM_EVENT_DICT = {}
+OSRM_RESULT_LOCK = threading.Lock()
+OSRM_REQUEST_DELAY = 0.5
+OSRM_TIMEOUT = 15
+
 # Simulation parameters
 OPERATORS = []
 THREADS = []
@@ -34,6 +43,54 @@ UPDATE_INTERVAL = 1
 # Suppress debug logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+def osrm_queue_processor():
+    """Background thread that processes OSRM route requests with rate limiting."""
+    logger.info("OSRM queue processor started")
+    while RUNNING:
+        try:
+            request_data = OSRM_REQUEST_QUEUE.get(timeout=1)
+            if request_data is None:
+                break
+            
+            request_id, start_lon, start_lat, end_lon, end_lat = request_data
+
+            result = None
+            try:
+                url = f"{OSRM_ENDPOINT}/{start_lon},{start_lat};{end_lon},{end_lat}?overview=full&geometries=geojson"
+                logger.info(f"OSRM request for {request_id}")
+                
+                response = requests.get(url, timeout=OSRM_TIMEOUT)
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    if data.get("routes") and len(data["routes"]) > 0:
+                        coords = data["routes"][0]["geometry"]["coordinates"]
+                        result = [(coord[1], coord[0]) for coord in coords]
+                        logger.info(f"OSRM request successful for {request_id}")
+                else:
+                    logger.warning(f"OSRM returned status {response.status_code} for {request_id}")
+                    
+            except requests.exceptions.Timeout:
+                logger.error(f"OSRM timeout for {request_id}")
+            except requests.exceptions.ConnectionError as e:
+                logger.error(f"OSRM connection error for {request_id}: {e}")
+            except Exception as e:
+                logger.error(f"OSRM request error for {request_id}: {e}")
+            
+            with OSRM_RESULT_LOCK:
+                OSRM_RESULT_DICT[request_id] = result
+                if request_id in OSRM_EVENT_DICT:
+                    OSRM_EVENT_DICT[request_id].set()
+            
+            time.sleep(OSRM_REQUEST_DELAY)
+            
+        except queue.Empty:
+            continue
+        except Exception as e:
+            logger.error(f"Queue processor error: {e}")
+    
+    logger.info("OSRM queue processor stopped")
 
 class StompWSClient:
     """A minimal STOMP over WebSocket client."""
@@ -160,6 +217,10 @@ class VehicleSimulator:
         try:
             message = json.loads(body)
             print(f"[Vehicle {self.vehicle_id:03d}] Received assignment message")
+
+            if self.current_assignment is not None:
+                print(f"[Vehicle {self.vehicle_id:03d}] Busy. Ignored assignment {message.get('id')}")
+                return
             
             if not self.current_assignment:
                 self.current_assignment = message
@@ -201,18 +262,26 @@ class VehicleSimulator:
 
     def get_route(self, start_lon, start_lat, end_lon, end_lat):
         print(f"[Vehicle {self.vehicle_id:03d}] Calculating route from {start_lon},{start_lat} to {end_lon},{end_lat}")
-        try:
-            url = f"{OSRM_ENDPOINT}/{start_lon},{start_lat};{end_lon},{end_lat}?overview=full&geometries=geojson"
-            response = requests.get(url, timeout=5)
-            if response.status_code == 200:
-                data = response.json()
-                if data.get("routes") and len(data["routes"]) > 0:
-                    coords = data["routes"][0]["geometry"]["coordinates"]
-                    return [(coord[1], coord[0]) for coord in coords]
-            return None
-        except Exception as e:
-            print(f"[Vehicle {self.vehicle_id:03d}] Route error: {e}")
-            return None
+        
+        request_id = f"{self.vehicle_id}_{time.time()}"
+        event = threading.Event()
+        
+        with OSRM_RESULT_LOCK:
+            OSRM_EVENT_DICT[request_id] = event
+        
+        OSRM_REQUEST_QUEUE.put((request_id, start_lon, start_lat, end_lon, end_lat))
+        print(f"[Vehicle {self.vehicle_id:03d}] Route request queued, waiting for response...")
+        
+        event.wait()
+        with OSRM_RESULT_LOCK:
+            result = OSRM_RESULT_DICT.pop(request_id, None)
+            OSRM_EVENT_DICT.pop(request_id, None)
+            
+        if result:
+            print(f"[Vehicle {self.vehicle_id:03d}] Route received successfully")
+        else:
+            print(f"[Vehicle {self.vehicle_id:03d}] Route request failed")
+        return result
     
     def update_location(self, lat, lon):
         try:
@@ -246,32 +315,45 @@ class VehicleSimulator:
         print(f"[Vehicle {self.vehicle_id:03d}] Started simulation")
         try:
             while self.running and RUNNING:
+                # STATE 1: Moving to Incident
                 if self.current_assignment and self.route_points:
                     assignment_id = self.current_assignment.get("id")
+                    
                     if self.route_index < len(self.route_points):
+                        # Move to next point
                         point = self.route_points[self.route_index]
                         self.current_lat, self.current_lon = point
                         self.route_index += 5
                         self.update_location(self.current_lat, self.current_lon)
-                        
                     else:
+                        # STATE 2: Arrived and Resolving
+                        # Ensure we hit the exact final coordinate
                         final_point = self.route_points[-1]
                         self.current_lat, self.current_lon = final_point
                         self.update_location(self.current_lat, self.current_lon)
                         
-                        self.update_status(assignment_id, vehicle_status="RESOLVING")
                         print(f"[Vehicle {self.vehicle_id:03d}] Reached site. Resolving...")
+                        self.update_status(assignment_id, vehicle_status="RESOLVING")
+                        
                         time.sleep(RESOLVING_TIME)
-                        if self.update_status(
+                        
+                        self.current_assignment = None
+                        self.route_points = []
+                        self.route_index = 0
+                        # STATE 3: Completion and Cleanup
+                        self.update_status(
                             assignment_id, 
                             vehicle_status="AVAILABLE", 
                             assignment_status="COMPLETED", 
                             incident_status="RESOLVED"
-                        ):
-                            self.current_assignment = None; self.route_points = []; self.route_index = 0
+                        )
+                        print(f"[Vehicle {self.vehicle_id:03d}] Assignment complete. Standing by.")
+                
+                # If no assignment, the loop just sleeps and waits for the WS callback
                 time.sleep(UPDATE_INTERVAL)
+                
         except Exception as e:
-            print(f"[Vehicle {self.vehicle_id:03d}] Simulation error: {e}")
+            logger.error(f"[Vehicle {self.vehicle_id:03d}] Simulation loop crashed: {e}", exc_info=True)
         finally:
             if self.stomp: self.stomp.disconnect()
 
@@ -298,6 +380,11 @@ def main():
     if len(sys.argv) != 2: sys.exit(1)
     n = int(sys.argv[1])
     operators = load_operators(n)
+    
+    # Start OSRM queue processor
+    osrm_thread = threading.Thread(target=osrm_queue_processor, daemon=True)
+    osrm_thread.start()
+    print("✓ OSRM rate limiter started\n")
     
     threads = []
     for op in operators:
