@@ -32,8 +32,13 @@ const AdminSidebar = ({ activeMenu, setActiveMenu, collapsed, setCollapsed,onLog
         <MenuItem icon={FileText} label="Reports" id="reports" />
         <MenuItem icon={BarChart3} label="Analysis" id="analysis" />
       </div>
- <button className="sidebar-logout-btn" onClick={onLogout}>
-        Logout
+ 
+ <button 
+        className="sidebar-logout-btn" 
+        onClick={onLogout}
+        title={collapsed ? 'Logout' : ''}
+      >
+        {collapsed ? '🚪' : 'Logout'}
       </button>
       <button 
         className="sidebar-collapse-btn"
