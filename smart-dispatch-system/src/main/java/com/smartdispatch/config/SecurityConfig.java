@@ -12,31 +12,26 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import com.smartdispatch.security.filter.JwtAuthFilter;
+// import com.smartdispatch.security.filter.JwtAuthFilter;
 
 @Configuration
 @EnableMethodSecurity
 public class SecurityConfig {
 
-    private final JwtAuthFilter jwtAuthFilter;
+    // private final JwtAuthFilter jwtAuthFilter;
 
-    SecurityConfig(JwtAuthFilter jwtAuthFilter) {
-        this.jwtAuthFilter = jwtAuthFilter;
-    }
+    // SecurityConfig(JwtAuthFilter jwtAuthFilter) {
+    //     this.jwtAuthFilter = jwtAuthFilter;
+    // }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .sessionManagement(session ->
-                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                )
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                    .anyRequest().permitAll()
-                );
-
-
+                        .anyRequest().permitAll());
 
         return http.build();
     }

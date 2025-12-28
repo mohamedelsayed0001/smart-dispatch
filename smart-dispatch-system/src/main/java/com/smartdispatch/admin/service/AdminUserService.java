@@ -8,7 +8,7 @@ import com.smartdispatch.model.enums.UserRole;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.format.DateTimeFormatter;
+// import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,7 +19,7 @@ public class AdminUserService {
     private IUserDao userDAO;
 
     private static final int DEFAULT_PAGE_SIZE = 10;
-    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    // private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     public PaginatedResponse<UserDTO> getUsers(int page, String role, String search) {
         if (page < 1)

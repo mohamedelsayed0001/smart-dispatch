@@ -21,6 +21,7 @@ import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
+@SuppressWarnings("null")
 public class IncidentDao implements IIncidentDao {
 
   private final JdbcTemplate jdbcTemplate;
@@ -59,7 +60,8 @@ public class IncidentDao implements IIncidentDao {
       return ps;
     }, keyHolder);
 
-    return keyHolder.getKey().longValue();
+    Number key = keyHolder.getKey();
+    return key != null ? key.longValue() : null;
   }
 
   @Override

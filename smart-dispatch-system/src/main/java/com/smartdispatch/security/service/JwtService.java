@@ -44,7 +44,7 @@ public class JwtService {
             return null;
         return new AppUserDetails(
                 Long.valueOf((String) claims.get("id")),
-                (String) claims.get("username"),
+                // (String) claims.get("username"),
                 (String) claims.get("email"),
                 (String) claims.get("role"));
     }

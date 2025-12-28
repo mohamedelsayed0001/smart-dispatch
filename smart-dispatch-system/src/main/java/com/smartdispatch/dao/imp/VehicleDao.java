@@ -16,6 +16,7 @@ import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
+@SuppressWarnings("null")
 public class VehicleDao implements IVehicleDao {
 
   private final JdbcTemplate jdbcTemplate;

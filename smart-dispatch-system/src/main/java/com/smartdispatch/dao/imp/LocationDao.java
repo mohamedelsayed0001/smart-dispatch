@@ -16,6 +16,7 @@ import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
+@SuppressWarnings("null")
 public class LocationDao implements ILocationDao {
 
   private final JdbcTemplate jdbcTemplate;

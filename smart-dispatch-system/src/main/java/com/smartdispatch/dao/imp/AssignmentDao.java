@@ -17,6 +17,7 @@ import java.util.List;
 
 @Repository
 @RequiredArgsConstructor
+@SuppressWarnings("null")
 public class AssignmentDao implements IAssignmentDao {
 
   private final JdbcTemplate jdbcTemplate;
@@ -42,7 +43,8 @@ public class AssignmentDao implements IAssignmentDao {
       return ps;
     }, keyHolder);
 
-    return keyHolder.getKey().longValue();
+    Number key = keyHolder.getKey();
+    return key != null ? key.longValue() : null;
   }
 
   @Override

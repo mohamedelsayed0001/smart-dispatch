@@ -5,7 +5,6 @@ import java.util.List;
 
 import com.smartdispatch.admin.service.AdminNotificationService;
 import com.smartdispatch.dispatcher.dtos.IncidentDto;
-import com.smartdispatch.model.Incident;
 import org.springframework.stereotype.Service;
 
 import com.smartdispatch.report.dao.ReportedIncidentDao;

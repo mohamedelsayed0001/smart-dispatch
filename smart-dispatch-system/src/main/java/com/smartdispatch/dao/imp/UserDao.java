@@ -15,6 +15,7 @@ import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
+@SuppressWarnings("null")
 public class UserDao implements IUserDao {
 
   private final JdbcTemplate jdbcTemplate;
@@ -100,7 +101,8 @@ public class UserDao implements IUserDao {
       return ps;
     }, keyHolder);
 
-    return keyHolder.getKey().longValue();
+    Number key = keyHolder.getKey();
+    return key != null ? key.longValue() : 0L;
   }
 
   @Override
