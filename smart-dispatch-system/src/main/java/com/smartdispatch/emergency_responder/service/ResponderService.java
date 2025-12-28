@@ -1,5 +1,6 @@
 package com.smartdispatch.emergency_responder.service;
 
+import com.smartdispatch.admin.service.AdminNotificationService;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.data.redis.core.RedisTemplate;
@@ -17,6 +18,7 @@ import com.smartdispatch.vehiclemanagement.init.VehicleLocationInitializer;
 import com.smartdispatch.websockets.NotificationService;
 import com.smartdispatch.websockets.websocketDto.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -25,7 +27,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class ResponderService {
-
+  private final AdminNotificationService adminNotificationService;
   private final IUserDao userDAO;
   private final IVehicleDao vehicleDAO;
   private final IAssignmentDao assignmentDAO;
@@ -193,6 +195,11 @@ public class ResponderService {
     if (statusDTO.getIncidentStatus() != null) {
       if (statusDTO.getAssignmentStatus() == AssignmentStatus.COMPLETED) {
         incidentDAO.updateTimeResolved(assignment.getIncidentId(), statusDTO.getIncidentStatus());
+        adminNotificationService.notifyIncidentResolved(IncidentDto.builder().type(incident.getType().name())
+                .id(assignment.getIncidentId())
+                .description(incident.getDescription())
+                        .timeResolved((LocalDateTime.now()))
+                .build());
 
         try {
           dispatcherService.autoAssignPendingIncidentToVehicle(vehicle.getId());

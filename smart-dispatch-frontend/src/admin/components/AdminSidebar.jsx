@@ -1,14 +1,17 @@
-import { LayoutDashboard, Users, FileText, BarChart3, Truck, MapPin, Map, ChevronLeft, ChevronRight } from 'lucide-react';
+import { LayoutDashboard, Users, FileText, BarChart3, Truck, MapPin, Map, ChevronLeft, ChevronRight, Bell } from 'lucide-react';
 import '../styles/AdminSidebar.css';
+// import SidebarNotificationMenu from './SidebarNotificationMenu';
 
-const AdminSidebar = ({ activeMenu, setActiveMenu, collapsed, setCollapsed }) => {
-  const MenuItem = ({ icon: Icon, label, id }) => (
+const AdminSidebar = ({ activeMenu, setActiveMenu, collapsed, setCollapsed, hasNewNotification }) => {
+  const MenuItem = ({ icon: Icon, label, id, showDot }) => (
     <button
       onClick={() => setActiveMenu(id)}
       className={activeMenu === id ? 'menu-item menu-item-active' : 'menu-item'}
       title={collapsed ? label : ''}
+      style={{ position: 'relative' }}
     >
       <Icon size={20} />
+      {showDot && <span className="notif-dot-sidebar" />}
       {!collapsed && <span>{label}</span>}
     </button>
   );
@@ -33,6 +36,7 @@ const AdminSidebar = ({ activeMenu, setActiveMenu, collapsed, setCollapsed }) =>
         <MenuItem icon={Map} label="Live Map" id="livemap" />
         <MenuItem icon={FileText} label="Reports" id="reports" />
         <MenuItem icon={BarChart3} label="Analysis" id="analysis" />
+        <MenuItem icon={Bell} label="Notifications" id="notifications" showDot={hasNewNotification} />
       </div>
 
       <button 

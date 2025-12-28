@@ -7,6 +7,10 @@ import VehicleLocations from './components/VehicleLocations';
 import LiveMap from './components/LiveMap';
 import Reports from './components/Reports';
 import Analysis from './components/Analysis';
+import AdminNotifications from './components/AdminNotifications';
+// import { Client } from '@stomp/stompjs';
+// import SockJS from 'sockjs-client';
+import { useCallback } from 'react';
 import { fetchDashboardData, fetchUsers, fetchReports } from './api.js';
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
@@ -22,6 +26,52 @@ const AdminPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [notifList, setNotifList] = useState([]);
+  const [snackbarNotif, setSnackbarNotif] = useState(null);
+  const stompNotifClientRef = useRef(null);
+    // Subscribe to admin notifications WebSocket globally
+    useEffect(() => {
+      const token = localStorage.getItem('authToken');
+      const client = new Client({
+        webSocketFactory: () => new SockJS('http://localhost:8080/ws'),
+        connectHeaders: token ? { Authorization: `Bearer ${token}` } : {},
+        onConnect: () => {
+          client.subscribe('/topic/admin/notifications', (message) => {
+            try {
+              const notif = JSON.parse(message.body);
+              setNotifList(prev => {
+                const uniqueKey = `${notif.incidentId}-${notif.time}`;
+                // Avoid duplicates
+                if (prev.some(n => `${n.incidentId}-${n.time}` === uniqueKey)) {
+                  return prev;
+                }
+                const newList = [{ ...notif, unread: true }, ...prev];
+                return newList.length > 10 ? newList.slice(0, 10) : newList;
+              });
+              setSnackbarNotif(notif);
+              setTimeout(() => setSnackbarNotif(null), 4000);
+            } catch (e) {
+              console.error('Failed to parse admin notification', e);
+            }
+          });
+        },
+        onStompError: (frame) => {
+          console.error('STOMP error:', frame);
+        },
+        reconnectDelay: 5000,
+        heartbeatIncoming: 4000,
+        heartbeatOutgoing: 4000,
+      });
+      client.activate();
+      stompNotifClientRef.current = client;
+      return () => {
+        if (stompNotifClientRef.current) {
+          try { stompNotifClientRef.current.deactivate(); } catch (e) { }
+          stompNotifClientRef.current = null;
+        }
+      };
+    }, []);
+  const [notifTargetIncident, setNotifTargetIncident] = useState(null);
   const stompClientRef = useRef(null);
 
   useEffect(() => {
@@ -78,6 +128,29 @@ const AdminPage = () => {
     });
   };
 
+  // Handler for new notification (called from AdminNotifications via prop)
+  // Add unread status to new notifications
+  const handleNotifNew = useCallback((notif) => {
+    setNotifList(prev => {
+      const newList = [{ ...notif, unread: true }, ...prev];
+      return newList.length > 10 ? newList.slice(0, 10) : newList;
+    });
+    setSnackbarNotif(notif);
+    setTimeout(() => setSnackbarNotif(null), 4000);
+  }, []);
+  // Handler for menu open
+  // Mark all as read when opening notifications page
+  const handleNotifMenuOpen = () => {
+    setNotifList(prev => prev.map(n => ({ ...n, unread: false })));
+  };
+  // Handler for notification click
+  // Mark notification as read on click (only open popup, do not navigate)
+  const handleNotificationClick = (notif, idx) => {
+    setNotifList(prev => prev.map((n, i) => i === idx ? { ...n, unread: false } : n));
+    // No navigation to live map
+  };
+
+  // Pass notification state to sidebar and notification component
   return (
     <div className="admin-container">
       <AdminSidebar 
@@ -85,8 +158,8 @@ const AdminPage = () => {
         setActiveMenu={setActiveMenu}
         collapsed={sidebarCollapsed}
         setCollapsed={setSidebarCollapsed}
+        hasNewNotification={notifList.some(n => n.unread)}
       />
-      
       <div className="admin-main" style={{ marginLeft: sidebarCollapsed ? '80px' : '250px', transition: 'margin-left 0.3s ease' }}>
         <div className="admin-content">
           {activeMenu === 'dashboard' && <Dashboard dashboardData={dashboardData} />}
@@ -105,7 +178,7 @@ const AdminPage = () => {
           )}
           {activeMenu === 'vehicles' && <Vehicles />}
           {activeMenu === 'locations' && <VehicleLocations />}
-          {activeMenu === 'livemap' && <LiveMap />}
+          {activeMenu === 'livemap' && <LiveMap targetIncident={notifTargetIncident} />}
           {activeMenu === 'reports' && (
             <Reports
               reports={reports}
@@ -115,7 +188,34 @@ const AdminPage = () => {
             />
           )}
           {activeMenu === 'analysis' && <Analysis />}
+          {activeMenu === 'notifications' && (
+            <AdminNotifications
+              notifications={notifList}
+              onNotificationClick={handleNotificationClick}
+              onMenuOpen={handleNotifMenuOpen}
+              onNewNotification={handleNotifNew}
+            />
+          )}
         </div>
+        {/* Snackbar notification for any page (moved outside admin-content for global visibility) */}
+        {snackbarNotif && (
+          <div style={{
+            position: 'fixed',
+            top: 32,
+            right: 32,
+            background: '#fff',
+            color: '#222',
+            padding: '1em 2em',
+            borderRadius: 8,
+            boxShadow: '0 2px 12px rgba(0,0,0,0.15)',
+            zIndex: 9999,
+            fontWeight: 600,
+            border: '1px solid #ddd'
+          }}>
+            <span style={{marginRight: 12}}>🔔</span>
+            {snackbarNotif.message}
+          </div>
+        )}
       </div>
     </div>
   );

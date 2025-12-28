@@ -1,3 +1,15 @@
+
+.notif-dot-sidebar {
+  position: absolute;
+  top: 8px;
+  left: 22px;
+  width: 10px;
+  height: 10px;
+  background: #ef4444;
+  border-radius: 50%;
+  box-shadow: 0 0 4px #dc2626;
+  z-index: 2;
+}
 /* AdminSidebar Component Styles */
 
 .admin-sidebar {

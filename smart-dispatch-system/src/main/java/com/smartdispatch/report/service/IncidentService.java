@@ -3,6 +3,9 @@ package com.smartdispatch.report.service;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.smartdispatch.admin.service.AdminNotificationService;
+import com.smartdispatch.dispatcher.dtos.IncidentDto;
+import com.smartdispatch.model.Incident;
 import org.springframework.stereotype.Service;
 
 import com.smartdispatch.report.dao.ReportedIncidentDao;
@@ -12,12 +15,13 @@ import com.smartdispatch.report.dto.AdminIncidentReportDto;
 
 @Service
 public class IncidentService {
-
+    private final AdminNotificationService adminNotificationService;
     private final ReportedIncidentDao reportedIncidentDao;
     private final NotificationService notificationService;
     private final com.smartdispatch.dispatcher.services.DispatcherService dispatcherService;
 
-    IncidentService(ReportedIncidentDao reportedIncidentDao, NotificationService notificationService, com.smartdispatch.dispatcher.services.DispatcherService dispatcherService) {
+    IncidentService(AdminNotificationService adminNotificationService, ReportedIncidentDao reportedIncidentDao, NotificationService notificationService, com.smartdispatch.dispatcher.services.DispatcherService dispatcherService) {
+        this.adminNotificationService = adminNotificationService;
         this.reportedIncidentDao = reportedIncidentDao;
         this.notificationService = notificationService;
         this.dispatcherService = dispatcherService;
@@ -43,6 +47,13 @@ public class IncidentService {
             );
             try {
                 notificationService.notifyChannel("reports", created);
+                adminNotificationService.notifyIncidentCreated(IncidentDto.builder()
+                                .type(dto.getType())
+                                .timeReported(LocalDateTime.now())
+                                .description(dto.getDescription())
+                                .id(id)
+                        .build());
+
                 dispatcherService.autoAssignClosestVehicle(id);
             } catch (Exception e) {
                 System.out.println("Failed to broadcast new incident or auto-assign: " + e.getMessage());

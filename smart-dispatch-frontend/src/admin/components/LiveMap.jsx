@@ -191,7 +191,7 @@ const LiveMap = () => {
   const stompClientRef = useRef(null);
   const mapRef = useRef(null);
 
-  // Fetch initial data
+
   useEffect(() => {
     const loadInitialData = async () => {
       try {

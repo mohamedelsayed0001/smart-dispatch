@@ -8,7 +8,7 @@ INSERT INTO `User` (name, email, password, role) VALUES
   ('Operator 007', 'operator007@sim.local', 'password', 'OPERATOR'),
   ('Operator 008', 'operator008@sim.local', 'password', 'OPERATOR'),
   ('Operator 009', 'operator009@sim.local', 'password', 'OPERATOR'),
-  ('Operator 010', 'operator010@sim.local', 'password', 'OPERATOR');
+  ('Operator 010', 'operator010@sim.local', 'password', 'ADMIN');
 
 -- Capture first inserted user id
 SET @first_new_user_id = LAST_INSERT_ID();
