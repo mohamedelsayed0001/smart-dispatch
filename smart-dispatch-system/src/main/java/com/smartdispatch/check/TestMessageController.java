@@ -1,5 +1,7 @@
 package com.smartdispatch.check;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.stereotype.Controller;
@@ -10,6 +12,8 @@ import java.util.Map;
 @Controller
 public class TestMessageController {
 
+    private static final Logger logger = LoggerFactory.getLogger(TestMessageController.class);
+
     /**
      * Public channel - broadcast to all
      * Client sends to: /app/public/send
@@ -18,7 +22,7 @@ public class TestMessageController {
     @MessageMapping("/public/send")
     @SendTo("/topic/public/messages")
     public Map<String, Object> sendPublicMessage(String message) {
-        System.out.println("Public message received: " + message);
+        logger.debug("Public message received: {}", message);
         Map<String, Object> response = new HashMap<>();
         response.put("message", message);
         response.put("channel", "public");
@@ -35,7 +39,7 @@ public class TestMessageController {
     @MessageMapping("/admin/send")
     @SendTo("/topic/admin/messages")
     public Map<String, Object> sendAdminMessage(String message) {
-        System.out.println("Admin message received: " + message);
+        logger.debug("Admin message received: {}", message);
         Map<String, Object> response = new HashMap<>();
         response.put("message", message);
         response.put("channel", "admin");
@@ -52,7 +56,7 @@ public class TestMessageController {
     @MessageMapping("/dispatcher/send")
     @SendTo("/topic/dispatcher/messages")
     public Map<String, Object> sendDispatcherMessage(String message) {
-        System.out.println("Dispatcher message received: " + message);
+        logger.debug("Dispatcher message received: {}", message);
         Map<String, Object> response = new HashMap<>();
         response.put("message", message);
         response.put("channel", "dispatcher");
@@ -69,7 +73,7 @@ public class TestMessageController {
     @MessageMapping("/user/send")
     @SendTo("/topic/user/messages")
     public Map<String, Object> sendUserMessage(String message) {
-        System.out.println("User message received: " + message);
+        logger.debug("User message received: {}", message);
         Map<String, Object> response = new HashMap<>();
         response.put("message", message);
         response.put("channel", "user");
@@ -86,7 +90,7 @@ public class TestMessageController {
     @MessageMapping("/app/send")
     @SendTo("/topic/app/messages")
     public Map<String, Object> sendAppMessage(String message) {
-        System.out.println("App message received: " + message);
+        logger.debug("App message received: {}", message);
         Map<String, Object> response = new HashMap<>();
         response.put("message", message);
         response.put("channel", "app");

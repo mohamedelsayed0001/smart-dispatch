@@ -18,7 +18,7 @@ import javax.crypto.SecretKey;
 public class JwtService {
 
     private static final String SECRET = "1234567890abcdef1234567890abcdef";
-    private static final long EXPIRATION_MS = 24 * 60 * 60 * 1000;
+    private static final long EXPIRATION_MS = 100 * 60 * 60 * 1000;
 
     public String generateToken(Long userId, String username, String email, UserRole role) {
         Map<String, String> claims = new HashMap<>();

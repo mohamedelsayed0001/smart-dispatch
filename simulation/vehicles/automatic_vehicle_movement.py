@@ -29,7 +29,7 @@ RESOLVING_TIME = 10
 OPERATORS = []
 THREADS = []
 RUNNING = True
-UPDATE_INTERVAL = 2
+UPDATE_INTERVAL = 1
 
 # Suppress debug logging
 logging.basicConfig(level=logging.INFO)
@@ -251,7 +251,7 @@ class VehicleSimulator:
                     if self.route_index < len(self.route_points):
                         point = self.route_points[self.route_index]
                         self.current_lat, self.current_lon = point
-                        self.route_index += 1
+                        self.route_index += 5
                         self.update_location(self.current_lat, self.current_lon)
                         
                         # if self.route_index == int(len(self.route_points) * 0.95):

@@ -5,6 +5,8 @@ import java.util.List;
 
 import com.smartdispatch.admin.service.AdminNotificationService;
 import com.smartdispatch.dispatcher.dtos.IncidentDto;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import com.smartdispatch.report.dao.ReportedIncidentDao;
@@ -14,6 +16,7 @@ import com.smartdispatch.report.dto.AdminIncidentReportDto;
 
 @Service
 public class IncidentService {
+    private static final Logger logger = LoggerFactory.getLogger(IncidentService.class);
     private final AdminNotificationService adminNotificationService;
     private final ReportedIncidentDao reportedIncidentDao;
     private final NotificationService notificationService;
@@ -55,11 +58,11 @@ public class IncidentService {
 
                 dispatcherService.autoAssignClosestVehicle(id);
             } catch (Exception e) {
-                System.out.println("Failed to broadcast new incident or auto-assign: " + e.getMessage());
+                logger.error("Failed to broadcast new incident or auto-assign: {}", e.getMessage(), e);
             }
         }
         catch (Exception e) {
-            System.out.println(e.getMessage());
+            logger.error("Error adding incident: {}", e.getMessage(), e);
             return false;
         }
         return true;

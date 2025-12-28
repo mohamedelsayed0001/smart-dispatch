@@ -3,6 +3,8 @@ package com.smartdispatch.admin.controller;
 import com.smartdispatch.admin.dto.PaginatedResponse;
 import com.smartdispatch.admin.dto.UserDTO;
 import com.smartdispatch.admin.service.AdminUserService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +19,8 @@ import java.util.Map;
 @CrossOrigin(origins = "*")
 public class AdminUserController {
 
+    private static final Logger logger = LoggerFactory.getLogger(AdminUserController.class);
+
     @Autowired
     private AdminUserService userService;
 
@@ -28,15 +32,14 @@ public class AdminUserController {
             @RequestParam(defaultValue = "") String search
     ) {
         try {
-            System.out.println("[UserController] GET /api/admin/users?page=" + page + "&role=" + role + "&search=" + search);
+            logger.debug("GET /api/admin/users?page={}&role={}&search={}", page, role, search);
             
             PaginatedResponse<UserDTO> response = userService.getUsers(page, role, search);
             
-            System.out.println("[UserController] Returning " + response.getData().size() + " users");
+            logger.debug("Returning {} users", response.getData().size());
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            System.out.println("[UserController] Error: " + e.getMessage());
-            e.printStackTrace();
+            logger.error("Error fetching users: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
@@ -57,7 +60,7 @@ public class AdminUserController {
                 return ResponseEntity.badRequest().body(error);
             }
             
-            System.out.println("[UserController] Updating user id=" + id + " to role=" + newRole);
+            logger.debug("Updating user id={} to role={}", id, newRole);
             
             boolean updated = userService.promoteUser(id, newRole);
             
@@ -72,8 +75,7 @@ public class AdminUserController {
             }
 
         } catch (Exception e) {
-            System.out.println("[UserController] Error: " + e.getMessage());
-            e.printStackTrace();
+            logger.error("Error updating user role: {}", e.getMessage(), e);
             Map<String, String> error = new HashMap<>();
             error.put("error", "Internal server error");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);

@@ -8,6 +8,8 @@ import java.util.Map;
 
 import lombok.RequiredArgsConstructor;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
@@ -17,6 +19,8 @@ import com.smartdispatch.vehiclemanagement.Dto.VehicleLiveLocationDto;
 @Component
 @RequiredArgsConstructor
 public class VehicleLocationInitializer {
+
+    private static final Logger logger = LoggerFactory.getLogger(VehicleLocationInitializer.class);
 
     private final RedisTemplate<String, String> redisTemplate;
     private final ILocationDao locationDao;
@@ -37,6 +41,6 @@ public class VehicleLocationInitializer {
 
         redisTemplate.opsForHash().putAll(VEHICLE_LOCATIONS_KEY, map);
 
-        System.out.println("Loaded " + vehicles.size() + " vehicles into Redis");
+        logger.info("Loaded {} vehicles into Redis", vehicles.size());
     }
 }

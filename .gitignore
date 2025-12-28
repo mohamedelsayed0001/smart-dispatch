@@ -1,0 +1,5 @@
+# Ignore contents of Reports and logs directories (keep folders themselves)
+**/Reports/**
+!**/Reports/.gitkeep
+**/logs/**
+!**/logs/.gitkeep

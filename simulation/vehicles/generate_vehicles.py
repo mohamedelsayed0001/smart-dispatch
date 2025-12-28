@@ -65,7 +65,6 @@ ORDER BY u.id
 LIMIT {N};
 """)
 
-# Generate initial vehicle locations (randomized within Cairo boundaries)
 print(f"Generating {N} initial vehicle locations within Cairo boundaries...")
 location_values = []
 for i in range(1, N + 1):
@@ -84,7 +83,19 @@ for batch_start in range(0, len(location_values), BATCH_SIZE):
         + ";"
     )
 
+analysis_path = pathlib.Path(__file__).with_name("analysis_mock_data.txt")
+try:
+  analysis_sql = analysis_path.read_text(encoding="utf-8")
+  out.append(analysis_sql)
+  print(f"✓ Appended analysis mock data")
+except FileNotFoundError:
+  print(f"⚠ Analysis mock data file not found: {analysis_path.resolve()}")
+
+if N < 9:
+  print(f"⚠ Analysis data references vehicle_id up to 9; generated {N} vehicles.")
+
 # Resolve path relative to repo root
 p = pathlib.Path(__file__).parent.parent.parent / "smart-dispatch-system" / "src" / "main" / "resources" / "data.sql"
 p.write_text("\n".join(out), encoding="utf-8")
-print(f"✓ Wrote {p.resolve()} ({N} operators, {N} vehicles, {N} locations)")
+# print(f"✓ Wrote {p.resolve()} ({N} operators, {N} vehicles, {N} locations)")
+print(f"✓ Wrote ({N} operators, {N} vehicles, {N} locations)")

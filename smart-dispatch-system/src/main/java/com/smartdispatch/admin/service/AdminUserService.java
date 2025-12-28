@@ -5,6 +5,8 @@ import com.smartdispatch.admin.dto.PaginatedResponse;
 import com.smartdispatch.admin.dto.UserDTO;
 import com.smartdispatch.model.User;
 import com.smartdispatch.model.enums.UserRole;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,6 +16,8 @@ import java.util.List;
 
 @Service
 public class AdminUserService {
+
+    private static final Logger logger = LoggerFactory.getLogger(AdminUserService.class);
 
     @Autowired
     private IUserDao userDAO;
@@ -25,7 +29,7 @@ public class AdminUserService {
         if (page < 1)
             page = 1;
 
-        System.out.println("[UserService] getUsers called with page=" + page + ", role=" + role + ", search=" + search);
+        logger.debug("getUsers called with page={}, role={}, search={}", page, role, search);
 
         // Get users for the current page
         List<User> users = userDAO.getAllUsers(page, DEFAULT_PAGE_SIZE, role, search);
@@ -34,8 +38,7 @@ public class AdminUserService {
         long totalCount = userDAO.getTotalCount(role, search);
         int totalPages = (int) Math.ceil((double) totalCount / DEFAULT_PAGE_SIZE);
 
-        System.out.println("[UserService] Retrieved " + users.size() + " users, total=" + totalCount + ", totalPages="
-                + totalPages);
+        logger.debug("Retrieved {} users, total={}, totalPages={}", users.size(), totalCount, totalPages);
 
         // Convert to DTOs
         List<UserDTO> userDTOs = new ArrayList<>();
@@ -54,12 +57,12 @@ public class AdminUserService {
     }
 
     public boolean promoteUser(Long userId, String newRole) {
-        System.out.println("[UserService] Promoting user id=" + userId + " to role=" + newRole);
+        logger.debug("Promoting user id={} to role={}", userId, newRole);
         try {
             UserRole roleEnum = UserRole.valueOf(newRole.toUpperCase());
             return userDAO.updateUserRole(userId, roleEnum);
         } catch (IllegalArgumentException e) {
-            System.err.println("[UserService] Invalid role: " + newRole);
+            logger.error("Invalid role: {}", newRole);
             return false;
         }
     }

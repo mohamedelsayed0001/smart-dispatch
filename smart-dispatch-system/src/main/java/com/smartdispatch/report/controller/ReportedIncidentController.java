@@ -1,5 +1,7 @@
 package com.smartdispatch.report.controller;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -18,6 +20,8 @@ import com.smartdispatch.security.model.AppUserDetails;
 @RestController
 @RequestMapping("/api")
 public class ReportedIncidentController {
+
+    private static final Logger logger = LoggerFactory.getLogger(ReportedIncidentController.class);
 
     IncidentService incidentService;
 
@@ -49,7 +53,7 @@ public class ReportedIncidentController {
             var list = incidentService.getAllIncidents(id, status, type, level, text);
             return ResponseEntity.ok(list);
         } catch (Exception e) {
-            System.out.println("[ReportedIncidentController] Error fetching reports: " + e.getMessage());
+            logger.error("Error fetching reports: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to fetch reports");
         }
     }

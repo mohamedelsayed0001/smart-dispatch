@@ -2,6 +2,8 @@ package com.smartdispatch.vehiclemanagement.controller;
 
 import com.smartdispatch.vehiclemanagement.Dto.VehicleDto;
 import com.smartdispatch.vehiclemanagement.service.VehicleService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -13,6 +15,8 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/vehicle")
 public class VehicleController {
+
+    private static final Logger logger = LoggerFactory.getLogger(VehicleController.class);
 
     private final VehicleService vehicleService;
 
@@ -84,7 +88,7 @@ public class VehicleController {
                 return ResponseEntity.ok(List.of());
             }
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            logger.error("Error getting all vehicles: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }

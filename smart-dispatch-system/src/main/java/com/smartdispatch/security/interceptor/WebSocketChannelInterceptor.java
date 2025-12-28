@@ -1,5 +1,7 @@
 package com.smartdispatch.security.interceptor;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.Ordered;
 import org.springframework.messaging.Message;
@@ -21,6 +23,8 @@ import java.util.List;
 @Component
 public class WebSocketChannelInterceptor implements ChannelInterceptor, Ordered {
 
+    private static final Logger logger = LoggerFactory.getLogger(WebSocketChannelInterceptor.class);
+
     @Autowired
     private JwtService jwtService;
 
@@ -29,7 +33,7 @@ public class WebSocketChannelInterceptor implements ChannelInterceptor, Ordered 
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(message);
 
-        System.out.println("bombena WebSocketChannelInterceptor: PreSend called for command " + accessor.getCommand());
+        logger.debug("WebSocketChannelInterceptor: PreSend called for command {}", accessor.getCommand());
 
         // If not a CONNECT frame, leave unchanged
         if (accessor.getCommand() == null || !accessor.getCommand().equals(StompCommand.CONNECT)) {
@@ -37,34 +41,34 @@ public class WebSocketChannelInterceptor implements ChannelInterceptor, Ordered 
         }
 
 
-        System.out.println("CONNECT command detected");
+        logger.debug("CONNECT command detected");
 
         String authHeader = accessor.getFirstNativeHeader("Authorization");
-        System.out.println("Authorization header: " + (authHeader != null ? "present" : "MISSING"));
+        logger.debug("Authorization header: {}", (authHeader != null ? "present" : "MISSING"));
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            System.out.println("ERROR: Invalid or missing JWT token");
+            logger.error("Invalid or missing JWT token");
             throw new IllegalArgumentException("Invalid or missing JWT token");
         }
 
         String jwt = authHeader.substring(7);
-        System.out.println("JWT token extracted, length: " + jwt.length());
+        logger.debug("JWT token extracted, length: {}", jwt.length());
         
         AppUserDetails userDetails = jwtService.extractUserDetails(jwt);
 
         if (userDetails == null) {
-            System.out.println("ERROR: JWT validation failed - userDetails is null");
+            logger.error("JWT validation failed - userDetails is null");
             throw new IllegalArgumentException("Invalid JWT token");
         }
 
-        System.out.println("JWT validated successfully for user: " + userDetails.getUsername());
-        System.out.println("User ID: " + userDetails.getId());
-        System.out.println("User Email: " + userDetails.getEmail());
-        System.out.println("User Authorities: " + userDetails.getAuthorities());
+        logger.debug("JWT validated successfully for user: {}", userDetails.getUsername());
+        logger.debug("User ID: {}", userDetails.getId());
+        logger.debug("User Email: {}", userDetails.getEmail());
+        logger.debug("User Authorities: {}", userDetails.getAuthorities());
 
         List<GrantedAuthority> authorities = userDetails.getAuthorities();
-        System.out.println("Total authorities: " + authorities.size());
-        authorities.forEach(auth -> System.out.println("  - Authority: " + auth.getAuthority()));
+        logger.debug("Total authorities: {}", authorities.size());
+        authorities.forEach(auth -> logger.debug("  - Authority: {}", auth.getAuthority()));
 
         UsernamePasswordAuthenticationToken authentication =
                 new UsernamePasswordAuthenticationToken(
@@ -74,13 +78,13 @@ public class WebSocketChannelInterceptor implements ChannelInterceptor, Ordered 
                 );
 
 
-        System.out.println("*****"+ authentication.isAuthenticated() +"******");
+        logger.debug("Authentication status: {}", authentication.isAuthenticated());
 
         accessor.setUser(authentication);
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
 
-        System.out.println("WebSocket authentication successful for user: " + userDetails.getUsername() + " with roles: " + authorities);
+        logger.debug("WebSocket authentication successful for user: {} with roles: {}", userDetails.getUsername(), authorities);
 
         return MessageBuilder.createMessage(message.getPayload(), accessor.getMessageHeaders());
     }

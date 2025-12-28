@@ -2,6 +2,8 @@ package com.smartdispatch.config;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,6 +16,7 @@ import redis.embedded.RedisServer;
 @Configuration
 public class RedisConfig {
 
+    private static final Logger logger = LoggerFactory.getLogger(RedisConfig.class);
     private RedisServer redisServer;
 
     @Value("${spring.data.redis.port}")
@@ -23,14 +26,14 @@ public class RedisConfig {
     public void startRedis() {
         redisServer = new RedisServer(redisPort);
         redisServer.start();
-        System.out.println("In-memory Redis started on port: " + redisPort);
+        logger.info("In-memory Redis started on port: {}", redisPort);
     }
 
     @PreDestroy
     public void stopRedis() {
         if (redisServer != null) {
             redisServer.stop();
-            System.out.println("In-memory Redis stopped.");
+            logger.info("In-memory Redis stopped.");
         }
     }
 
