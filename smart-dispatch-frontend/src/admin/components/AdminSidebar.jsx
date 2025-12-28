@@ -1,5 +1,4 @@
 import { LayoutDashboard, Users, FileText, BarChart3, Truck, MapPin, Map, ChevronLeft, ChevronRight, Bell } from 'lucide-react';
-import { Users, FileText, BarChart3, Truck, MapPin, Map, ChevronLeft, ChevronRight } from 'lucide-react';
 import '../styles/AdminSidebar.css';
 // import SidebarNotificationMenu from './SidebarNotificationMenu';
 
