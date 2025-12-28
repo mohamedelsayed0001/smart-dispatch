@@ -3,6 +3,8 @@ package com.smartdispatch.admin.dao;
 import com.smartdispatch.admin.entity.Notification;
 
 import com.smartdispatch.admin.entity.NotificationType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +16,8 @@ import java.util.List;
 
 @Repository
 public class NotificationDao {
+    private static final Logger logger = LoggerFactory.getLogger(NotificationDao.class);
+    
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
@@ -35,20 +39,23 @@ public class NotificationDao {
     public void add(Notification notification) {
         String sql = "INSERT INTO Notification (notification_type, content, time_sent) VALUES (?, ?, ?)";
         LocalDateTime timeSent = notification.getTimeSent();
-        System.out.println("Time sent in dao : "+timeSent  );
-         jdbcTemplate.update(sql,
+        logger.debug("Adding notification - Type: {}, Time sent: {}", notification.getNotificationType(), timeSent);
+        jdbcTemplate.update(sql,
             notification.getNotificationType().name(),
             notification.getContent(),
             timeSent
         );
+        logger.debug("Notification added successfully");
     }
 
 
     public List<Notification> getNotificationsByType(int limit, NotificationType notificationType) {
+        logger.debug("Fetching notifications - Type: {}, Limit: {}", notificationType, limit);
         String sql = "SELECT * FROM Notification WHERE notification_type = ?" +
                 " ORDER BY time_sent DESC LIMIT ?";
 
-        List<Notification> notifications=jdbcTemplate.query(sql, notificationRowMapper,notificationType.name(), limit);
-        return  notifications;
+        List<Notification> notifications = jdbcTemplate.query(sql, notificationRowMapper, notificationType.name(), limit);
+        logger.debug("Retrieved {} notifications of type {}", notifications.size(), notificationType);
+        return notifications;
     }
 }

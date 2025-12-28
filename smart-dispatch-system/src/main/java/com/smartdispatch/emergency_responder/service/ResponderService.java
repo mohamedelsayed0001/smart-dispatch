@@ -3,7 +3,6 @@ package com.smartdispatch.emergency_responder.service;
 import com.smartdispatch.admin.service.AdminNotificationService;
 import lombok.RequiredArgsConstructor;
 
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,9 +13,10 @@ import com.smartdispatch.dispatcher.dtos.VehicleDto;
 import com.smartdispatch.emergency_responder.dto.*;
 import com.smartdispatch.model.*;
 import com.smartdispatch.model.enums.*;
-import com.smartdispatch.vehiclemanagement.init.VehicleLocationInitializer;
 import com.smartdispatch.websockets.NotificationService;
 import com.smartdispatch.websockets.websocketDto.*;
+import com.smartdispatch.util.RedisLocationUtil;
+import com.smartdispatch.util.LocationCoordinates;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -34,8 +34,8 @@ public class ResponderService {
   private final IIncidentDao incidentDAO;
   private final ILocationDao locationDao;
   private final NotificationService notificationService;
-  private final RedisTemplate<String, String> redisTemplate;
   private final com.smartdispatch.dispatcher.services.DispatcherService dispatcherService;
+  private final RedisLocationUtil redisLocationUtil;
 
   public Map<String, Object> getResponderProfile(Long responderId) {
     User responder = userDAO.findById(responderId)
@@ -135,21 +135,20 @@ public class ResponderService {
     Vehicle vehicle = vehicleDAO.findByOperatorId(responderId)
         .orElseThrow(() -> new RuntimeException("No vehicle assigned"));
 
-    String vehicleId = vehicle.getId().toString();
-    if (vehicleId == null)
-      return;
-
-    redisTemplate.opsForHash().put(
-        VehicleLocationInitializer.VEHICLE_LOCATIONS_KEY,
-        vehicleId,
-        locationDTO.getLongitude() + "," + locationDTO.getLatitude());
+    redisLocationUtil.updateVehicleLocationInRedis(
+      vehicle.getId(),
+      locationDTO.getLatitude(),
+      locationDTO.getLongitude()
+    );
 
     notificationService.notifyVehicleUpdate(
-        new VehicleUpdateDto(
-            vehicle.getId(),
-            vehicle.getStatus().name(),
-            locationDTO.getLatitude(),
-            locationDTO.getLongitude()));
+      new VehicleUpdateDto(
+        vehicle.getId(),
+        vehicle.getStatus().name(),
+        locationDTO.getLatitude(),
+        locationDTO.getLongitude()
+      )
+    );
   }
 
   @Transactional
@@ -169,17 +168,33 @@ public class ResponderService {
     if (statusDTO.getVehicleStatus() != null) {
       vehicleDAO.updateStatus(vehicle.getId(), statusDTO.getVehicleStatus());
 
-      Optional<VehicleLocation> locationOpt = locationDao
-          .findLatestByVehicleId(vehicle.getId());
+      LocationCoordinates coords = redisLocationUtil.getVehicleLocationFromRedis(vehicle.getId());
+      
+      Double latitude = null;
+      Double longitude = null;
 
-      if (locationOpt.isPresent()) {
-        VehicleLocation location = locationOpt.get();
+      if (coords != null) {
+        latitude = coords.getLatitude();
+        longitude = coords.getLongitude();
+      } 
+      else {
+        Optional<VehicleLocation> locationOpt = locationDao.findLatestByVehicleId(vehicle.getId());
+        if (locationOpt.isPresent()) {
+          VehicleLocation location = locationOpt.get();
+          latitude = location.getLatitude();
+          longitude = location.getLongitude();
+        }
+      }
 
-        notificationService.notifyVehicleUpdate(new VehicleUpdateDto(
+      if (latitude != null && longitude != null) {
+        notificationService.notifyVehicleUpdate(
+          new VehicleUpdateDto(
             vehicle.getId(),
             statusDTO.getVehicleStatus().name(),
-            location.getLatitude(),
-            location.getLongitude()));
+            latitude,
+            longitude
+          )
+        );
       }
     }
 

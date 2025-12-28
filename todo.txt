@@ -1,4 +1,3 @@
-- fix autmatic_vehicle: api and assignment without doing anything
-- lock autoassign in backend
-- fix livemap when car is moving
-- 
+- fix location of vehicle when resolving
+- fix calling route api
+

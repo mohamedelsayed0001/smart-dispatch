@@ -254,14 +254,20 @@ class VehicleSimulator:
                         self.route_index += 5
                         self.update_location(self.current_lat, self.current_lon)
                         
-                        # if self.route_index == int(len(self.route_points) * 0.95):
-                        #     self.update_status(assignment_id, vehicle_status="RESOLVING")
                     else:
+                        final_point = self.route_points[-1]
+                        self.current_lat, self.current_lon = final_point
+                        self.update_location(self.current_lat, self.current_lon)
+                        
                         self.update_status(assignment_id, vehicle_status="RESOLVING")
                         print(f"[Vehicle {self.vehicle_id:03d}] Reached site. Resolving...")
                         time.sleep(RESOLVING_TIME)
-                        if self.update_status(assignment_id, vehicle_status="AVAILABLE", 
-                                             assignment_status="COMPLETED", incident_status="RESOLVED"):
+                        if self.update_status(
+                            assignment_id, 
+                            vehicle_status="AVAILABLE", 
+                            assignment_status="COMPLETED", 
+                            incident_status="RESOLVED"
+                        ):
                             self.current_assignment = None; self.route_points = []; self.route_index = 0
                 time.sleep(UPDATE_INTERVAL)
         except Exception as e:
