@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { useState, useEffect, useRef, act } from 'react';
 import AdminSidebar from './components/AdminSidebar';
 import SystemUsers from './components/SystemUsers';
@@ -41,15 +42,20 @@ const AdminPage = () => {
         onConnect: () => {
           client.subscribe('/topic/admin/notifications', (message) => {
             try {
-              const notif = JSON.parse(message.body);
+              const notifRaw = JSON.parse(message.body);
+              const notif = {
+                type: notifRaw.notificationType,
+                message: notifRaw.content,
+                time: notifRaw.timeSent,
+                unread: true
+              };
               setNotifList(prev => {
-                const uniqueKey = `${notif.incidentId}-${notif.time}`;
-                // Avoid duplicates
-                if (prev.some(n => `${n.incidentId}-${n.time}` === uniqueKey)) {
+                const uniqueKey = `${notif.type}-${notif.time}`;
+                if (prev.some(n => `${n.type}-${n.time}` === uniqueKey)) {
                   return prev;
                 }
-                const newList = [{ ...notif, unread: true }, ...prev];
-                return newList.length > 10 ? newList.slice(0, 10) : newList;
+                const newList = [notif, ...prev];
+                return newList.length > 40 ? newList.slice(0, 40) : newList;
               });
               setSnackbarNotif(notif);
               setTimeout(() => setSnackbarNotif(null), 4000);
@@ -139,15 +145,40 @@ const AdminPage = () => {
     setSnackbarNotif(notif);
     setTimeout(() => setSnackbarNotif(null), 4000);
   }, []);
-  // Handler for menu open
-  // Mark all as read when opening notifications page
-  const handleNotifMenuOpen = () => {
-    setNotifList(prev => prev.map(n => ({ ...n, unread: false })));
+  // Fetch notifications from backend and mark all as read
+  const fetchNotifications = async (limit = 10) => {
+    try {
+      const res = await axios.get(`http://localhost:8080/api/admin/notifications/getNotifications?limit=${limit}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('authToken')}`
+        }
+      });
+      setNotifList(res.data.map(n => ({
+        type: n.notificationType,
+        message: n.content,
+        time: n.timeSent,
+        unread: false // Mark all as read when fetched from backend
+      })));
+    } catch (e) {
+      setNotifList(prev => prev.map(n => ({ ...n, unread: false })));
+    }
   };
+
+
+  // Handler for menu open, supports limit
+  const handleNotifMenuOpen = (limit) => fetchNotifications(limit);
+    // Fetch notifications on reload if notifications is the current page
+    useEffect(() => {
+      if (activeMenu === 'notifications') {
+        fetchNotifications();
+      }
+    }, [activeMenu]);
   // Handler for notification click
   // Mark notification as read on click (only open popup, do not navigate)
   const handleNotificationClick = (notif, idx) => {
-    setNotifList(prev => prev.map((n, i) => i === idx ? { ...n, unread: false } : n));
+    setNotifList(prev => prev.map((n, i) =>
+      n.type === notif.type && n.time === notif.time ? { ...n, unread: false } : n
+    ));
     // No navigation to live map
   };
 
