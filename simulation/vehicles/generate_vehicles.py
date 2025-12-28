@@ -83,16 +83,16 @@ for batch_start in range(0, len(location_values), BATCH_SIZE):
         + ";"
     )
 
-analysis_path = pathlib.Path(__file__).with_name("analysis_mock_data.txt")
-try:
-  analysis_sql = analysis_path.read_text(encoding="utf-8")
-  out.append(analysis_sql)
-  print(f"✓ Appended analysis mock data")
-except FileNotFoundError:
-  print(f"⚠ Analysis mock data file not found: {analysis_path.resolve()}")
+# analysis_path = pathlib.Path(__file__).with_name("analysis_mock_data.txt")
+# try:
+#   analysis_sql = analysis_path.read_text(encoding="utf-8")
+#   out.append(analysis_sql)
+#   print(f"✓ Appended analysis mock data")
+# except FileNotFoundError:
+#   print(f"⚠ Analysis mock data file not found: {analysis_path.resolve()}")
 
-if N < 9:
-  print(f"⚠ Analysis data references vehicle_id up to 9; generated {N} vehicles.")
+# if N < 9:
+#   print(f"⚠ Analysis data references vehicle_id up to 9; generated {N} vehicles.")
 
 # Resolve path relative to repo root
 p = pathlib.Path(__file__).parent.parent.parent / "smart-dispatch-system" / "src" / "main" / "resources" / "data.sql"

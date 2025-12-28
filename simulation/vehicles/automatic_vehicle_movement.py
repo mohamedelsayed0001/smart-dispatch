@@ -32,7 +32,7 @@ OSRM_RESULT_DICT = {}
 OSRM_EVENT_DICT = {}
 OSRM_RESULT_LOCK = threading.Lock()
 OSRM_REQUEST_DELAY = 0.5
-OSRM_TIMEOUT = 15
+OSRM_TIMEOUT = 2
 
 # Simulation parameters
 OPERATORS = []
@@ -72,12 +72,14 @@ def osrm_queue_processor():
                     logger.warning(f"OSRM returned status {response.status_code} for {request_id}")
                     
             except requests.exceptions.Timeout:
-                logger.error(f"OSRM timeout for {request_id}")
+                logger.error(f"OSRM timeout for {request_id}, re-queueing")
+                OSRM_REQUEST_QUEUE.put((request_id, start_lon, start_lat, end_lon, end_lat))
+                continue
             except requests.exceptions.ConnectionError as e:
                 logger.error(f"OSRM connection error for {request_id}: {e}")
             except Exception as e:
                 logger.error(f"OSRM request error for {request_id}: {e}")
-            
+
             with OSRM_RESULT_LOCK:
                 OSRM_RESULT_DICT[request_id] = result
                 if request_id in OSRM_EVENT_DICT:
@@ -323,7 +325,7 @@ class VehicleSimulator:
                         # Move to next point
                         point = self.route_points[self.route_index]
                         self.current_lat, self.current_lon = point
-                        self.route_index += 5
+                        self.route_index += 10
                         self.update_location(self.current_lat, self.current_lon)
                     else:
                         # STATE 2: Arrived and Resolving

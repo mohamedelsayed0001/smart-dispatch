@@ -40,6 +40,12 @@ public class IncidentDao implements IIncidentDao {
   }
 
   @Override
+  public List<Incident> getAllPendingIncidentsOfType(IncidentType type) {
+    String sql = "SELECT * FROM Incident WHERE status = 'PENDING' AND type = ?";
+    return jdbcTemplate.query(sql, incidentRowMapper, type.name());
+  }
+
+  @Override
   public Long createIncident(Incident incident) {
     String sql = "INSERT INTO Incident (type, level, description, latitude, longitude, status, time_reported, citizen_id) VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?)";
     KeyHolder keyHolder = new GeneratedKeyHolder();

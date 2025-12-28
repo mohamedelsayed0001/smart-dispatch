@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.annotation.Isolation;
 
 import com.smartdispatch.dao.*;
 import com.smartdispatch.dispatcher.dtos.AssignmentDto;
@@ -130,7 +131,6 @@ public class ResponderService {
         .build();
   }
 
-  @Transactional
   public void updateVehicleLocation(Long responderId, VehicleUpdateDto locationDTO) {
     Vehicle vehicle = vehicleDAO.findByOperatorId(responderId)
         .orElseThrow(() -> new RuntimeException("No vehicle assigned"));
@@ -151,7 +151,7 @@ public class ResponderService {
     );
   }
 
-  @Transactional
+  @Transactional(isolation = Isolation.READ_COMMITTED)
   public void updateStatus(Long assignmentId, StatusUpdateDTO statusDTO) {
     Assignment assignment = assignmentDAO.findById(assignmentId);
     if (assignment == null)

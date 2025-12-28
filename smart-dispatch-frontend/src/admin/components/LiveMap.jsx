@@ -190,6 +190,7 @@ const LiveMap = () => {
   const [notifications, setNotifications] = useState([]);
   const stompClientRef = useRef(null);
   const mapRef = useRef(null);
+  const notifiedIncidentsRef = useRef(new Set()); // Track which incidents we've notified about
 
 
   useEffect(() => {
@@ -305,9 +306,10 @@ const LiveMap = () => {
           const incident = JSON.parse(message.body);
           console.log('🚨 Incident update:', incident);
 
-          // Add notification for incident update
-          const existingIncident = incidents.find(i => i.id === incident.id);
-          if (!existingIncident && (incident.status === 'PENDING' || incident.status === 'ASSIGNED')) {
+          // Only add notification if this is a new incident we haven't notified about
+          const isNewIncident = !notifiedIncidentsRef.current.has(incident.id);
+          if (isNewIncident && (incident.status === 'PENDING' || incident.status === 'ASSIGNED')) {
+            notifiedIncidentsRef.current.add(incident.id);
             addNotification('incident', 1);
           }
 
@@ -363,7 +365,11 @@ const LiveMap = () => {
             setIncidents(prev => {
               const exists = prev.some(i => i.id === report.id);
               if (!exists) {
-                addNotification('incident', 1);
+                // Only add notification if we haven't notified about this incident yet
+                if (!notifiedIncidentsRef.current.has(report.id)) {
+                  notifiedIncidentsRef.current.add(report.id);
+                  addNotification('incident', 1);
+                }
               }
               if (exists) return prev;
               return [...prev, report];
@@ -474,9 +480,27 @@ const LiveMap = () => {
     }
   });
 
-  const handleMarkerClick = (item, type) => {
-    setSelectedItem(item);
-    setSelectedType(type);
+  const handleMarkerClick = (id, type) => {
+    if (type === 'vehicle') {
+      const vehicle = vehicles.find(v => v.id === id);
+      if (vehicle) {
+        const liveLocation = liveLocations[vehicle.id];
+        const vehicleData = {
+          ...vehicle,
+          latitude: liveLocation?.lat || vehicle.latitude,
+          longitude: liveLocation?.lng || vehicle.longitude,
+          timestamp: liveLocation?.timestamp || vehicle.lastUpdate
+        };
+        setSelectedItem(vehicleData);
+        setSelectedType('vehicle');
+      }
+    } else if (type === 'incident') {
+      const incident = incidents.find(i => i.id === id);
+      if (incident) {
+        setSelectedItem(incident);
+        setSelectedType('incident');
+      }
+    }
   };
 
   const closeDetailWindow = () => {
@@ -585,7 +609,7 @@ const LiveMap = () => {
           </div>
         </div>
         <MapContainer
-          center={[31.2001, 29.9187]} // Alexandria, Egypt
+          center={[30.0444, 31.2357]} // Cairo, Egypt
           zoom={12}
           style={{ height: '100%', width: '100%' }}
           ref={mapRef}
@@ -608,7 +632,7 @@ const LiveMap = () => {
                 eventHandlers={{
                   click: (e) => {
                     L.DomEvent.stopPropagation(e);
-                    handleMarkerClick(incident, 'incident');
+                    handleMarkerClick(incident.id, 'incident');
                   }
                 }}
               >
@@ -649,7 +673,7 @@ const LiveMap = () => {
                 eventHandlers={{
                   click: (e) => {
                     L.DomEvent.stopPropagation(e);
-                    handleMarkerClick(vehicleData, 'vehicle');
+                    handleMarkerClick(vehicle.id, 'vehicle');
                   }
                 }}
               >

@@ -1,10 +1,16 @@
 package com.smartdispatch.dispatcher.services;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.support.TransactionTemplate;
+
+import jakarta.annotation.PostConstruct;
 
 import com.smartdispatch.dao.*;
 import com.smartdispatch.dispatcher.dtos.*;
@@ -12,9 +18,15 @@ import com.smartdispatch.model.*;
 import com.smartdispatch.mapper.*;
 import com.smartdispatch.model.enums.*;
 import com.smartdispatch.websockets.NotificationService;
+
+import lombok.RequiredArgsConstructor;
+
 import com.smartdispatch.model.enums.VehicleType;
+import com.smartdispatch.util.RedisAssignmentUtil;
+import com.smartdispatch.util.LocationCoordinates;
 
 @Service
+@RequiredArgsConstructor
 public class DispatcherService implements IDispatcherService {
     private final IIncidentDao incidentDao;
     private final IVehicleDao vehicleDao;
@@ -24,18 +36,13 @@ public class DispatcherService implements IDispatcherService {
     private final AssignmentMapper assignmentMapper;
     private final VehicleMapper vehicleMapper;
     private final NotificationService notificationService;
+    private final RedisAssignmentUtil redisAssignmentUtil;
+    private final TransactionTemplate txTemplate;
+    private final ReentrantLock assignmentLock = new ReentrantLock();
 
-    public DispatcherService(IVehicleDao vehicleDao, IIncidentDao incidentDao, IAssignmentDao assignmentDao,
-            IncidentMapper incidentMapper, AssignmentMapper assignmentMapper, VehicleMapper vehicleMapper,
-            NotificationService notificationService, ILocationDao locationDao) {
-        this.vehicleDao = vehicleDao;
-        this.incidentDao = incidentDao;
-        this.assignmentDao = assignmentDao;
-        this.incidentMapper = incidentMapper;
-        this.assignmentMapper = assignmentMapper;
-        this.vehicleMapper = vehicleMapper;
-        this.notificationService = notificationService;
-        this.locationDao = locationDao;
+    @PostConstruct
+    void configureTransactionTemplate() {
+        txTemplate.setIsolationLevel(TransactionDefinition.ISOLATION_READ_COMMITTED);
     }
 
     @Override
@@ -84,7 +91,7 @@ public class DispatcherService implements IDispatcherService {
     }
 
     @Override
-    @Transactional(isolation = Isolation.SERIALIZABLE)
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public AssignmentDto assignVehicleToIncident(AssignmentRequest assignmentRequest) {
         Incident incident = incidentDao.findById(assignmentRequest.getIncidentId());
         if (incident == null) {
@@ -134,7 +141,7 @@ public class DispatcherService implements IDispatcherService {
     }
 
     @Override
-    @Transactional(isolation = Isolation.SERIALIZABLE)
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public AssignmentDto reassignAssignment(ReassignRequest request) {
         // find existing assignment
         Assignment existing = assignmentDao.findById(request.getAssignmentId());
@@ -192,28 +199,61 @@ public class DispatcherService implements IDispatcherService {
     }
 
     @Override
-    @Transactional(isolation = Isolation.SERIALIZABLE)
     public AssignmentDto autoAssignClosestVehicle(Long incidentId) {
+        if (!tryAcquireAssignmentLock()) {
+            return null;
+        }
+        try {
+            return txTemplate.execute(status -> performAutoAssignClosestVehicle(incidentId));
+        } finally {
+            assignmentLock.unlock();
+        }
+    }
+
+    @Override
+    public AssignmentDto autoAssignPendingIncidentToVehicle(Long vehicleId) {
+        if (!tryAcquireAssignmentLock()) {
+            return null;
+        }
+        try {
+            return txTemplate.execute(status -> performAutoAssignPendingIncidentToVehicle(vehicleId));
+        } finally {
+            assignmentLock.unlock();
+        }
+    }
+
+    private boolean tryAcquireAssignmentLock() {
+        try {
+            return assignmentLock.tryLock(200, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return false;
+        }
+    }
+
+    private AssignmentDto performAutoAssignClosestVehicle(Long incidentId) {
         Incident incident = incidentDao.findById(incidentId);
         if (incident == null) {
             return null;
         }
 
-        // If not pending, nothing to do
         if (incident.getStatus() != IncidentStatus.PENDING) {
             return null;
         }
 
         VehicleType targetVehicleType = mapIncidentTypeToVehicleType(incident.getType());
 
-        Vehicle closestVehicle = vehicleDao.findClosestAvailableVehicle(
-                targetVehicleType,
-                incident.getLatitude(),
-                incident.getLongitude());
+        Vehicle closestVehicle = redisAssignmentUtil.findClosestAvailableVehicleFromRedis(
+            targetVehicleType,
+            incident.getLatitude(),
+            incident.getLongitude()
+        );
 
         if (closestVehicle == null) {
             return null;
         }
+
+        vehicleDao.updateStatus(closestVehicle.getId(), VehicleStatus.ONROUTE);
 
         Assignment assignment = Assignment.builder()
                 .dispatcherId(13L)
@@ -226,13 +266,11 @@ public class DispatcherService implements IDispatcherService {
         assignment.setId(assignmentId);
 
         incidentDao.updateStatus(incidentId, IncidentStatus.ASSIGNED);
-        vehicleDao.updateStatus(closestVehicle.getId(), VehicleStatus.ONROUTE);
 
         incident.setStatus(IncidentStatus.ASSIGNED);
         closestVehicle.setStatus(VehicleStatus.ONROUTE);
 
-        VehicleLocation location = locationDao.findLatestByVehicleId(closestVehicle.getId())
-                .orElse(null);
+        LocationCoordinates location = redisAssignmentUtil.getVehicleLocationFromRedis(closestVehicle.getId());
 
         AssignmentDto assignmentDto = assignmentMapper.mapTo(assignment);
         assignmentDto.setIncidentType(incident.getType().name());
@@ -247,20 +285,17 @@ public class DispatcherService implements IDispatcherService {
         return assignmentDto;
     }
 
-    @Override
-    @Transactional(isolation = Isolation.SERIALIZABLE)
-    public AssignmentDto autoAssignPendingIncidentToVehicle(Long vehicleId) {
+    private AssignmentDto performAutoAssignPendingIncidentToVehicle(Long vehicleId) {
         Vehicle vehicle = vehicleDao.findById(vehicleId);
         IncidentType targetIncidentType = mapVehicleTypeToIncidentType(vehicle.getType());
 
-        VehicleLocation location = locationDao.findLatestByVehicleId(vehicleId)
-                .orElse(null);
+        LocationCoordinates location = redisAssignmentUtil.getVehicleLocationFromRedis(vehicleId);
 
         if (location == null) {
             return null;
         }
 
-        Incident closestIncident = incidentDao.findClosestPendingIncident(
+        Incident closestIncident = redisAssignmentUtil.findClosestPendingIncidentFromDatabase(
                 targetIncidentType,
                 location.getLatitude(),
                 location.getLongitude());

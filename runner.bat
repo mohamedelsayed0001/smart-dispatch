@@ -44,7 +44,8 @@ del /q "%~dp0simulation\jmeter\logs\results.jtl" 2>nul
 
 echo Running JMeter test and generating HTML report...
 cd /d "%~dp0simulation\jmeter"
-jmeter -n -t IncidentGeneration.jmx -l logs\results.jtl -e -o "%RESULTS_DIR%"
+:: jmeter -n -t IncidentGeneration.jmx -l logs\results.jtl -e -o "%RESULTS_DIR%"
+jmeter -Jjmeter.reportgenerator.overall_granularity=1000 -n -t IncidentGeneration.jmx -l logs\results.jtl -e -o "%RESULTS_DIR%"
 
 if exist "%RESULTS_DIR%\index.html" (
     echo Report generated successfully!

@@ -13,6 +13,8 @@ public interface IIncidentDao {
 
   List<Incident> getAllPendingIncidents();
 
+  List<Incident> getAllPendingIncidentsOfType(IncidentType type);
+
   List<Incident> getAllIncidents();
 
   Incident findById(Long id);
