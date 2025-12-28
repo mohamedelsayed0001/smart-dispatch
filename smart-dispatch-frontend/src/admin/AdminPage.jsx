@@ -1,20 +1,23 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, act } from 'react';
 import AdminSidebar from './components/AdminSidebar';
-import Dashboard from './components/Dashboard';
 import SystemUsers from './components/SystemUsers';
 import Vehicles from './components/Vehicles';
-import VehicleLocations from './components/VehicleLocations';
 import LiveMap from './components/LiveMap';
 import Reports from './components/Reports';
 import Analysis from './components/Analysis';
-import { fetchDashboardData, fetchUsers, fetchReports } from './api.js';
+import {fetchUsers, fetchReports } from './api.js';
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 import './AdminPage.css';
-
+import { useNavigate } from 'react-router-dom';
 const AdminPage = () => {
-  const [activeMenu, setActiveMenu] = useState('dashboard');
-  const [dashboardData, setDashboardData] = useState(null);
+  const navigate = useNavigate();
+  const handleLogout = () => {
+  localStorage.removeItem('authToken'); // or whatever key you use
+  localStorage.removeItem('user');
+    window.location.href = '/login'; // redirect to login page
+}; 
+  const [activeMenu, setActiveMenu] = useState('analysis');
   const [users, setUsers] = useState([]);
   const [reports, setReports] = useState([]);
   const [userFilter, setUserFilter] = useState('all');
@@ -25,9 +28,7 @@ const AdminPage = () => {
   const stompClientRef = useRef(null);
 
   useEffect(() => {
-    if (activeMenu === 'dashboard') {
-      fetchDashboardData().then(setDashboardData);
-    } else if (activeMenu === 'users') {
+    if (activeMenu === 'users') {
       fetchUsers(currentPage, userFilter, searchQuery).then(data => {
         setUsers(data.users);
         setTotalPages(data.pages);
@@ -80,16 +81,18 @@ const AdminPage = () => {
 
   return (
     <div className="admin-container">
+      
       <AdminSidebar 
         activeMenu={activeMenu} 
         setActiveMenu={setActiveMenu}
         collapsed={sidebarCollapsed}
         setCollapsed={setSidebarCollapsed}
+        onLogout={handleLogout}
       />
       
       <div className="admin-main" style={{ marginLeft: sidebarCollapsed ? '80px' : '250px', transition: 'margin-left 0.3s ease' }}>
         <div className="admin-content">
-          {activeMenu === 'dashboard' && <Dashboard dashboardData={dashboardData} />}
+         
           {activeMenu === 'users' && (
             <SystemUsers
               users={users}
@@ -101,10 +104,10 @@ const AdminPage = () => {
               searchQuery={searchQuery}
               setSearchQuery={setSearchQuery}
               onRefresh={handleRefreshUsers}
+              
             />
           )}
           {activeMenu === 'vehicles' && <Vehicles />}
-          {activeMenu === 'locations' && <VehicleLocations />}
           {activeMenu === 'livemap' && <LiveMap />}
           {activeMenu === 'reports' && (
             <Reports
@@ -115,6 +118,7 @@ const AdminPage = () => {
             />
           )}
           {activeMenu === 'analysis' && <Analysis />}
+          
         </div>
       </div>
     </div>
