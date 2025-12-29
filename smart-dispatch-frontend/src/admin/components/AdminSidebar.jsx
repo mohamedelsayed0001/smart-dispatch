@@ -29,12 +29,12 @@ const AdminSidebar = ({ activeMenu, setActiveMenu, collapsed, setCollapsed, hasN
       </div>
 
       <div className="sidebar-menu">
-        <MenuItem icon={Users} label="System Users" id="users" />
-        <MenuItem icon={Truck} label="Vehicles" id="vehicles" />
+        <MenuItem icon={BarChart3} label="Dashboard" id="analysis" />
         <MenuItem icon={Map} label="Live Map" id="livemap" />
-        <MenuItem icon={FileText} label="Reports" id="reports" />
-        <MenuItem icon={BarChart3} label="Analysis" id="analysis" />
         <MenuItem icon={Bell} label="Notifications" id="notifications" showDot={hasNewNotification} />
+        <MenuItem icon={Users} label="Users" id="users" />
+        <MenuItem icon={Truck} label="Vehicles" id="vehicles" />
+        <MenuItem icon={FileText} label="Reports" id="reports" />
       </div>
  
  <button 

@@ -24,6 +24,16 @@ ChartJS.register(
   Legend
 );
 
+const getLocalDateTime = () => {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  const hours = String(now.getHours()).padStart(2, '0');
+  const minutes = String(now.getMinutes()).padStart(2, '0');
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
+};
+
 const Analysis = () => {
   const [incidentStats, setIncidentStats] = useState([]);
   const [avgResolved, setAvgResolved] = useState([]);
@@ -33,8 +43,8 @@ const Analysis = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [dateRange, setDateRange] = useState({
-    startDate: '2024-01-01T00:00:00',
-    endDate: '2024-12-31T23:59:59'
+    startDate: '2025-01-01T00:00:00',
+    endDate: getLocalDateTime()
   });
 
   useEffect(() => {
@@ -125,7 +135,7 @@ const Analysis = () => {
     },
     scales: {
       x: { grid: { display: false } },
-      y: { 
+      y: {
         beginAtZero: true,
         title: { display: true, text: 'Number of Incidents' }
       }
@@ -210,7 +220,7 @@ const Analysis = () => {
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold text-gray-800">Analysis Dashboard</h1>
-          
+
           {/* Date Range Selector */}
           <div className="flex gap-2 items-center">
             <input
@@ -228,7 +238,7 @@ const Analysis = () => {
             />
           </div>
         </div>
-        
+
         {loading ? (
           <div className="flex items-center justify-center h-64">
             <div className="text-center">
@@ -302,7 +312,7 @@ const Analysis = () => {
                 {topUnits.length > 0 ? (
                   <div className="space-y-2">
                     {topUnits.slice(0, 10).map((unit, index) => (
-                      <div 
+                      <div
                         key={unit?.id || index}
                         className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors"
                       >
@@ -339,7 +349,7 @@ const Analysis = () => {
                     <div key={item.type} className="space-y-2">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                          <div 
+                          <div
                             className="w-4 h-4 rounded"
                             style={{ backgroundColor: colorPalette[index % colorPalette.length].border }}
                           ></div>
@@ -350,9 +360,9 @@ const Analysis = () => {
                         </span>
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div 
+                        <div
                           className="h-2 rounded-full transition-all"
-                          style={{ 
+                          style={{
                             width: item.avg ? `${Math.min((item.avg / 200) * 100, 100)}%` : '0%',
                             backgroundColor: colorPalette[index % colorPalette.length].border
                           }}
@@ -375,7 +385,7 @@ const Analysis = () => {
                               {rt?.avgResponseTime ? rt.avgResponseTime.toFixed(1) : 'N/A'} min
                             </div>
                             <div className="text-xs text-gray-500">
-                              {rt?.minResponseTime >=0 && rt?.maxResponseTime>=0 
+                              {rt?.minResponseTime >= 0 && rt?.maxResponseTime >= 0
                                 ? `${rt.minResponseTime.toFixed(1)} - ${rt.maxResponseTime.toFixed(1)} min range`
                                 : 'No range data'
                               }

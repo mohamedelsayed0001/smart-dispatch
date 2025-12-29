@@ -603,7 +603,7 @@ const LiveMap = () => {
               </div>
               <div className="livemap-legend-item-compact">
                 <span className="livemap-legend-dot" style={{ backgroundColor: '#ef4444' }}></span>
-                <span>Busy</span>
+                <span>Resolving</span>
               </div>
             </div>
           </div>

@@ -175,7 +175,7 @@ const Vehicles = () => {
   return (
     <div className="vehicles-container">
       <div className="vehicles-header">
-        <h1 className="page-title">Vehicle Management</h1>
+        <h1 className="page-title">Vehicles</h1>
         <button className="btn-primary" onClick={() => setShowModal(true)}>
           <Plus size={20} />
           Add Vehicle

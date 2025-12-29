@@ -309,13 +309,13 @@
 }
 
 /* Page Title */
-.page-title {
+/* .page-title {
     font-size: 30px;
     font-weight: 700;
     color: var(--dispatcher-text-primary);
     margin: 0 0 24px 0;
     transition: color 0.3s ease;
-}
+} */
 
 /* Responsive Design */
 @media (max-width: 768px) {
@@ -346,7 +346,7 @@
         white-space: nowrap;
     }
 
-    .page-title {
+    /* .page-title {
         font-size: 24px;
-    }
+    } */
 }

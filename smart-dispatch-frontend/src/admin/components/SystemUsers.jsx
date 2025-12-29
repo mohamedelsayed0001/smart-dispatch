@@ -27,7 +27,7 @@ const SystemUsers = ({ users, totalPages, currentPage, setCurrentPage, userFilte
 
   return (
     <div className="view-container">
-      <h1 className="page-title">System Users</h1>
+      <h1 className="page-title">Users</h1>
 
       {/* Filters */}
       <div className="filters-section">
