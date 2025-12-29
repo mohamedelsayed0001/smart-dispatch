@@ -24,6 +24,12 @@ for i in range(1, N + 1):
     role = "OPERATOR"
     users_values.append(f"('{name}', '{email}', '{password}', '{role}')")
 
+out.append("""
+INSERT INTO `User` (name, email, password, role) VALUES
+('admin', 'admin@sim.local', 'password', 'ADMIN'),
+('citizen', 'citizen@sim.local', 'password', 'CITIZEN'),
+('dispatcher', 'dispatcher@sim.local', 'password', 'DISPATCHER');
+""")
 out.append(
     "INSERT INTO `User` (name, email, password, role) VALUES\n  "
     + ",\n  ".join(users_values)
@@ -38,11 +44,6 @@ SET @num = {N};
 
 # Insert N vehicles
 out.append(f"""
-INSERT INTO `User` (name, email, password, role) VALUES
-('admin', 'admin@sim.local', 'password', 'ADMIN'),
-('citizen', 'citizen@sim.local', 'password', 'CITIZEN'),
-('dispatcher', 'dispatcher@sim.local', 'password', 'DISPATCHER');
-
 
 SET @r := -1;
 INSERT INTO Vehicle (type, status, capacity, operator_id)

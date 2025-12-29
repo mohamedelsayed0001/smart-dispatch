@@ -255,7 +255,7 @@ public class DispatcherService implements IDispatcherService {
         vehicleDao.updateStatus(closestVehicle.getId(), VehicleStatus.ONROUTE);
 
         Assignment assignment = Assignment.builder()
-                .dispatcherId(13L)
+                .dispatcherId(3L)
                 .vehicleId(closestVehicle.getId())
                 .incidentId(incidentId)
                 .status(AssignmentStatus.PENDING)
@@ -303,7 +303,7 @@ public class DispatcherService implements IDispatcherService {
             return null;
         }
         Assignment assignment = Assignment.builder()
-                .dispatcherId(13L)
+                .dispatcherId(3L)
                 .vehicleId(vehicleId)
                 .incidentId(closestIncident.getId())
                 .status(AssignmentStatus.PENDING)
