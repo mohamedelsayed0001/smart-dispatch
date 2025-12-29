@@ -81,6 +81,16 @@ public class IncidentDao implements IIncidentDao {
   }
 
   @Override
+  public Incident findByIdForUpdate(Long id) {
+    try {
+      String sql = "SELECT * FROM Incident WHERE id = ? FOR UPDATE";
+      return jdbcTemplate.queryForObject(sql, incidentRowMapper, id);
+    } catch (EmptyResultDataAccessException e) {
+      return null;
+    }
+  }
+
+  @Override
   public Optional<Incident> findOptionalById(Long id) {
     return Optional.ofNullable(findById(id));
   }

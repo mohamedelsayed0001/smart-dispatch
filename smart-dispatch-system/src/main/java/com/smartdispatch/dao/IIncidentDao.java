@@ -19,6 +19,8 @@ public interface IIncidentDao {
 
   Incident findById(Long id);
 
+  Incident findByIdForUpdate(Long id);
+
   Optional<Incident> findOptionalById(Long id);
 
   boolean updateStatus(Long id, IncidentStatus status);

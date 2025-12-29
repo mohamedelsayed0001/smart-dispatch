@@ -232,7 +232,7 @@ public class DispatcherService implements IDispatcherService {
     }
 
     private AssignmentDto performAutoAssignClosestVehicle(Long incidentId) {
-        Incident incident = incidentDao.findById(incidentId);
+        Incident incident = incidentDao.findByIdForUpdate(incidentId);
         if (incident == null) {
             return null;
         }
@@ -245,8 +245,7 @@ public class DispatcherService implements IDispatcherService {
 
         Vehicle closestVehicle = redisAssignmentUtil.findClosestAvailableVehicleFromRedis(
             targetVehicleType,
-            incident.getLatitude(),
-            incident.getLongitude()
+            incident
         );
 
         if (closestVehicle == null) {
@@ -286,7 +285,7 @@ public class DispatcherService implements IDispatcherService {
     }
 
     private AssignmentDto performAutoAssignPendingIncidentToVehicle(Long vehicleId) {
-        Vehicle vehicle = vehicleDao.findById(vehicleId);
+        Vehicle vehicle = vehicleDao.findByIdForUpdate(vehicleId);
         IncidentType targetIncidentType = mapVehicleTypeToIncidentType(vehicle.getType());
 
         LocationCoordinates location = redisAssignmentUtil.getVehicleLocationFromRedis(vehicleId);

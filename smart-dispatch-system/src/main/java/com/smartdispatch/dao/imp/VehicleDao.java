@@ -58,6 +58,16 @@ public class VehicleDao implements IVehicleDao {
   }
 
   @Override
+  public Vehicle findByIdForUpdate(Long id) {
+    try {
+      String sql = "SELECT * FROM Vehicle WHERE id = ? FOR UPDATE";
+      return jdbcTemplate.queryForObject(sql, vehicleRowMapper, id);
+    } catch (EmptyResultDataAccessException e) {
+      return null;
+    }
+  }
+
+  @Override
   public Optional<Vehicle> findOptionalById(Long id) {
     return Optional.ofNullable(findById(id));
   }

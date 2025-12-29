@@ -20,6 +20,8 @@ public interface IVehicleDao {
 
   Vehicle findById(Long id);
 
+  Vehicle findByIdForUpdate(Long id);
+
   Optional<Vehicle> findOptionalById(Long id);
 
   Optional<Vehicle> findByOperatorId(Long operatorId);

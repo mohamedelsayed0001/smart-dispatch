@@ -21,62 +21,78 @@ public class RedisAssignmentUtil {
   private final IVehicleDao vehicleDao;
   private final IIncidentDao incidentDao;
 
-  public Vehicle findClosestAvailableVehicleFromRedis(VehicleType type, double incidentLat, double incidentLon) {
-    // Get all available vehicles of the specified type from database
+  public Vehicle findClosestAvailableVehicleFromRedis(VehicleType type, Incident incident) {
     List<Vehicle> availableVehicles = vehicleDao.findAvailableVehiclesByType(type);
     
     if (availableVehicles.isEmpty()) {
       return null;
     }
 
-    Vehicle closestVehicle = null;
-    double closestDistance = Double.MAX_VALUE;
+    Vehicle bestVehicle = null;
+    double lowestPriorityScore = Double.MAX_VALUE;
 
-    // For each available vehicle, get its location from Redis and calculate distance
     for (Vehicle vehicle : availableVehicles) {
       LocationCoordinates coords = getVehicleLocationFromRedis(vehicle.getId());
       
       if (coords != null) {
-        double distance = calculateHaversineDistance(
-            incidentLat, incidentLon,
-            coords.getLatitude(), coords.getLongitude()
+        double priorityScore = calculatePriorityScore(
+            incident, coords.getLatitude(), coords.getLongitude()
         );
         
-        if (distance < closestDistance) {
-          closestDistance = distance;
-          closestVehicle = vehicle;
+        if (priorityScore < lowestPriorityScore) {
+          lowestPriorityScore = priorityScore;
+          bestVehicle = vehicle;
         }
       }
     }
 
-    return closestVehicle;
+    return bestVehicle;
   }
 
   public Incident findClosestPendingIncidentFromDatabase(IncidentType type, double vehicleLat, double vehicleLon) {
-    // Get all pending incidents of the specified type from database
     List<Incident> pendingIncidents = incidentDao.getAllPendingIncidentsOfType(type);
     
     if (pendingIncidents.isEmpty()) {
       return null;
     }
 
-    Incident closestIncident = null;
-    double closestDistance = Double.MAX_VALUE;
+    Incident bestIncident = null;
+    double lowestPriorityScore = Double.MAX_VALUE;
 
-    // Calculate distance for each incident
     for (Incident incident : pendingIncidents) {
-      double distance = calculateHaversineDistance(
-          vehicleLat, vehicleLon,
-          incident.getLatitude(), incident.getLongitude()
+      double priorityScore = calculatePriorityScore(
+          incident, vehicleLat, vehicleLon
       );
       
-      if (distance < closestDistance) {
-        closestDistance = distance;
-        closestIncident = incident;
+      if (priorityScore < lowestPriorityScore) {
+        lowestPriorityScore = priorityScore;
+        bestIncident = incident;
       }
     }
 
-    return closestIncident;
+    return bestIncident;
+  }
+
+  private double calculatePriorityScore(Incident incident, double vehicleLat, double vehicleLon) {
+    double levelWeight = switch (incident.getLevel()) {
+      case HIGH -> 0;
+      case MEDIUM -> 50;
+      case LOW -> 100;
+    };
+
+    double latDiff = incident.getLatitude() - vehicleLat;
+    double lonDiff = incident.getLongitude() - vehicleLon;
+    double squaredDistance = (latDiff * latDiff) + (lonDiff * lonDiff);
+
+    long waitingMinutes = 0;
+    if (incident.getTimeReported() != null) {
+      waitingMinutes = java.time.Duration.between(
+          incident.getTimeReported(), 
+          java.time.LocalDateTime.now()
+      ).toMinutes();
+    }
+
+    return levelWeight + (10 * squaredDistance) - (2 * waitingMinutes);
   }
 
   public LocationCoordinates getVehicleLocationFromRedis(Long vehicleId) {
@@ -101,20 +117,5 @@ public class RedisAssignmentUtil {
     }
 
     return null;
-  }
-
-  private double calculateHaversineDistance(double lat1, double lon1, double lat2, double lon2) {
-    final double EARTH_RADIUS_KM = 6371.0;
-
-    double dLat = Math.toRadians(lat2 - lat1);
-    double dLon = Math.toRadians(lon2 - lon1);
-
-    double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-        Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) *
-            Math.sin(dLon / 2) * Math.sin(dLon / 2);
-
-    double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-
-    return EARTH_RADIUS_KM * c;
   }
 }
