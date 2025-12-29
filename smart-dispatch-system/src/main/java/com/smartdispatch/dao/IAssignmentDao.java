@@ -10,6 +10,7 @@ public interface IAssignmentDao {
   List<Assignment> getAllAssignments();
 
   Assignment findById(Long id);
+  Assignment findByIdForUpdate(Long id);
 
   List<Assignment> findByVehicleIdOrderByTimeAssignedDesc(Long vehicleId);
 

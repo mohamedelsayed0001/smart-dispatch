@@ -68,6 +68,15 @@ public class AssignmentDao implements IAssignmentDao {
       return null;
     }
   }
+  @Override
+  public Assignment findByIdForUpdate(Long id) {
+    try {
+      String sql = "SELECT * FROM Assignment WHERE id = ? FOR UPDATE";
+      return jdbcTemplate.queryForObject(sql, assignmentRowMapper, id);
+    } catch (EmptyResultDataAccessException e) {
+      return null;
+    }
+  }
 
   @Override
   public List<Assignment> findByVehicleIdOrderByTimeAssignedDesc(Long vehicleId) {

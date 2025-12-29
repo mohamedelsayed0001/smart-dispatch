@@ -153,7 +153,7 @@ public class ResponderService {
 
   @Transactional(isolation = Isolation.READ_COMMITTED)
   public void updateStatus(Long assignmentId, StatusUpdateDTO statusDTO) {
-    Assignment assignment = assignmentDAO.findById(assignmentId);
+    Assignment assignment = assignmentDAO.findByIdForUpdate(assignmentId);
     if (assignment == null)
       throw new RuntimeException("Assignment not found");
 

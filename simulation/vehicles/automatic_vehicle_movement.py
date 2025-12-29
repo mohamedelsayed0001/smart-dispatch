@@ -248,11 +248,32 @@ class VehicleSimulator:
                         self.route_index = 0
                         print(f"[Vehicle {self.vehicle_id:03d}] Route calculated: {len(route)} points")
                     else:
-                        print(f"[Vehicle {self.vehicle_id:03d}] Failed to calculate route")
+                        print(f"[Vehicle {self.vehicle_id:03d}] OSRM routing failed. Using linear fallback.")
+                        if self.current_lat is not None and self.current_lon is not None:
+                            # Generate simple straight line path (approx 10 simulation updates)
+                            self.route_points = self.generate_straight_line(
+                                self.current_lat, self.current_lon, 
+                                incident_lat, incident_lon, 
+                                steps=100
+                            )
+                            self.route_index = 0
+                            print(f"[Vehicle {self.vehicle_id:03d}] Linear route calculated: {len(self.route_points)} points")
+                        else:
+                            print(f"[Vehicle {self.vehicle_id:03d}] Cannot route: Unknown start location")
                 else:
                     print(f"[Vehicle {self.vehicle_id:03d}] Error: Missing incident coordinates")
         except Exception as e:
             print(f"[Vehicle {self.vehicle_id:03d}] Message handling error: {e}")
+
+    def generate_straight_line(self, lat1, lon1, lat2, lon2, steps=100):
+        path = []
+        if steps < 2: steps = 2
+        for i in range(steps):
+            frac = i / (steps - 1)
+            lat = lat1 + (lat2 - lat1) * frac
+            lon = lon1 + (lon2 - lon1) * frac
+            path.append((lat, lon))
+        return path
 
     def get_incident_details(self, incident_id):
         try:
