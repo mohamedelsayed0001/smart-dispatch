@@ -68,8 +68,12 @@ LIMIT {N};
 print(f"Generating {N} initial vehicle locations within Cairo boundaries...")
 location_values = []
 for i in range(1, N + 1):
-    lat = round(random.uniform(LAT_MIN, LAT_MAX), 8)
-    lon = round(random.uniform(LON_MIN, LON_MAX), 8)
+    if i == 1:
+        # Fixed location for special scenario testing
+        lat, lon = 30.0, 31.0
+    else:
+        lat = round(random.uniform(LAT_MIN, LAT_MAX), 8)
+        lon = round(random.uniform(LON_MIN, LON_MAX), 8)
     location_values.append(f"({i}, {lon}, {lat}, CURRENT_TIMESTAMP)")
 
 # Insert locations in batches of 100

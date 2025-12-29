@@ -33,19 +33,30 @@ echo When you are ready to start the Load Test, press any key...
 pause > nul
 
 :: 5. Run JMeter
-echo [5/5] Starting Load Test...
+echo.
+echo [5/5] Load Test Scenarios:
+echo 1. Standard Randomized Incidents (Random distribution)
+echo 2. Equidistant Stress Test (2 incidents, same time, same proximity to Vehicle 1)
+set /p SCENARIO="Select scenario (1 or 2): "
+
 set TIMESTAMP=%date:~10,4%%date:~4,2%%date:~7,2%_%time:~0,2%%time:~3,2%%time:~6,2%
 set TIMESTAMP=%TIMESTAMP: =0%
-set RESULTS_DIR=%~dp0simulation\jmeter\Reports\report_%TIMESTAMP%
+
+if "%SCENARIO%"=="2" (
+    set JMX_FILE=EquidistantIncidents.jmx
+    set RESULTS_DIR=%~dp0simulation\jmeter\Reports\report_stress_%TIMESTAMP%
+) else (
+    set JMX_FILE=IncidentGeneration.jmx
+    set RESULTS_DIR=%~dp0simulation\jmeter\Reports\report_%TIMESTAMP%
+)
 
 if not exist "%~dp0simulation\jmeter\logs" mkdir "%~dp0simulation\jmeter\logs"
 if not exist "%~dp0simulation\jmeter\Reports" mkdir "%~dp0simulation\jmeter\Reports"
 del /q "%~dp0simulation\jmeter\logs\results.jtl" 2>nul
 
-echo Running JMeter test and generating HTML report...
+echo Running JMeter scenario %SCENARIO%...
 cd /d "%~dp0simulation\jmeter"
-:: jmeter -n -t IncidentGeneration.jmx -l logs\results.jtl -e -o "%RESULTS_DIR%"
-jmeter -Jjmeter.reportgenerator.overall_granularity=1000 -n -t IncidentGeneration.jmx -l logs\results.jtl -e -o "%RESULTS_DIR%"
+jmeter -Jjmeter.reportgenerator.overall_granularity=1000 -n -t %JMX_FILE% -l logs\results.jtl -e -o "%RESULTS_DIR%"
 
 if exist "%RESULTS_DIR%\index.html" (
     echo Report generated successfully!
