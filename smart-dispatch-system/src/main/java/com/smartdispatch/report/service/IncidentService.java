@@ -56,6 +56,7 @@ public class IncidentService {
                                 .id(id)
                         .build());
 
+                //System.out.println("Incident created: " + id);
                 dispatcherService.autoAssignClosestVehicle(id);
             } catch (Exception e) {
                 logger.error("Failed to broadcast new incident or auto-assign: {}", e.getMessage(), e);

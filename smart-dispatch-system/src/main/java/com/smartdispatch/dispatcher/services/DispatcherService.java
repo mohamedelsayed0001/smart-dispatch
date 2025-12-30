@@ -38,7 +38,7 @@ public class DispatcherService implements IDispatcherService {
     private final NotificationService notificationService;
     private final RedisAssignmentUtil redisAssignmentUtil;
     private final TransactionTemplate txTemplate;
-    private final ReentrantLock assignmentLock = new ReentrantLock();
+    // private final ReentrantLock assignmentLock = new ReentrantLock();
 
     @PostConstruct
     void configureTransactionTemplate() {
@@ -200,36 +200,36 @@ public class DispatcherService implements IDispatcherService {
 
     @Override
     public AssignmentDto autoAssignClosestVehicle(Long incidentId) {
-        if (!tryAcquireAssignmentLock()) {
-            return null;
-        }
+        // if (!tryAcquireAssignmentLock()) {
+        //     return null;
+        // }
         try {
             return txTemplate.execute(status -> performAutoAssignClosestVehicle(incidentId));
         } finally {
-            assignmentLock.unlock();
+            // assignmentLock.unlock();
         }
     }
 
     @Override
     public AssignmentDto autoAssignPendingIncidentToVehicle(Long vehicleId) {
-        if (!tryAcquireAssignmentLock()) {
-            return null;
-        }
+        // if (!tryAcquireAssignmentLock()) {
+        //     return null;
+        // }
         try {
             return txTemplate.execute(status -> performAutoAssignPendingIncidentToVehicle(vehicleId));
         } finally {
-            assignmentLock.unlock();
+            // assignmentLock.unlock();
         }
     }
 
-    private boolean tryAcquireAssignmentLock() {
-        try {
-            return assignmentLock.tryLock(200, TimeUnit.MILLISECONDS);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            return false;
-        }
-    }
+    // private boolean tryAcquireAssignmentLock() {
+    //     try {
+    //         return assignmentLock.tryLock(200, TimeUnit.MILLISECONDS);
+    //     } catch (InterruptedException e) {
+    //         Thread.currentThread().interrupt();
+    //         return false;
+    //     }
+    // }
 
     private AssignmentDto performAutoAssignClosestVehicle(Long incidentId) {
         Incident incident = incidentDao.findByIdForUpdate(incidentId);
@@ -252,7 +252,7 @@ public class DispatcherService implements IDispatcherService {
             return null;
         }
 
-        vehicleDao.updateStatus(closestVehicle.getId(), VehicleStatus.ONROUTE);
+        //vehicleDao.updateStatus(closestVehicle.getId(), VehicleStatus.ONROUTE);
 
         Assignment assignment = Assignment.builder()
                 .dispatcherId(3L)
@@ -264,10 +264,10 @@ public class DispatcherService implements IDispatcherService {
         Long assignmentId = assignmentDao.createAssignment(assignment);
         assignment.setId(assignmentId);
 
-        incidentDao.updateStatus(incidentId, IncidentStatus.ASSIGNED);
+        // incidentDao.updateStatus(incidentId, IncidentStatus.ASSIGNED);
 
-        incident.setStatus(IncidentStatus.ASSIGNED);
-        closestVehicle.setStatus(VehicleStatus.ONROUTE);
+        //incident.setStatus(IncidentStatus.ASSIGNED);
+        //closestVehicle.setStatus(VehicleStatus.ONROUTE);
 
         LocationCoordinates location = redisAssignmentUtil.getVehicleLocationFromRedis(closestVehicle.getId());
 
