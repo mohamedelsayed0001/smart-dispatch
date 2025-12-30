@@ -1,13 +1,12 @@
 import { useState, useEffect } from 'react';
-import { Plus, Edit, Trash2, X, Search } from 'lucide-react';
+import { Plus, Edit, Trash2, X } from 'lucide-react';
 import '../styles/Vehicles.css';
+import { fetchVehicles, createVehicle, updateVehicle, deleteVehicle } from '../api.js';
 
-const Vehicles = () => {
-
-  const [vehicles, setVehicles] = useState([]);
+const Vehicles = ({ vehicles, setVehicles }) => {
   const [showModal, setShowModal] = useState(false);
   const [editingVehicle, setEditingVehicle] = useState(null);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     type: 'AMBULANCE',
     status: 'AVAILABLE',
@@ -15,70 +14,56 @@ const Vehicles = () => {
     operatorId: ''
   });
 
+  // Load vehicles on mount
   useEffect(() => {
-    fetchVehicles();
+    loadVehicles();
   }, []);
 
-  const token = localStorage.getItem('authToken');
-
-  const fetchVehicles = async () => {
-    try {
-      const response = await fetch('http://localhost:8080/api/vehicle/getAllVehicles', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        console.log('✅ Vehicles fetched:', data);
-        setVehicles(data);
-      } else {
-        const errorText = await response.text();
-        console.error('❌ Server error:', errorText);
-        alert('Failed to fetch vehicles: ' + errorText);
-      }
-    } catch (error) {
-      console.error('❌ Network error:', error);
-      alert('Failed to fetch vehicles: ' + error.message);
-    }
+  const loadVehicles = async () => {
+    setLoading(true);
+    const data = await fetchVehicles();
+    setVehicles(data || []);
+    setLoading(false);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
 
     try {
-      const url = editingVehicle
-        ? `http://localhost:8080/api/vehicle/edit/${editingVehicle.id}`
-        : 'http://localhost:8080/api/vehicle/create';
-
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          ...formData,
-          capacity: parseInt(formData.capacity),
-          operatorId: formData.operatorId ? parseInt(formData.operatorId) : null
-        })
-      });
-
-      if (response.ok) {
-        alert(editingVehicle ? 'Vehicle updated successfully!' : 'Vehicle created successfully!');
-        setShowModal(false);
-        resetForm();
-        fetchVehicles();
+      if (editingVehicle) {
+        const result = await updateVehicle(formData, editingVehicle.id);
+        if (result.success) {
+          setVehicles(
+            vehicles.map(v => v.id === editingVehicle.id 
+              ? {
+                  ...v,
+                  ...formData,
+                  capacity: parseInt(formData.capacity),
+                  operatorId: formData.operatorId ? parseInt(formData.operatorId) : null
+                }
+              : v
+            )
+          );
+          setShowModal(false);
+          resetForm();
+        } else {
+          console.log(result.error || 'Failed to update vehicle');
+        }
       } else {
-        const errorText = await response.text();
-        alert(`Error: ${errorText}`);
+        const result = await createVehicle(formData);
+        if (result.success) {
+          await loadVehicles();
+          setShowModal(false);
+          resetForm();
+        } else {
+          console.log(result.error || 'Failed to create vehicle');
+        }
       }
-    } catch (error) {
-      console.error('Error saving vehicle:', error);
-      alert('Failed to save vehicle: ' + error.message);
+    } catch (err) {
+      console.log(err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -87,24 +72,19 @@ const Vehicles = () => {
       return;
     }
 
-    try {
-      const response = await fetch(`http://localhost:8080/api/vehicle/delete/${id}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
+    setLoading(true);
 
-      if (response.ok) {
-        alert('Vehicle deleted successfully!');
-        fetchVehicles();
+    try {
+      const result = await deleteVehicle(id);
+      if (result.success) {
+        setVehicles(vehicles.filter(v => v.id !== id));
       } else {
-        const errorText = await response.text();
-        alert(`Error: ${errorText}`);
+        console.log(result.error || 'Failed to delete vehicle');
       }
-    } catch (error) {
-      console.error('Error deleting vehicle:', error);
-      alert('Failed to delete vehicle: ' + error.message);
+    } catch (err) {
+      console.log(err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -133,17 +113,6 @@ const Vehicles = () => {
     setShowModal(false);
     resetForm();
   };
-
-  const filteredVehicles = vehicles.filter(vehicle =>
-    vehicle.type.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    vehicle.status.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  // Add display IDs (1, 2, 3, ...) for frontend only
-  const vehiclesWithDisplayId = filteredVehicles.map((vehicle, index) => ({
-    ...vehicle,
-    displayId: index + 1
-  }));
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -176,22 +145,14 @@ const Vehicles = () => {
     <div className="vehicles-container">
       <div className="vehicles-header">
         <h1 className="page-title">Vehicles</h1>
-        <button className="btn-primary" onClick={() => setShowModal(true)}>
+        <button 
+          className="btn-primary" 
+          onClick={() => setShowModal(true)}
+          disabled={loading}
+        >
           <Plus size={20} />
           Add Vehicle
         </button>
-      </div>
-
-      <div className="vehicles-controls">
-        <div className="search-box">
-          <Search size={20} />
-          <input
-            type="text"
-            placeholder="Search vehicles..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
       </div>
 
       <div className="vehicles-table-container">
@@ -207,14 +168,18 @@ const Vehicles = () => {
             </tr>
           </thead>
           <tbody>
-            {vehiclesWithDisplayId.length === 0 ? (
+            {loading && vehicles.length === 0 ? (
+              <tr>
+                <td colSpan="6" className="no-data">Loading vehicles...</td>
+              </tr>
+            ) : vehicles.length === 0 ? (
               <tr>
                 <td colSpan="6" className="no-data">No vehicles found</td>
               </tr>
             ) : (
-              vehiclesWithDisplayId.map((vehicle) => (
+              vehicles.map((vehicle) => (
                 <tr key={vehicle.id}>
-                  <td>{vehicle.displayId}</td>
+                  <td>{vehicle.id}</td>
                   <td>{getVehicleTypeDisplay(vehicle.type)}</td>
                   <td>
                     <span className={`status-badge ${getStatusColor(vehicle.status)}`}>
@@ -229,6 +194,7 @@ const Vehicles = () => {
                         className="btn-icon btn-edit"
                         onClick={() => handleEdit(vehicle)}
                         title="Edit"
+                        disabled={loading}
                       >
                         <Edit size={16} />
                       </button>
@@ -236,6 +202,7 @@ const Vehicles = () => {
                         className="btn-icon btn-delete"
                         onClick={() => handleDelete(vehicle.id)}
                         title="Delete"
+                        disabled={loading}
                       >
                         <Trash2 size={16} />
                       </button>
@@ -253,7 +220,7 @@ const Vehicles = () => {
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h2>{editingVehicle ? 'Edit Vehicle' : 'Add New Vehicle'}</h2>
-              <button className="btn-close" onClick={handleCloseModal}>
+              <button className="btn-close" onClick={handleCloseModal} disabled={loading}>
                 <X size={24} />
               </button>
             </div>
@@ -265,6 +232,7 @@ const Vehicles = () => {
                   value={formData.type}
                   onChange={(e) => setFormData({ ...formData, type: e.target.value })}
                   required
+                  disabled={loading}
                 >
                   <option value="AMBULANCE">🚑 Ambulance</option>
                   <option value="FIRETRUCK">🚒 Fire Truck</option>
@@ -278,6 +246,7 @@ const Vehicles = () => {
                   value={formData.status}
                   onChange={(e) => setFormData({ ...formData, status: e.target.value })}
                   required
+                  disabled={loading}
                 >
                   <option value="AVAILABLE">Available</option>
                   <option value="ONROUTE">On Route</option>
@@ -295,6 +264,7 @@ const Vehicles = () => {
                   min="1"
                   max="20"
                   required
+                  disabled={loading}
                 />
               </div>
 
@@ -306,15 +276,25 @@ const Vehicles = () => {
                   onChange={(e) => setFormData({ ...formData, operatorId: e.target.value })}
                   placeholder="Leave empty if no operator assigned"
                   min="1"
+                  disabled={loading}
                 />
               </div>
 
               <div className="modal-actions">
-                <button type="button" className="btn-secondary" onClick={handleCloseModal}>
+                <button 
+                  type="button" 
+                  className="btn-secondary" 
+                  onClick={handleCloseModal}
+                  disabled={loading}
+                >
                   Cancel
                 </button>
-                <button type="submit" className="btn-primary">
-                  {editingVehicle ? 'Update Vehicle' : 'Create Vehicle'}
+                <button 
+                  type="submit" 
+                  className="btn-primary"
+                  disabled={loading}
+                >
+                  {loading ? 'Loading...' : (editingVehicle ? 'Update Vehicle' : 'Create Vehicle')}
                 </button>
               </div>
             </form>

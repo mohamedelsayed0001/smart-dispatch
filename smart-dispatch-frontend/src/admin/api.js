@@ -1,125 +1,147 @@
-// API utility functions for admin panel
+const API_BASE = 'http://localhost:8080';
 
-export const fetchDashboardData = async () => {
-    return {
-        activeCars: 12,
-        pendingEmergencies: 5,
-        responseTime: '4.5 min',
-        efficiency: 92
-    };
+const getHeaders = () => ({
+  'Content-Type': 'application/json',
+  'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+});
+
+const handleResponse = async (response) => {
+  const contentType = response.headers.get('content-type');
+  let data;
+
+  if (contentType && contentType.includes('application/json')) {
+    data = await response.json();
+  } else {
+    data = await response.text();
+  }
+
+  if (!response.ok) {
+    console.error(`API Error (${response.status}):`, data);
+    throw new Error(typeof data === 'string' ? data : (data.message || `API Error: ${response.status}`));
+  }
+
+  return data;
+};
+
+export const fetchVehicles = async () => {
+  try {
+    const response = await fetch(`${API_BASE}/api/vehicle/getAllVehicles`, {
+      method: 'GET',
+      headers: getHeaders()
+    });
+
+    const data = await handleResponse(response);
+    return Array.isArray(data) ? data : [];
+  } catch (error) {
+    console.error('Error fetching vehicles:', error);
+    return [];
+  }
+};
+
+export const createVehicle = async (formData) => {
+  try {
+    const response = await fetch(`${API_BASE}/api/vehicle/create`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify({
+        ...formData,
+        capacity: parseInt(formData.capacity),
+        operatorId: formData.operatorId ? parseInt(formData.operatorId) : null
+      })
+    });
+
+    const data = await handleResponse(response);
+    return { success: true, data: formData, message: data };
+  } catch (error) {
+    console.error('Error creating vehicle:', error);
+    return { success: false, error: error.message };
+  }
+};
+
+export const updateVehicle = async (formData, vehicleId) => {
+  try {
+    const response = await fetch(`${API_BASE}/api/vehicle/edit/${vehicleId}`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify({
+        ...formData,
+        capacity: parseInt(formData.capacity),
+        operatorId: formData.operatorId ? parseInt(formData.operatorId) : null
+      })
+    });
+
+    const data = await handleResponse(response);
+    return { success: true, data: formData, message: data };
+  } catch (error) {
+    console.error('Error updating vehicle:', error);
+    return { success: false, error: error.message };
+  }
+};
+
+export const deleteVehicle = async (vehicleId) => {
+  try {
+    const response = await fetch(`${API_BASE}/api/vehicle/delete/${vehicleId}`, {
+      method: 'DELETE',
+      headers: getHeaders()
+    });
+
+    const data = await handleResponse(response);
+    return { success: true, message: data };
+  } catch (error) {
+    console.error('Error deleting vehicle:', error);
+    return { success: false, error: error.message };
+  }
 };
 
 export const fetchUsers = async (page = 1, filter = 'all', search = '') => {
-    try {
-        const token = localStorage.getItem('authToken');
-        const response = await fetch(
-            `http://localhost:8080/api/admin/users?page=${page}&role=${filter}&search=${encodeURIComponent(search)}`,
-            {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
-            }
-        );
+  try {
+    const response = await fetch(
+      `${API_BASE}/api/admin/users?page=${page}&role=${filter}&search=${encodeURIComponent(search)}`,
+      { headers: getHeaders() }
+    );
 
-        if (!response.ok) {
-            throw new Error('Failed to fetch users');
-        }
-
-        const data = await response.json();
-
-        console.log('[API] Fetched users:', data);
-
-        return {
-            users: data.data || [],
-            total: data.totalElements || 0,
-            pages: data.totalPages || 1
-        };
-    } catch (error) {
-        console.error('[API] Error fetching users:', error);
-        // Return mock data as fallback
-        const allUsers = [
-            { id: 1, name: 'John Smith', email: 'john@emergency.com', role: 'ADMIN', status: 'active', joinedDate: '2024-01-15' },
-            { id: 2, name: 'Sarah Johnson', email: 'sarah@emergency.com', role: 'DISPATCHER', status: 'active', joinedDate: '2024-02-20' },
-            { id: 3, name: 'Mike Wilson', email: 'mike@emergency.com', role: 'OPERATOR', status: 'active', joinedDate: '2024-03-10' },
-        ];
-
-        let filtered = allUsers;
-        if (filter !== 'all') {
-            filtered = allUsers.filter(u => u.role.toLowerCase() === filter.toLowerCase());
-        }
-        if (search) {
-            filtered = filtered.filter(u => u.name.toLowerCase().includes(search.toLowerCase()));
-        }
-
-        return {
-            users: filtered.slice((page - 1) * 6, page * 6),
-            total: filtered.length,
-            pages: Math.ceil(filtered.length / 6)
-        };
-    }
+    const data = await handleResponse(response);
+    return {
+      users: data.data || [],
+      total: data.totalElements || 0,
+      pages: data.totalPages || 1
+    };
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    return { users: [], total: 0, pages: 1 };
+  }
 };
 
 export const fetchReports = async (page = 1) => {
-    try {
-        const token = localStorage.getItem('authToken');
-        const res = await fetch(`http://localhost:8080/api/admin/reports`, {
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
-        });
+  try {
+    const response = await fetch(`${API_BASE}/api/admin/reports`, {
+      headers: getHeaders()
+    });
 
-        if (!res.ok) throw new Error('Failed to fetch reports');
-
-        const data = await res.json();
-        // backend returns an array of AdminIncidentReportDto
-        return {
-            reports: data || [],
-            total: (data && data.length) || 0,
-            pages: 1
-        };
-    } catch (error) {
-        console.error('[API] Error fetching reports, falling back to mock:', error);
-        const reports = [
-            { id: 1, title: 'System Performance Report', date: '2024-10-15', type: 'Performance', status: 'completed' },
-            { id: 2, title: 'Emergency Response Times', date: '2024-10-20', type: 'Analytics', status: 'completed' },
-            { id: 3, title: 'Monthly Dispatch Summary', date: '2024-10-28', type: 'Summary', status: 'pending' },
-            { id: 4, title: 'User Activity Log', date: '2024-11-01', type: 'Activity', status: 'completed' },
-            { id: 5, title: 'Equipment Maintenance', date: '2024-11-05', type: 'Maintenance', status: 'completed' },
-        ];
-
-        return {
-            reports: reports.slice((page - 1) * 6, page * 6),
-            total: reports.length,
-            pages: Math.ceil(reports.length / 6)
-        };
-    }
+    const data = await handleResponse(response);
+    return {
+      reports: data || [],
+      total: (data && data.length) || 0,
+      pages: 1
+    };
+  } catch (error) {
+    console.error('Error fetching reports:', error);
+    return { reports: [], total: 0, pages: 1 };
+  }
 };
 
 export const updateUserRole = async (userId, newRole) => {
-    try {
-        console.log(`[API] Updating user ${userId} to ${newRole}`);
-        const token = localStorage.getItem('authToken');
+  try {
+    const response = await fetch(`${API_BASE}/api/admin/users/${userId}/role`, {
+      method: 'PUT',
+      headers: getHeaders(),
+      body: JSON.stringify({ role: newRole })
+    });
 
-        const response = await fetch(`http://localhost:8080/api/admin/users/${userId}/role`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify({ role: newRole })
-        });
-
-        if (!response.ok) {
-            throw new Error('Failed to update user role');
-        }
-
-        const result = await response.json();
-        console.log('[API] User role updated successfully:', result);
-        return result;
-    } catch (error) {
-        console.error('[API] Error updating user role:', error);
-        throw error;
-    }
+    const data = await handleResponse(response);
+    return { success: true, data };
+  } catch (error) {
+    console.error('Error updating user role:', error);
+    return { success: false, error: error.message };
+  }
 };

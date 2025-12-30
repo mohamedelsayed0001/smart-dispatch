@@ -178,8 +178,8 @@ const DetailWindow = ({ item, type, onClose }) => {
   );
 };
 
-const LiveMap = () => {
-  const [vehicles, setVehicles] = useState([]);
+const LiveMap = ({vehicles, setVehicles}) => {
+  // const [vehicles, setVehicles] = useState([]);
   const [incidents, setIncidents] = useState([]);
   const [liveLocations, setLiveLocations] = useState({});
   const [selectedItem, setSelectedItem] = useState(null);

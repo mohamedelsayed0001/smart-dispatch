@@ -1,5 +1,6 @@
 import axios from 'axios';
-import { useState, useEffect, useRef, act } from 'react';
+import { useState, useEffect, useRef } from 'react';
+
 import AdminSidebar from './components/AdminSidebar';
 import SystemUsers from './components/SystemUsers';
 import Vehicles from './components/Vehicles';
@@ -7,24 +8,27 @@ import LiveMap from './components/LiveMap';
 import Reports from './components/Reports';
 import Analysis from './components/Analysis';
 import AdminNotifications from './components/AdminNotifications';
-// import { Client } from '@stomp/stompjs';
-// import SockJS from 'sockjs-client';
+
 import { useCallback } from 'react';
-import { fetchDashboardData, fetchUsers, fetchReports } from './api.js';
+import { fetchUsers, fetchReports } from './api.js';
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
+
 import './AdminPage.css';
-import { useNavigate } from 'react-router-dom';
+
 const AdminPage = () => {
-  const navigate = useNavigate();
+  
   const handleLogout = () => {
-  localStorage.removeItem('authToken'); // or whatever key you use
-  localStorage.removeItem('user');
+    localStorage.removeItem('authToken'); // or whatever key you use
+    localStorage.removeItem('user');
     window.location.href = '/login'; // redirect to login page
-}; 
-  const [activeMenu, setActiveMenu] = useState('analysis');
+  };
+
   const [users, setUsers] = useState([]);
   const [reports, setReports] = useState([]);
+  const [vehicles, setVehicles] = useState([]);
+
+  const [activeMenu, setActiveMenu] = useState('analysis');
   const [userFilter, setUserFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
@@ -33,54 +37,55 @@ const AdminPage = () => {
   const [notifList, setNotifList] = useState([]);
   const [snackbarNotif, setSnackbarNotif] = useState(null);
   const stompNotifClientRef = useRef(null);
-    // Subscribe to admin notifications WebSocket globally
-    useEffect(() => {
-      const token = localStorage.getItem('authToken');
-      const client = new Client({
-        webSocketFactory: () => new SockJS('http://localhost:8080/ws'),
-        connectHeaders: token ? { Authorization: `Bearer ${token}` } : {},
-        onConnect: () => {
-          client.subscribe('/topic/admin/notifications', (message) => {
-            try {
-              const notifRaw = JSON.parse(message.body);
-              const notif = {
-                type: notifRaw.notificationType,
-                message: notifRaw.content,
-                time: notifRaw.timeSent,
-                unread: true
-              };
-              setNotifList(prev => {
-                const uniqueKey = `${notif.type}-${notif.time}`;
-                if (prev.some(n => `${n.type}-${n.time}` === uniqueKey)) {
-                  return prev;
-                }
-                const newList = [notif, ...prev];
-                return newList.length > 40 ? newList.slice(0, 40) : newList;
-              });
-              setSnackbarNotif(notif);
-              setTimeout(() => setSnackbarNotif(null), 4000);
-            } catch (e) {
-              console.error('Failed to parse admin notification', e);
-            }
-          });
-        },
-        onStompError: (frame) => {
-          console.error('STOMP error:', frame);
-        },
-        reconnectDelay: 5000,
-        heartbeatIncoming: 4000,
-        heartbeatOutgoing: 4000,
-      });
-      client.activate();
-      stompNotifClientRef.current = client;
-      return () => {
-        if (stompNotifClientRef.current) {
-          try { stompNotifClientRef.current.deactivate(); } catch (e) { }
-          stompNotifClientRef.current = null;
-        }
-      };
-    }, []);
-  const [notifTargetIncident, setNotifTargetIncident] = useState(null);
+
+  // Subscribe to admin notifications WebSocket globally
+  useEffect(() => {
+    const token = localStorage.getItem('authToken');
+    const client = new Client({
+      webSocketFactory: () => new SockJS('http://localhost:8080/ws'),
+      connectHeaders: token ? { Authorization: `Bearer ${token}` } : {},
+      onConnect: () => {
+        client.subscribe('/topic/admin/notifications', (message) => {
+          try {
+            const notifRaw = JSON.parse(message.body);
+            const notif = {
+              type: notifRaw.notificationType,
+              message: notifRaw.content,
+              time: notifRaw.timeSent,
+              unread: true
+            };
+            setNotifList(prev => {
+              const uniqueKey = `${notif.type}-${notif.time}`;
+              if (prev.some(n => `${n.type}-${n.time}` === uniqueKey)) {
+                return prev;
+              }
+              const newList = [notif, ...prev];
+              return newList.length > 40 ? newList.slice(0, 40) : newList;
+            });
+            setSnackbarNotif(notif);
+            setTimeout(() => setSnackbarNotif(null), 4000);
+          } catch (e) {
+            console.error('Failed to parse admin notification', e);
+          }
+        });
+      },
+      onStompError: (frame) => {
+        console.error('STOMP error:', frame);
+      },
+      reconnectDelay: 5000,
+      heartbeatIncoming: 4000,
+      heartbeatOutgoing: 4000,
+    });
+    client.activate();
+    stompNotifClientRef.current = client;
+    return () => {
+      if (stompNotifClientRef.current) {
+        try { stompNotifClientRef.current.deactivate(); } catch (e) { }
+        stompNotifClientRef.current = null;
+      }
+    };
+  }, []);
+  
   const stompClientRef = useRef(null);
 
   useEffect(() => {
@@ -167,12 +172,12 @@ const AdminPage = () => {
 
   // Handler for menu open, supports limit
   const handleNotifMenuOpen = (limit) => fetchNotifications(limit);
-    // Fetch notifications on reload if notifications is the current page
-    useEffect(() => {
-      if (activeMenu === 'notifications') {
-        fetchNotifications();
-      }
-    }, [activeMenu]);
+  // Fetch notifications on reload if notifications is the current page
+  useEffect(() => {
+    if (activeMenu === 'notifications') {
+      fetchNotifications();
+    }
+  }, [activeMenu]);
   // Handler for notification click
   // Mark notification as read on click (only open popup, do not navigate)
   const handleNotificationClick = (notif, idx) => {
@@ -185,9 +190,9 @@ const AdminPage = () => {
   // Pass notification state to sidebar and notification component
   return (
     <div className="admin-container">
-      
-      <AdminSidebar 
-        activeMenu={activeMenu} 
+
+      <AdminSidebar
+        activeMenu={activeMenu}
         setActiveMenu={setActiveMenu}
         collapsed={sidebarCollapsed}
         setCollapsed={setSidebarCollapsed}
@@ -196,7 +201,7 @@ const AdminPage = () => {
       />
       <div className="admin-main" style={{ marginLeft: sidebarCollapsed ? '80px' : '250px', transition: 'margin-left 0.3s ease' }}>
         <div className="admin-content">
-         
+
           {activeMenu === 'users' && (
             <SystemUsers
               users={users}
@@ -208,11 +213,11 @@ const AdminPage = () => {
               searchQuery={searchQuery}
               setSearchQuery={setSearchQuery}
               onRefresh={handleRefreshUsers}
-              
+
             />
           )}
-          {activeMenu === 'vehicles' && <Vehicles />}
-          {activeMenu === 'livemap' && <LiveMap targetIncident={notifTargetIncident} />}
+          {activeMenu === 'vehicles' && <Vehicles vehicles={vehicles} setVehicles={setVehicles} />}
+          {activeMenu === 'livemap' && <LiveMap vehicles={vehicles} setVehicles={setVehicles} />}
           {activeMenu === 'reports' && (
             <Reports
               reports={reports}
