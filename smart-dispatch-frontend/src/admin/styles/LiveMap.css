@@ -140,10 +140,10 @@
   transition: all 0.3s ease;
 }
 
-.map-marker-pin:hover::before {
+/* .map-marker-pin:hover::before {
   transform: translateX(-50%) rotate(-45deg) scale(1.1);
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3), 0 0 0 4px rgba(255, 255, 255, 0.95);
-}
+} */
 
 .map-marker-emoji {
   position: absolute;
@@ -156,9 +156,9 @@
   transition: all 0.3s ease;
 }
 
-.map-marker-pin:hover .map-marker-emoji {
+/* .map-marker-pin:hover .map-marker-emoji {
   transform: translateX(-50%) scale(1.15);
-}
+} */
 
 .map-marker-shadow {
   position: absolute;

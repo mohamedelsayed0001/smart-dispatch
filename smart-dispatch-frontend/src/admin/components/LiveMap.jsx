@@ -81,8 +81,8 @@ const createVehicleIcon = (type, status) => {
 };
 
 // Floating detail window component
-
 const DetailWindow = ({ item, type, onClose }) => {
+  if (!item) return null;
 
   return (
     <div className="livemap-detail-window">
@@ -101,7 +101,7 @@ const DetailWindow = ({ item, type, onClose }) => {
             </div>
             <div className="livemap-detail-row">
               <span className="livemap-detail-label">Status:</span>
-              <span className={`livemap-detail-value livemap-status-${item.status.toLowerCase()}`}>
+              <span className={`livemap-detail-value livemap-status-${item.status?.toLowerCase()}`}>
                 {item.status || 'N/A'}
               </span>
             </div>
@@ -140,7 +140,7 @@ const DetailWindow = ({ item, type, onClose }) => {
             </div>
             <div className="livemap-detail-row">
               <span className="livemap-detail-label">Status:</span>
-              <span className={`livemap-detail-value livemap-status-${item.status.toLowerCase()}`}>
+              <span className={`livemap-detail-value livemap-status-${item.status?.toLowerCase()}`}>
                 {item.status || 'N/A'}
               </span>
             </div>
@@ -178,7 +178,6 @@ const DetailWindow = ({ item, type, onClose }) => {
   );
 };
 
-
 const LiveMap = () => {
   const [vehicles, setVehicles] = useState([]);
   const [incidents, setIncidents] = useState([]);
@@ -188,8 +187,11 @@ const LiveMap = () => {
   const [loading, setLoading] = useState(true);
   const [showVehicles, setShowVehicles] = useState(true);
   const [showIncidents, setShowIncidents] = useState(true);
+  const [notifications, setNotifications] = useState([]);
   const stompClientRef = useRef(null);
   const mapRef = useRef(null);
+  const notifiedIncidentsRef = useRef(new Set()); // Track which incidents we've notified about
+
 
   useEffect(() => {
     const loadInitialData = async () => {
@@ -304,6 +306,12 @@ const LiveMap = () => {
           const incident = JSON.parse(message.body);
           console.log('🚨 Incident update:', incident);
 
+          // Only add notification if this is a new incident we haven't notified about
+          const isNewIncident = !notifiedIncidentsRef.current.has(incident.id);
+          if (isNewIncident && (incident.status === 'PENDING' || incident.status === 'ASSIGNED')) {
+            notifiedIncidentsRef.current.add(incident.id);
+            addNotification('incident', 1);
+          }
 
           setIncidents(prev => {
             const index = prev.findIndex(i => i.id === incident.id);
@@ -334,6 +342,8 @@ const LiveMap = () => {
           const updateDto = JSON.parse(message.body);
           console.log('📋 Assignment update:', updateDto);
 
+          // Add notification for assignment response (ACCEPTED, REJECTED, CANCELED)
+          addNotification('assignment', 1);
 
           // Note: This DTO only contains responderId, assignmentId, and response
           // The actual vehicle/incident status updates come through /topic/vehicle/update
@@ -354,6 +364,13 @@ const LiveMap = () => {
           if (report.status === 'PENDING' || report.status === 'ASSIGNED') {
             setIncidents(prev => {
               const exists = prev.some(i => i.id === report.id);
+              if (!exists) {
+                // Only add notification if we haven't notified about this incident yet
+                if (!notifiedIncidentsRef.current.has(report.id)) {
+                  notifiedIncidentsRef.current.add(report.id);
+                  addNotification('incident', 1);
+                }
+              }
               if (exists) return prev;
               return [...prev, report];
             });
@@ -382,6 +399,29 @@ const LiveMap = () => {
     };
   }, []);
 
+  // Notification management
+  const addNotification = (type, count = 1) => {
+    setNotifications(prev => {
+      const existing = prev.find(n => n.type === type);
+      if (existing) {
+        return prev.map(n =>
+          n.type === type
+            ? { ...n, count: n.count + count, timestamp: Date.now() }
+            : n
+        );
+      }
+      return [...prev, { type, count, timestamp: Date.now(), id: Date.now() }];
+    });
+
+    // Auto-remove after 5 seconds
+    setTimeout(() => {
+      setNotifications(prev => prev.filter(n => Date.now() - n.timestamp > 5000 ? false : true));
+    }, 5000);
+  };
+
+  const removeNotification = (id) => {
+    setNotifications(prev => prev.filter(n => n.id !== id));
+  };
 
   // Calculate bounds for all markers
   const allBounds = [];
@@ -445,6 +485,37 @@ const LiveMap = () => {
   return (
     <div className="live-map-container">
       <div className="map-wrapper">
+        {/* Notifications */}
+        <div className="livemap-notifications-container">
+          {notifications.map(notif => (
+            <div key={notif.id} className="livemap-notification-popup">
+              <button
+                className="livemap-notification-close"
+                onClick={() => removeNotification(notif.id)}
+              >
+                ×
+              </button>
+              <div className="livemap-notification-content">
+                {notif.type === 'incident' && (
+                  <>
+                    <span className="livemap-notification-icon">🚨</span>
+                    <span className="livemap-notification-text">
+                      {notif.count} New Incident{notif.count > 1 ? 's' : ''}
+                    </span>
+                  </>
+                )}
+                {notif.type === 'assignment' && (
+                  <>
+                    <span className="livemap-notification-icon">📋</span>
+                    <span className="livemap-notification-text">
+                      {notif.count} New Assignment{notif.count > 1 ? 's' : ''}
+                    </span>
+                  </>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
         {/* Controls and Legend Combined */}
         <div className="livemap-controls-panel">
           <div className="livemap-control-section">
@@ -511,7 +582,6 @@ const LiveMap = () => {
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
 
-
           {/* Render incidents */}
           {showIncidents && incidents.map((incident) => {
             if (!incident.latitude || !incident.longitude) return null;
@@ -528,10 +598,17 @@ const LiveMap = () => {
                   }
                 }}
               >
+                <Popup>
+                  <div className="livemap-popup-content">
+                    <h4>{INCIDENT_TYPE_EMOJIS[incident.type] || '⚠️'} {incident.type}</h4>
+                    <p><strong>Status:</strong> {incident.status}</p>
+                    <p><strong>Severity:</strong> {incident.severity || incident.level}</p>
+                    <p>{incident.description}</p>
+                  </div>
+                </Popup>
               </Marker>
             );
           })}
-
 
           {/* Render vehicles */}
           {showVehicles && vehicles.map((vehicle) => {
@@ -562,20 +639,27 @@ const LiveMap = () => {
                   }
                 }}
               >
+                <Popup>
+                  <div className="livemap-popup-content">
+                    <h4>{VEHICLE_TYPE_EMOJIS[vehicle.type] || '🚙'} {vehicle.type}</h4>
+                    <p><strong>Status:</strong> {vehicle.status}</p>
+                    <p><strong>Capacity:</strong> {vehicle.capacity || 'N/A'}</p>
+                    <p><strong>Location:</strong> {lat.toFixed(4)}, {lng.toFixed(4)}</p>
+                  </div>
+                </Popup>
               </Marker>
             );
           })}
+
+          {selectedItem && (
+            <DetailWindow
+              item={selectedItem}
+              type={selectedType}
+              onClose={closeDetailWindow}
+            />
+          )}
+
         </MapContainer>
-
-
-        {selectedItem && (
-          <DetailWindow
-            item={selectedItem}
-            type={selectedType}
-            onClose={closeDetailWindow}
-          />
-        )}
-
       </div>
     </div>
   );
