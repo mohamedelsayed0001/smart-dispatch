@@ -81,102 +81,6 @@ const createVehicleIcon = (type, status) => {
 };
 
 // Floating detail window component
-const DetailWindow = ({ item, type, onClose }) => {
-  if (!item) return null;
-
-  return (
-    <div className="livemap-detail-window">
-      <div className="livemap-detail-header">
-        <h3>{type === 'incident' ? 'Incident Details' : 'Vehicle Details'}</h3>
-        <button onClick={onClose} className="livemap-close-btn">×</button>
-      </div>
-      <div className="livemap-detail-content">
-        {type === 'incident' ? (
-          <>
-            <div className="livemap-detail-row">
-              <span className="livemap-detail-label">Type:</span>
-              <span className="livemap-detail-value">
-                {INCIDENT_TYPE_EMOJIS[item.type] || '⚠️'} {item.type || 'N/A'}
-              </span>
-            </div>
-            <div className="livemap-detail-row">
-              <span className="livemap-detail-label">Status:</span>
-              <span className={`livemap-detail-value livemap-status-${item.status?.toLowerCase()}`}>
-                {item.status || 'N/A'}
-              </span>
-            </div>
-            <div className="livemap-detail-row">
-              <span className="livemap-detail-label">Severity:</span>
-              <span className="livemap-detail-value">{item.severity || item.level || 'N/A'}</span>
-            </div>
-            <div className="livemap-detail-row">
-              <span className="livemap-detail-label">Description:</span>
-              <span className="livemap-detail-value">{item.description || 'No description'}</span>
-            </div>
-            <div className="livemap-detail-row">
-              <span className="livemap-detail-label">Location:</span>
-              <span className="livemap-detail-value">
-                {item.latitude?.toFixed(6)}, {item.longitude?.toFixed(6)}
-              </span>
-            </div>
-            <div className="livemap-detail-row">
-              <span className="livemap-detail-label">Reported:</span>
-              <span className="livemap-detail-value">
-                {item.reportedAt ? new Date(item.reportedAt).toLocaleString() : 'N/A'}
-              </span>
-            </div>
-          </>
-        ) : (
-          <>
-            <div className="livemap-detail-row">
-              <span className="livemap-detail-label">ID:</span>
-              <span className="livemap-detail-value">{item.id || item.vehicle_id || 'N/A'}</span>
-            </div>
-            <div className="livemap-detail-row">
-              <span className="livemap-detail-label">Type:</span>
-              <span className="livemap-detail-value">
-                {VEHICLE_TYPE_EMOJIS[item.type] || '🚙'} {item.type || 'N/A'}
-              </span>
-            </div>
-            <div className="livemap-detail-row">
-              <span className="livemap-detail-label">Status:</span>
-              <span className={`livemap-detail-value livemap-status-${item.status?.toLowerCase()}`}>
-                {item.status || 'N/A'}
-              </span>
-            </div>
-            <div className="livemap-detail-row">
-              <span className="livemap-detail-label">Operator ID:</span>
-              <span className="livemap-detail-value">{item.operatorId || 'N/A'}</span>
-            </div>
-            <div className="livemap-detail-row">
-              <span className="livemap-detail-label">Capacity:</span>
-              <span className="livemap-detail-value">{item.capacity || 'N/A'}</span>
-            </div>
-            <div className="livemap-detail-row">
-              <span className="livemap-detail-label">Location:</span>
-              <span className="livemap-detail-value">
-                {item.latitude?.toFixed(6) || item.lat?.toFixed(6)},
-                {item.longitude?.toFixed(6) || item.lng?.toFixed(6)}
-              </span>
-            </div>
-            {item.assignedTo && (
-              <div className="livemap-detail-row">
-                <span className="livemap-detail-label">Assigned To:</span>
-                <span className="livemap-detail-value">{item.assignedTo}</span>
-              </div>
-            )}
-            <div className="livemap-detail-row">
-              <span className="livemap-detail-label">Last Update:</span>
-              <span className="livemap-detail-value">
-                {item.timestamp ? new Date(item.timestamp).toLocaleString() : (item.lastUpdate ? new Date(item.lastUpdate).toLocaleString() : 'N/A')}
-              </span>
-            </div>
-          </>
-        )}
-      </div>
-    </div>
-  );
-};
 
 const LiveMap = () => {
   const [vehicles, setVehicles] = useState([]);
@@ -187,11 +91,104 @@ const LiveMap = () => {
   const [loading, setLoading] = useState(true);
   const [showVehicles, setShowVehicles] = useState(true);
   const [showIncidents, setShowIncidents] = useState(true);
-  const [notifications, setNotifications] = useState([]);
   const stompClientRef = useRef(null);
   const mapRef = useRef(null);
-  const notifiedIncidentsRef = useRef(new Set()); // Track which incidents we've notified about
-
+  
+  const DetailWindow = ({ item, type, onClose }) => {
+  
+    return (
+      <div className="livemap-detail-window">
+        <div className="livemap-detail-header">
+          <h3>{type === 'incident' ? 'Incident Details' : 'Vehicle Details'}</h3>
+          <button onClick={onClose} className="livemap-close-btn">×</button>
+        </div>
+        <div className="livemap-detail-content">
+          {type === 'incident' ? (
+            <>
+              <div className="livemap-detail-row">
+                <span className="livemap-detail-label">Type:</span>
+                <span className="livemap-detail-value">
+                  {INCIDENT_TYPE_EMOJIS[item.type] || '⚠️'} {item.type || 'N/A'}
+                </span>
+              </div>
+              <div className="livemap-detail-row">
+                <span className="livemap-detail-label">Status:</span>
+                <span className={`livemap-detail-value livemap-status-${incidents[item.id].status.toLowerCase()}`}>
+                  {item.status || 'N/A'}
+                </span>
+              </div>
+              <div className="livemap-detail-row">
+                <span className="livemap-detail-label">Severity:</span>
+                <span className="livemap-detail-value">{item.severity || item.level || 'N/A'}</span>
+              </div>
+              <div className="livemap-detail-row">
+                <span className="livemap-detail-label">Description:</span>
+                <span className="livemap-detail-value">{item.description || 'No description'}</span>
+              </div>
+              <div className="livemap-detail-row">
+                <span className="livemap-detail-label">Location:</span>
+                <span className="livemap-detail-value">
+                  {item.latitude?.toFixed(6)}, {item.longitude?.toFixed(6)}
+                </span>
+              </div>
+              <div className="livemap-detail-row">
+                <span className="livemap-detail-label">Reported:</span>
+                <span className="livemap-detail-value">
+                  {item.reportedAt ? new Date(item.reportedAt).toLocaleString() : 'N/A'}
+                </span>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="livemap-detail-row">
+                <span className="livemap-detail-label">ID:</span>
+                <span className="livemap-detail-value">{item.id || item.vehicle_id || 'N/A'}</span>
+              </div>
+              <div className="livemap-detail-row">
+                <span className="livemap-detail-label">Type:</span>
+                <span className="livemap-detail-value">
+                  {VEHICLE_TYPE_EMOJIS[item.type] || '🚙'} {item.type || 'N/A'}
+                </span>
+              </div>
+              <div className="livemap-detail-row">
+                <span className="livemap-detail-label">Status:</span>
+                <span className={`livemap-detail-value livemap-status-${vehicles[item.id].status.toLowerCase()}`}>
+                  {item.status || 'N/A'}
+                </span>
+              </div>
+              <div className="livemap-detail-row">
+                <span className="livemap-detail-label">Operator ID:</span>
+                <span className="livemap-detail-value">{item.operatorId || 'N/A'}</span>
+              </div>
+              <div className="livemap-detail-row">
+                <span className="livemap-detail-label">Capacity:</span>
+                <span className="livemap-detail-value">{item.capacity || 'N/A'}</span>
+              </div>
+              <div className="livemap-detail-row">
+                <span className="livemap-detail-label">Location:</span>
+                <span className="livemap-detail-value">
+                  {item.latitude?.toFixed(6) || item.lat?.toFixed(6)},
+                  {item.longitude?.toFixed(6) || item.lng?.toFixed(6)}
+                </span>
+              </div>
+              {item.assignedTo && (
+                <div className="livemap-detail-row">
+                  <span className="livemap-detail-label">Assigned To:</span>
+                  <span className="livemap-detail-value">{item.assignedTo}</span>
+                </div>
+              )}
+              <div className="livemap-detail-row">
+                <span className="livemap-detail-label">Last Update:</span>
+                <span className="livemap-detail-value">
+                  {item.timestamp ? new Date(item.timestamp).toLocaleString() : (item.lastUpdate ? new Date(item.lastUpdate).toLocaleString() : 'N/A')}
+                </span>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+    );
+  };
 
   useEffect(() => {
     const loadInitialData = async () => {
@@ -306,12 +303,6 @@ const LiveMap = () => {
           const incident = JSON.parse(message.body);
           console.log('🚨 Incident update:', incident);
 
-          // Only add notification if this is a new incident we haven't notified about
-          const isNewIncident = !notifiedIncidentsRef.current.has(incident.id);
-          if (isNewIncident && (incident.status === 'PENDING' || incident.status === 'ASSIGNED')) {
-            notifiedIncidentsRef.current.add(incident.id);
-            addNotification('incident', 1);
-          }
 
           setIncidents(prev => {
             const index = prev.findIndex(i => i.id === incident.id);
@@ -342,8 +333,6 @@ const LiveMap = () => {
           const updateDto = JSON.parse(message.body);
           console.log('📋 Assignment update:', updateDto);
 
-          // Add notification for assignment response (ACCEPTED, REJECTED, CANCELED)
-          addNotification('assignment', 1);
 
           // Note: This DTO only contains responderId, assignmentId, and response
           // The actual vehicle/incident status updates come through /topic/vehicle/update
@@ -364,13 +353,6 @@ const LiveMap = () => {
           if (report.status === 'PENDING' || report.status === 'ASSIGNED') {
             setIncidents(prev => {
               const exists = prev.some(i => i.id === report.id);
-              if (!exists) {
-                // Only add notification if we haven't notified about this incident yet
-                if (!notifiedIncidentsRef.current.has(report.id)) {
-                  notifiedIncidentsRef.current.add(report.id);
-                  addNotification('incident', 1);
-                }
-              }
               if (exists) return prev;
               return [...prev, report];
             });
@@ -399,29 +381,6 @@ const LiveMap = () => {
     };
   }, []);
 
-  // Notification management
-  const addNotification = (type, count = 1) => {
-    setNotifications(prev => {
-      const existing = prev.find(n => n.type === type);
-      if (existing) {
-        return prev.map(n =>
-          n.type === type
-            ? { ...n, count: n.count + count, timestamp: Date.now() }
-            : n
-        );
-      }
-      return [...prev, { type, count, timestamp: Date.now(), id: Date.now() }];
-    });
-
-    // Auto-remove after 5 seconds
-    setTimeout(() => {
-      setNotifications(prev => prev.filter(n => Date.now() - n.timestamp > 5000 ? false : true));
-    }, 5000);
-  };
-
-  const removeNotification = (id) => {
-    setNotifications(prev => prev.filter(n => n.id !== id));
-  };
 
   // Calculate bounds for all markers
   const allBounds = [];
