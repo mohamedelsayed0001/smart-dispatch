@@ -551,6 +551,28 @@ const LiveMap = () => {
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
 
+
+          {/* Render incidents */}
+          {showIncidents && incidents.map((incident) => {
+            if (!incident.latitude || !incident.longitude) return null;
+
+            return (
+              <Marker
+                key={`incident-${incident.id}`}
+                position={[incident.latitude, incident.longitude]}
+                icon={createIncidentIcon(incident.type, incident.status)}
+                eventHandlers={{
+                  click: (e) => {
+                    L.DomEvent.stopPropagation(e);
+                    handleMarkerClick(incident.id, 'incident');
+                  }
+                }}
+              >
+              </Marker>
+            );
+          })}
+
+
           {/* Render vehicles */}
           {showVehicles && vehicles.map((vehicle) => {
             // Use live location if available, otherwise use vehicle's stored location
@@ -580,18 +602,20 @@ const LiveMap = () => {
                   }
                 }}
               >
-                <Popup>
-                  <div className="livemap-popup-content">
-                    <h4>{VEHICLE_TYPE_EMOJIS[vehicle.type] || '🚙'} {vehicle.type}</h4>
-                    <p><strong>Status:</strong> {vehicle.status}</p>
-                    <p><strong>Capacity:</strong> {vehicle.capacity || 'N/A'}</p>
-                    <p><strong>Location:</strong> {lat.toFixed(4)}, {lng.toFixed(4)}</p>
-                  </div>
-                </Popup>
               </Marker>
             );
           })}
         </MapContainer>
+
+
+        {selectedItem && (
+          <DetailWindow
+            item={selectedItem}
+            type={selectedType}
+            onClose={closeDetailWindow}
+          />
+        )}
+
       </div>
     </div>
   );
