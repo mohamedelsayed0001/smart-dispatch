@@ -379,43 +379,6 @@ const LiveMap = () => {
           console.error('Error parsing report:', e);
         }
       });
-
-      // Subscribe to new admin assignments
-    //   client.subscribe('/topic/assignment/admin/new', (message) => {
-    //     try {
-    //       const assignment = JSON.parse(message.body);
-    //       addNotification('assignment', 1);
-
-    //       // Update incident status
-    //       if (assignment.incidentId) {
-    //         setIncidents(prev => {
-    //           const index = prev.findIndex(i => i.id === assignment.incidentId);
-    //           if (index !== -1) {
-    //             const updated = [...prev];
-    //             updated[index] = { ...updated[index], status: 'PENDING' };
-    //             return updated;
-    //           }
-    //           return prev;
-    //         });
-    //       }
-
-    //       // Update vehicle status
-    //       if (assignment.vehicleId) {
-    //         setVehicles(prev => {
-    //           const index = prev.findIndex(v => v.id === assignment.vehicleId);
-    //           if (index !== -1) {
-    //             const updated = [...prev];
-    //             updated[index] = { ...updated[index], status: 'ONROUTE' };
-    //             return updated;
-    //           }
-    //           return prev;
-    //         });
-    //       }
-
-    //     } catch (e) {
-    //       console.error('Error parsing admin assignment:', e);
-    //     }
-    //   });
     };
 
     client.onStompError = (frame) => {
@@ -522,38 +485,6 @@ const LiveMap = () => {
   return (
     <div className="live-map-container">
       <div className="map-wrapper">
-        {/* Notifications */}
-        <div className="livemap-notifications-container">
-          {notifications.map(notif => (
-            <div key={notif.id} className="livemap-notification-popup">
-              <button
-                className="livemap-notification-close"
-                onClick={() => removeNotification(notif.id)}
-              >
-                ×
-              </button>
-              <div className="livemap-notification-content">
-                {notif.type === 'incident' && (
-                  <>
-                    <span className="livemap-notification-icon">🚨</span>
-                    <span className="livemap-notification-text">
-                      {notif.count} New Incident{notif.count > 1 ? 's' : ''}
-                    </span>
-                  </>
-                )}
-                {notif.type === 'assignment' && (
-                  <>
-                    <span className="livemap-notification-icon">📋</span>
-                    <span className="livemap-notification-text">
-                      {notif.count} New Assignment{notif.count > 1 ? 's' : ''}
-                    </span>
-                  </>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-
         {/* Controls and Legend Combined */}
         <div className="livemap-controls-panel">
           <div className="livemap-control-section">
@@ -620,34 +551,6 @@ const LiveMap = () => {
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
 
-          {/* Render incidents */}
-          {showIncidents && incidents.map((incident) => {
-            if (!incident.latitude || !incident.longitude) return null;
-
-            return (
-              <Marker
-                key={`incident-${incident.id}`}
-                position={[incident.latitude, incident.longitude]}
-                icon={createIncidentIcon(incident.type, incident.status)}
-                eventHandlers={{
-                  click: (e) => {
-                    L.DomEvent.stopPropagation(e);
-                    handleMarkerClick(incident.id, 'incident');
-                  }
-                }}
-              >
-                <Popup>
-                  <div className="livemap-popup-content">
-                    <h4>{INCIDENT_TYPE_EMOJIS[incident.type] || '⚠️'} {incident.type}</h4>
-                    <p><strong>Status:</strong> {incident.status}</p>
-                    <p><strong>Severity:</strong> {incident.severity || incident.level}</p>
-                    <p>{incident.description}</p>
-                  </div>
-                </Popup>
-              </Marker>
-            );
-          })}
-
           {/* Render vehicles */}
           {showVehicles && vehicles.map((vehicle) => {
             // Use live location if available, otherwise use vehicle's stored location
@@ -689,14 +592,6 @@ const LiveMap = () => {
             );
           })}
         </MapContainer>
-
-        {selectedItem && (
-          <DetailWindow
-            item={selectedItem}
-            type={selectedType}
-            onClose={closeDetailWindow}
-          />
-        )}
       </div>
     </div>
   );
