@@ -6,6 +6,8 @@ import SockJS from 'sockjs-client';
 import 'leaflet/dist/leaflet.css';
 import '../styles/LiveMap.css';
 
+import DetailWindow from './DetailWindow';
+
 const API_BASE = 'http://localhost:8080';
 
 // Fix for default marker icons in Leaflet
@@ -78,104 +80,6 @@ const createVehicleIcon = (type, status) => {
     iconAnchor: [20, 50],
     popupAnchor: [0, -50],
   });
-};
-
-// Floating detail window component
-const DetailWindow = ({ item, type, onClose }) => {
-  if (!item) return null;
-
-  return (
-    <div className="livemap-detail-window">
-      <div className="livemap-detail-header">
-        <h3>{type === 'incident' ? 'Incident Details' : 'Vehicle Details'}</h3>
-        <button onClick={onClose} className="livemap-close-btn">×</button>
-      </div>
-      <div className="livemap-detail-content">
-        {type === 'incident' ? (
-          <>
-            <div className="livemap-detail-row">
-              <span className="livemap-detail-label">Type:</span>
-              <span className="livemap-detail-value">
-                {INCIDENT_TYPE_EMOJIS[item.type] || '⚠️'} {item.type || 'N/A'}
-              </span>
-            </div>
-            <div className="livemap-detail-row">
-              <span className="livemap-detail-label">Status:</span>
-              <span className={`livemap-detail-value livemap-status-${item.status?.toLowerCase()}`}>
-                {item.status || 'N/A'}
-              </span>
-            </div>
-            <div className="livemap-detail-row">
-              <span className="livemap-detail-label">Severity:</span>
-              <span className="livemap-detail-value">{item.severity || item.level || 'N/A'}</span>
-            </div>
-            <div className="livemap-detail-row">
-              <span className="livemap-detail-label">Description:</span>
-              <span className="livemap-detail-value">{item.description || 'No description'}</span>
-            </div>
-            <div className="livemap-detail-row">
-              <span className="livemap-detail-label">Location:</span>
-              <span className="livemap-detail-value">
-                {item.latitude?.toFixed(6)}, {item.longitude?.toFixed(6)}
-              </span>
-            </div>
-            <div className="livemap-detail-row">
-              <span className="livemap-detail-label">Reported:</span>
-              <span className="livemap-detail-value">
-                {item.reportedAt ? new Date(item.reportedAt).toLocaleString() : 'N/A'}
-              </span>
-            </div>
-          </>
-        ) : (
-          <>
-            <div className="livemap-detail-row">
-              <span className="livemap-detail-label">ID:</span>
-              <span className="livemap-detail-value">{item.id || item.vehicle_id || 'N/A'}</span>
-            </div>
-            <div className="livemap-detail-row">
-              <span className="livemap-detail-label">Type:</span>
-              <span className="livemap-detail-value">
-                {VEHICLE_TYPE_EMOJIS[item.type] || '🚙'} {item.type || 'N/A'}
-              </span>
-            </div>
-            <div className="livemap-detail-row">
-              <span className="livemap-detail-label">Status:</span>
-              <span className={`livemap-detail-value livemap-status-${item.status?.toLowerCase()}`}>
-                {item.status || 'N/A'}
-              </span>
-            </div>
-            <div className="livemap-detail-row">
-              <span className="livemap-detail-label">Operator ID:</span>
-              <span className="livemap-detail-value">{item.operatorId || 'N/A'}</span>
-            </div>
-            <div className="livemap-detail-row">
-              <span className="livemap-detail-label">Capacity:</span>
-              <span className="livemap-detail-value">{item.capacity || 'N/A'}</span>
-            </div>
-            <div className="livemap-detail-row">
-              <span className="livemap-detail-label">Location:</span>
-              <span className="livemap-detail-value">
-                {item.latitude?.toFixed(6) || item.lat?.toFixed(6)},
-                {item.longitude?.toFixed(6) || item.lng?.toFixed(6)}
-              </span>
-            </div>
-            {item.assignedTo && (
-              <div className="livemap-detail-row">
-                <span className="livemap-detail-label">Assigned To:</span>
-                <span className="livemap-detail-value">{item.assignedTo}</span>
-              </div>
-            )}
-            <div className="livemap-detail-row">
-              <span className="livemap-detail-label">Last Update:</span>
-              <span className="livemap-detail-value">
-                {item.timestamp ? new Date(item.timestamp).toLocaleString() : (item.lastUpdate ? new Date(item.lastUpdate).toLocaleString() : 'N/A')}
-              </span>
-            </div>
-          </>
-        )}
-      </div>
-    </div>
-  );
 };
 
 const LiveMap = ({vehicles, setVehicles}) => {
@@ -486,7 +390,7 @@ const LiveMap = ({vehicles, setVehicles}) => {
     <div className="live-map-container">
       <div className="map-wrapper">
         {/* Notifications */}
-        <div className="livemap-notifications-container">
+        {/* <div className="livemap-notifications-container">
           {notifications.map(notif => (
             <div key={notif.id} className="livemap-notification-popup">
               <button
@@ -515,7 +419,7 @@ const LiveMap = ({vehicles, setVehicles}) => {
               </div>
             </div>
           ))}
-        </div>
+        </div> */}
         {/* Controls and Legend Combined */}
         <div className="livemap-controls-panel">
           <div className="livemap-control-section">
@@ -598,14 +502,14 @@ const LiveMap = ({vehicles, setVehicles}) => {
                   }
                 }}
               >
-                <Popup>
+                {/* <Popup>
                   <div className="livemap-popup-content">
                     <h4>{INCIDENT_TYPE_EMOJIS[incident.type] || '⚠️'} {incident.type}</h4>
                     <p><strong>Status:</strong> {incident.status}</p>
                     <p><strong>Severity:</strong> {incident.severity || incident.level}</p>
                     <p>{incident.description}</p>
                   </div>
-                </Popup>
+                </Popup> */}
               </Marker>
             );
           })}
@@ -639,14 +543,14 @@ const LiveMap = ({vehicles, setVehicles}) => {
                   }
                 }}
               >
-                <Popup>
+                {/* <Popup>
                   <div className="livemap-popup-content">
                     <h4>{VEHICLE_TYPE_EMOJIS[vehicle.type] || '🚙'} {vehicle.type}</h4>
                     <p><strong>Status:</strong> {vehicle.status}</p>
                     <p><strong>Capacity:</strong> {vehicle.capacity || 'N/A'}</p>
                     <p><strong>Location:</strong> {lat.toFixed(4)}, {lng.toFixed(4)}</p>
                   </div>
-                </Popup>
+                </Popup> */}
               </Marker>
             );
           })}
@@ -656,6 +560,8 @@ const LiveMap = ({vehicles, setVehicles}) => {
               item={selectedItem}
               type={selectedType}
               onClose={closeDetailWindow}
+              vehicles={vehicles}
+              incidents={incidents}
             />
           )}
 

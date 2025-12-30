@@ -79,7 +79,7 @@ const Analysis = () => {
         setAvgResolved(Array.isArray(avgResolvedData) ? avgResolvedData : []);
         setVehicleCounts(Array.isArray(vehicleCountData) ? vehicleCountData : []);
         setResponseTimes(Array.isArray(responseTimeData) ? responseTimeData : []);
-        setTopUnits(Array.isArray(topUnitsData) ? topUnitsData : []);
+        setTopUnits(Array.isArray(topUnitsData) ? topUnitsData : []);  
         setLoading(false);
       })
       .catch(err => {
@@ -210,7 +210,7 @@ const Analysis = () => {
 
   // Safe calculation for average response time
   const calculateAvgResponseTime = () => {
-    if (!responseTimes.length) return 'N/A';
+    if (!responseTimes.length) return '< 0.1';
     const sum = responseTimes.reduce((acc, rt) => acc + (rt?.avgResponseTime || 0), 0);
     return (sum / responseTimes.length).toFixed(1);
   };
@@ -327,7 +327,7 @@ const Analysis = () => {
                         </div>
                         <div className="text-right">
                           <div className="font-bold text-lg text-gray-900">
-                            {unit?.resolutionTime ? unit.resolutionTime.toFixed(1) : 'N/A'} min
+                            {unit?.resolutionTime ? unit.resolutionTime.toFixed(1) : '< 0.1'} min
                           </div>
                           <div className="text-xs text-gray-500">avg resolution</div>
                         </div>
@@ -356,7 +356,7 @@ const Analysis = () => {
                           <span className="font-medium text-gray-700">{item.type}</span>
                         </div>
                         <span className="font-bold text-gray-900">
-                          {item.avg !== null ? `${item.avg.toFixed(2)} min` : 'N/A'}
+                          {item.avg !== null ? `${item.avg.toFixed(2)} min` : '< 0.1 min'}
                         </span>
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-2">
@@ -382,7 +382,7 @@ const Analysis = () => {
                           <span className="font-medium text-gray-600">{rt?.type || 'Unknown'}</span>
                           <div className="text-right">
                             <div className="font-semibold text-gray-800">
-                              {rt?.avgResponseTime ? rt.avgResponseTime.toFixed(1) : 'N/A'} min
+                              {rt?.avgResponseTime ? rt.avgResponseTime.toFixed(1) : '< 0.1'} min
                             </div>
                             <div className="text-xs text-gray-500">
                               {rt?.minResponseTime >= 0 && rt?.maxResponseTime >= 0
