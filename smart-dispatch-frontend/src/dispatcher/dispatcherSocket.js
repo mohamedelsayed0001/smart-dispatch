@@ -8,6 +8,7 @@ const WS_URL = API_BASE.replace(/\/$/, '') + '/ws'
 
 let client = null
 let connectionCount = 0
+let subscriptions = [] // Store subscription references for cleanup
 
 // Callback registries - allows multiple components to listen to the same events
 const callbackRegistries = {
@@ -91,8 +92,11 @@ export function connect({ onMessage, onVehicle, onIncident, onAssignment, onNoti
   client.onConnect = (frame) => {
     console.info('[stomp] connected')
 
+    // Clear old subscriptions
+    subscriptions = []
+
     // Subscribe to vehicle status updates
-    client.subscribe('/topic/vehicle/update', (msg) => {
+    const sub1 = client.subscribe('/topic/vehicle/update', (msg) => {
       try {
         const body = JSON.parse(msg.body)
         triggerCallbacks('onVehicle', body)
@@ -100,9 +104,10 @@ export function connect({ onMessage, onVehicle, onIncident, onAssignment, onNoti
         console.error('[stomp] Error parsing vehicle message:', e)
       }
     })
+    subscriptions.push(sub1)
 
     // Subscribe to vehicle assignment updates
-    client.subscribe('/topic/assignment/update', (msg) => {
+    const sub2 = client.subscribe('/topic/assignment/update', (msg) => {
       try {
         console.log('[stomp] Raw assignment message:', msg.body)
         const body = JSON.parse(msg.body)
@@ -111,9 +116,10 @@ export function connect({ onMessage, onVehicle, onIncident, onAssignment, onNoti
         console.error('[stomp] Error parsing assignment message:', e)
       }
     })
+    subscriptions.push(sub2)
 
     // Subscribe to new assignments for admin
-    client.subscribe('/topic/assignment/admin/new', (msg) => {
+    const sub3 = client.subscribe('/topic/assignment/admin/new', (msg) => {
       try {
         console.log('[stomp] New assignment message:', msg.body)
         const body = JSON.parse(msg.body)
@@ -122,9 +128,10 @@ export function connect({ onMessage, onVehicle, onIncident, onAssignment, onNoti
         console.error('[stomp] Error parsing new assignment message:', e)
       }
     })
+    subscriptions.push(sub3)
 
     // Subscribe to incidents (keeping existing)
-    client.subscribe('/topic/incident/update', (msg) => {
+    const sub4 = client.subscribe('/topic/incident/update', (msg) => {
       try {
         const body = JSON.parse(msg.body)
         triggerCallbacks('onIncident', body)
@@ -147,7 +154,7 @@ export function connect({ onMessage, onVehicle, onIncident, onAssignment, onNoti
     // Get dispatcher ID from localStorage or context
     const dispatcherId = getCurrentDispatcherId()
     if (dispatcherId) {
-      client.subscribe(`/user/${dispatcherId}/assignment`, (msg) => {
+      const sub5 = client.subscribe(`/user/${dispatcherId}/assignment`, (msg) => {
         try {
           const body = JSON.parse(msg.body)
           console.log('[stomp] received user-specific assignment:', body)
@@ -156,6 +163,7 @@ export function connect({ onMessage, onVehicle, onIncident, onAssignment, onNoti
           console.error('[stomp] Error parsing user assignment message:', e)
         }
       })
+      subscriptions.push(sub5)
     }
 
     // Trigger all onConnect callbacks
@@ -195,6 +203,15 @@ export function disconnect(connectionInfo) {
 
   if (!hasActiveCallbacks && client) {
     console.log('[dispatcherSocket] No more active callbacks, closing WebSocket connection')
+    // Unsubscribe from all subscriptions
+    subscriptions.forEach(sub => {
+      try {
+        sub.unsubscribe()
+      } catch (e) {
+        console.error('[dispatcherSocket] Error unsubscribing:', e)
+      }
+    })
+    subscriptions = []
     client.deactivate()
     client = null
   } else {

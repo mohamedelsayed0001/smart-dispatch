@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useMemo, useCallback, memo } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import { Client } from '@stomp/stompjs';
@@ -39,14 +39,22 @@ const VEHICLE_TYPE_EMOJIS = {
   OTHER: '🚙'
 };
 
-// Create custom incident marker
+// Cache for icons to avoid recreating them
+const iconCache = new Map();
+
+// Create custom incident marker with caching
 const createIncidentIcon = (type, status) => {
+  const cacheKey = `incident-${type}-${status}`;
+  if (iconCache.has(cacheKey)) {
+    return iconCache.get(cacheKey);
+  }
+
   const emoji = INCIDENT_TYPE_EMOJIS[type] || INCIDENT_TYPE_EMOJIS.OTHER;
   let bgColor = '#ef4444'; // red for pending
   if (status === 'ASSIGNED') bgColor = '#eab308'; // yellow for assigned
   else if (status === 'RESOLVED') bgColor = '#22c55e'; // green for resolved
 
-  return L.divIcon({
+  const icon = L.divIcon({
     html: `
       <div class="map-marker-pin" style="--pin-color: ${bgColor};">
         <div class="map-marker-emoji">${emoji}</div>
@@ -58,17 +66,25 @@ const createIncidentIcon = (type, status) => {
     iconAnchor: [20, 50],
     popupAnchor: [0, -50],
   });
+
+  iconCache.set(cacheKey, icon);
+  return icon;
 };
 
-// Create custom vehicle marker
+// Create custom vehicle marker with caching
 const createVehicleIcon = (type, status) => {
+  const cacheKey = `vehicle-${type}-${status}`;
+  if (iconCache.has(cacheKey)) {
+    return iconCache.get(cacheKey);
+  }
+
   const emoji = VEHICLE_TYPE_EMOJIS[type] || VEHICLE_TYPE_EMOJIS.OTHER;
   let bgColor = '#6b7280'; // gray for offline
   if (status === 'AVAILABLE') bgColor = '#22c55e'; // green
   else if (status === 'ON_ROUTE' || status === 'ONROUTE') bgColor = '#f59e0b'; // orange
-  else if (status === 'RESOLVING' || status === 'BUSY') bgColor = '#ef4444'; // red
+  else if (status === 'RESOLVING' || status === 'BUSY') bgColor = '#60a5fa'; // light blue
 
-  return L.divIcon({
+  const icon = L.divIcon({
     html: `
       <div class="map-marker-pin" style="--pin-color: ${bgColor};">
         <div class="map-marker-emoji">${emoji}</div>
@@ -80,10 +96,95 @@ const createVehicleIcon = (type, status) => {
     iconAnchor: [20, 50],
     popupAnchor: [0, -50],
   });
+
+  iconCache.set(cacheKey, icon);
+  return icon;
+};
+
+// Memoized Incident Marker component
+const IncidentMarker = memo(({ incident, onMarkerClick }) => {
+  if (!incident.latitude || !incident.longitude) return null;
+
+  const handleClick = useCallback((e) => {
+    L.DomEvent.stopPropagation(e);
+    onMarkerClick(incident.id, 'incident');
+  }, [incident.id, onMarkerClick]);
+
+  return (
+    <Marker
+      key={`incident-${incident.id}`}
+      position={[incident.latitude, incident.longitude]}
+      icon={createIncidentIcon(incident.type, incident.status)}
+      eventHandlers={{ click: handleClick }}
+    />
+  );
+}, (prevProps, nextProps) => {
+  // Only re-render if these properties change
+  return (
+    prevProps.incident.id === nextProps.incident.id &&
+    prevProps.incident.latitude === nextProps.incident.latitude &&
+    prevProps.incident.longitude === nextProps.incident.longitude &&
+    prevProps.incident.type === nextProps.incident.type &&
+    prevProps.incident.status === nextProps.incident.status
+  );
+});
+
+// Memoized Vehicle Marker component
+const VehicleMarker = memo(({ vehicle, liveLocation, onMarkerClick }) => {
+  const lat = liveLocation?.lat || vehicle.latitude;
+  const lng = liveLocation?.lng || vehicle.longitude;
+
+  if (!lat || !lng) return null;
+
+  const handleClick = useCallback((e) => {
+    L.DomEvent.stopPropagation(e);
+    onMarkerClick(vehicle.id, 'vehicle');
+  }, [vehicle.id, onMarkerClick]);
+
+  return (
+    <Marker
+      key={`vehicle-${vehicle.id}`}
+      position={[lat, lng]}
+      icon={createVehicleIcon(vehicle.type, vehicle.status)}
+      eventHandlers={{ click: handleClick }}
+    />
+  );
+}, (prevProps, nextProps) => {
+  // Only re-render if these properties change
+  const prevLat = prevProps.liveLocation?.lat || prevProps.vehicle.latitude;
+  const prevLng = prevProps.liveLocation?.lng || prevProps.vehicle.longitude;
+  const nextLat = nextProps.liveLocation?.lat || nextProps.vehicle.latitude;
+  const nextLng = nextProps.liveLocation?.lng || nextProps.vehicle.longitude;
+
+  return (
+    prevProps.vehicle.id === nextProps.vehicle.id &&
+    prevLat === nextLat &&
+    prevLng === nextLng &&
+    prevProps.vehicle.type === nextProps.vehicle.type &&
+    prevProps.vehicle.status === nextProps.vehicle.status
+  );
+});
+
+// Throttle helper function
+const throttle = (func, delay) => {
+  let timeoutId = null;
+  let lastArgs = null;
+
+  const throttled = (...args) => {
+    lastArgs = args;
+    if (!timeoutId) {
+      timeoutId = setTimeout(() => {
+        func(...lastArgs);
+        timeoutId = null;
+        lastArgs = null;
+      }, delay);
+    }
+  };
+
+  return throttled;
 };
 
 const LiveMap = ({vehicles, setVehicles}) => {
-  // const [vehicles, setVehicles] = useState([]);
   const [incidents, setIncidents] = useState([]);
   const [liveLocations, setLiveLocations] = useState({});
   const [selectedItem, setSelectedItem] = useState(null);
@@ -94,7 +195,83 @@ const LiveMap = ({vehicles, setVehicles}) => {
   const [notifications, setNotifications] = useState([]);
   const stompClientRef = useRef(null);
   const mapRef = useRef(null);
-  const notifiedIncidentsRef = useRef(new Set()); // Track which incidents we've notified about
+  const notifiedIncidentsRef = useRef(new Set());
+  const vehicleUpdateQueueRef = useRef({});
+  const incidentUpdateQueueRef = useRef({});
+  const updateTimerRef = useRef(null);
+
+  // Throttled batch update for vehicles and incidents
+  const flushUpdates = useCallback(() => {
+    const vehicleQueue = vehicleUpdateQueueRef.current;
+    const incidentQueue = incidentUpdateQueueRef.current;
+
+    if (Object.keys(vehicleQueue).length > 0) {
+      setVehicles(prev => {
+        const updated = [...prev];
+        Object.values(vehicleQueue).forEach(updateDto => {
+          const index = updated.findIndex(v => v.id === updateDto.vehicleId);
+          if (index >= 0) {
+            updated[index] = {
+              ...updated[index],
+              status: updateDto.newStatus,
+              latitude: updateDto.latitude,
+              longitude: updateDto.longitude,
+              lastUpdate: new Date().toISOString()
+            };
+          }
+        });
+        return updated;
+      });
+
+      const locationUpdates = {};
+      Object.values(vehicleQueue).forEach(updateDto => {
+        if (updateDto.vehicleId && updateDto.latitude && updateDto.longitude) {
+          locationUpdates[updateDto.vehicleId] = {
+            lat: updateDto.latitude,
+            lng: updateDto.longitude,
+            timestamp: new Date().toISOString()
+          };
+        }
+      });
+      if (Object.keys(locationUpdates).length > 0) {
+        setLiveLocations(prev => ({ ...prev, ...locationUpdates }));
+      }
+
+      vehicleUpdateQueueRef.current = {};
+    }
+
+    if (Object.keys(incidentQueue).length > 0) {
+      setIncidents(prev => {
+        let updated = [...prev];
+        Object.values(incidentQueue).forEach(incident => {
+          const index = updated.findIndex(i => i.id === incident.id);
+          if (incident.status !== 'PENDING' && incident.status !== 'ASSIGNED') {
+            if (index >= 0) {
+              updated = updated.filter(i => i.id !== incident.id);
+            }
+          } else {
+            if (index >= 0) {
+              updated[index] = { ...updated[index], ...incident };
+            } else {
+              updated.push(incident);
+            }
+          }
+        });
+        return updated;
+      });
+
+      incidentUpdateQueueRef.current = {};
+    }
+  }, [setVehicles]);
+
+  // Schedule batch updates every 100ms
+  const scheduleUpdate = useCallback(() => {
+    if (updateTimerRef.current) return;
+    updateTimerRef.current = setTimeout(() => {
+      flushUpdates();
+      updateTimerRef.current = null;
+    }, 100);
+  }, [flushUpdates]);
 
 
   useEffect(() => {
@@ -165,40 +342,12 @@ const LiveMap = ({vehicles, setVehicles}) => {
     client.onConnect = () => {
       console.log('✅ WebSocket connected');
 
-      // Subscribe to vehicle updates (VehicleUpdateDto: vehicleId, newStatus, latitude, longitude)
       client.subscribe('/topic/vehicle/update', (message) => {
         try {
           const updateDto = JSON.parse(message.body);
-          console.log('🚗 Vehicle update:', updateDto);
-
-          setVehicles(prev => {
-            const index = prev.findIndex(v => v.id === updateDto.vehicleId);
-            if (index >= 0) {
-              const updated = [...prev];
-              updated[index] = {
-                ...updated[index],
-                status: updateDto.newStatus,
-                latitude: updateDto.latitude,
-                longitude: updateDto.longitude,
-                lastUpdate: new Date().toISOString()
-              };
-              return updated;
-            }
-            // Vehicle doesn't exist, don't add incomplete vehicle
-            return prev;
-          });
-
-          // Also update live locations
-          if (updateDto.vehicleId && updateDto.latitude && updateDto.longitude) {
-            setLiveLocations(prev => ({
-              ...prev,
-              [updateDto.vehicleId]: {
-                lat: updateDto.latitude,
-                lng: updateDto.longitude,
-                timestamp: new Date().toISOString()
-              }
-            }));
-          }
+          // Queue the update instead of immediately applying it
+          vehicleUpdateQueueRef.current[updateDto.vehicleId] = updateDto;
+          scheduleUpdate();
         } catch (e) {
           console.error('Error parsing vehicle update:', e);
         }
@@ -208,76 +357,44 @@ const LiveMap = ({vehicles, setVehicles}) => {
       client.subscribe('/topic/incident/update', (message) => {
         try {
           const incident = JSON.parse(message.body);
-          console.log('🚨 Incident update:', incident);
 
-          // Only add notification if this is a new incident we haven't notified about
           const isNewIncident = !notifiedIncidentsRef.current.has(incident.id);
           if (isNewIncident && (incident.status === 'PENDING' || incident.status === 'ASSIGNED')) {
             notifiedIncidentsRef.current.add(incident.id);
             addNotification('incident', 1);
           }
 
-          setIncidents(prev => {
-            const index = prev.findIndex(i => i.id === incident.id);
-            // Only show pending or assigned incidents
-            if (incident.status !== 'PENDING' && incident.status !== 'ASSIGNED') {
-              // Remove if resolved
-              if (index >= 0) {
-                return prev.filter(i => i.id !== incident.id);
-              }
-              return prev;
-            }
-
-            if (index >= 0) {
-              const updated = [...prev];
-              updated[index] = { ...updated[index], ...incident };
-              return updated;
-            }
-            return [...prev, incident];
-          });
+          // Queue the update instead of immediately applying it
+          incidentUpdateQueueRef.current[incident.id] = incident;
+          scheduleUpdate();
         } catch (e) {
           console.error('Error parsing incident update:', e);
         }
       });
 
-      // Subscribe to assignment updates (AssignmentUpdateDto: responderId, assignmentId, response)
       client.subscribe('/topic/assignment/update', (message) => {
         try {
           const updateDto = JSON.parse(message.body);
-          console.log('📋 Assignment update:', updateDto);
 
-          // Add notification for assignment response (ACCEPTED, REJECTED, CANCELED)
           addNotification('assignment', 1);
 
-          // Note: This DTO only contains responderId, assignmentId, and response
-          // The actual vehicle/incident status updates come through /topic/vehicle/update
-          // and /topic/incident/update channels
         } catch (e) {
           console.error('Error parsing assignment update:', e);
         }
       });
 
-      // Note: /topic/locations/all is currently commented out in LocationTrackService.java
-      // Location updates come through /topic/vehicle/update (VehicleUpdateDto) instead
-
-      // Subscribe to reports topic (new incidents)
       client.subscribe('/topic/reports', (message) => {
         try {
           const report = JSON.parse(message.body);
-          console.log('📝 New report:', report);
           if (report.status === 'PENDING' || report.status === 'ASSIGNED') {
-            setIncidents(prev => {
-              const exists = prev.some(i => i.id === report.id);
-              if (!exists) {
-                // Only add notification if we haven't notified about this incident yet
-                if (!notifiedIncidentsRef.current.has(report.id)) {
-                  notifiedIncidentsRef.current.add(report.id);
-                  addNotification('incident', 1);
-                }
-              }
-              if (exists) return prev;
-              return [...prev, report];
-            });
+            // Only add notification if we haven't notified about this incident yet
+            if (!notifiedIncidentsRef.current.has(report.id)) {
+              notifiedIncidentsRef.current.add(report.id);
+              addNotification('incident', 1);
+            }
+            // Queue the update
+            incidentUpdateQueueRef.current[report.id] = report;
+            scheduleUpdate();
           }
         } catch (e) {
           console.error('Error parsing report:', e);
@@ -300,34 +417,55 @@ const LiveMap = ({vehicles, setVehicles}) => {
       if (stompClientRef.current) {
         stompClientRef.current.deactivate();
       }
+      // Clear batch update timer
+      if (updateTimerRef.current) {
+        clearTimeout(updateTimerRef.current);
+      }
+      // Clear all notification timeouts
+      notificationTimeoutsRef.current.forEach(timeoutId => clearTimeout(timeoutId));
+      notificationTimeoutsRef.current = [];
     };
-  }, []);
+  }, [scheduleUpdate]);
 
   // Notification management
+  const notificationTimeoutsRef = useRef([]);
+  const MAX_NOTIFICATIONS = 40;
+  
   const addNotification = (type, count = 1) => {
+    const notifId = Date.now();
     setNotifications(prev => {
       const existing = prev.find(n => n.type === type);
       if (existing) {
         return prev.map(n =>
           n.type === type
-            ? { ...n, count: n.count + count, timestamp: Date.now() }
+            ? { ...n, count: n.count + count, timestamp: notifId }
             : n
         );
       }
-      return [...prev, { type, count, timestamp: Date.now(), id: Date.now() }];
+      
+      // Add new notification and limit to MAX_NOTIFICATIONS
+      let updated = [...prev, { type, count, timestamp: notifId, id: notifId }];
+      if (updated.length+10 > MAX_NOTIFICATIONS) {
+        // Remove oldest notifications to stay within limit
+        updated = updated.slice(updated.length - MAX_NOTIFICATIONS);
+      }
+      return updated;
     });
 
-    // Auto-remove after 5 seconds
-    setTimeout(() => {
-      setNotifications(prev => prev.filter(n => Date.now() - n.timestamp > 5000 ? false : true));
+    const timeoutId = setTimeout(() => {
+      setNotifications(prev => prev.filter(n => n.id !== notifId));
+      // Remove timeout reference
+      notificationTimeoutsRef.current = notificationTimeoutsRef.current.filter(id => id !== timeoutId);
     }, 5000);
+    
+    // Store timeout reference for cleanup
+    notificationTimeoutsRef.current.push(timeoutId);
   };
 
   const removeNotification = (id) => {
     setNotifications(prev => prev.filter(n => n.id !== id));
   };
 
-  // Calculate bounds for all markers
   const allBounds = [];
 
   // Add incident locations
@@ -347,7 +485,7 @@ const LiveMap = ({vehicles, setVehicles}) => {
     }
   });
 
-  const handleMarkerClick = (id, type) => {
+  const handleMarkerClick = useCallback((id, type) => {
     if (type === 'vehicle') {
       const vehicle = vehicles.find(v => v.id === id);
       if (vehicle) {
@@ -368,7 +506,7 @@ const LiveMap = ({vehicles, setVehicles}) => {
         setSelectedType('incident');
       }
     }
-  };
+  }, [vehicles, liveLocations, incidents]);
 
   const closeDetailWindow = () => {
     setSelectedItem(null);
@@ -389,37 +527,6 @@ const LiveMap = ({vehicles, setVehicles}) => {
   return (
     <div className="live-map-container">
       <div className="map-wrapper">
-        {/* Notifications */}
-        {/* <div className="livemap-notifications-container">
-          {notifications.map(notif => (
-            <div key={notif.id} className="livemap-notification-popup">
-              <button
-                className="livemap-notification-close"
-                onClick={() => removeNotification(notif.id)}
-              >
-                ×
-              </button>
-              <div className="livemap-notification-content">
-                {notif.type === 'incident' && (
-                  <>
-                    <span className="livemap-notification-icon">🚨</span>
-                    <span className="livemap-notification-text">
-                      {notif.count} New Incident{notif.count > 1 ? 's' : ''}
-                    </span>
-                  </>
-                )}
-                {notif.type === 'assignment' && (
-                  <>
-                    <span className="livemap-notification-icon">📋</span>
-                    <span className="livemap-notification-text">
-                      {notif.count} New Assignment{notif.count > 1 ? 's' : ''}
-                    </span>
-                  </>
-                )}
-              </div>
-            </div>
-          ))}
-        </div> */}
         {/* Controls and Legend Combined */}
         <div className="livemap-controls-panel">
           <div className="livemap-control-section">
@@ -468,7 +575,7 @@ const LiveMap = ({vehicles, setVehicles}) => {
                 <span>On Route</span>
               </div>
               <div className="livemap-legend-item-compact">
-                <span className="livemap-legend-dot" style={{ backgroundColor: '#ef4444' }}></span>
+                <span className="livemap-legend-dot" style={{ backgroundColor: '#60a5fa' }}></span>
                 <span>Resolving</span>
               </div>
             </div>
@@ -487,73 +594,23 @@ const LiveMap = ({vehicles, setVehicles}) => {
           />
 
           {/* Render incidents */}
-          {showIncidents && incidents.map((incident) => {
-            if (!incident.latitude || !incident.longitude) return null;
-
-            return (
-              <Marker
-                key={`incident-${incident.id}`}
-                position={[incident.latitude, incident.longitude]}
-                icon={createIncidentIcon(incident.type, incident.status)}
-                eventHandlers={{
-                  click: (e) => {
-                    L.DomEvent.stopPropagation(e);
-                    handleMarkerClick(incident.id, 'incident');
-                  }
-                }}
-              >
-                {/* <Popup>
-                  <div className="livemap-popup-content">
-                    <h4>{INCIDENT_TYPE_EMOJIS[incident.type] || '⚠️'} {incident.type}</h4>
-                    <p><strong>Status:</strong> {incident.status}</p>
-                    <p><strong>Severity:</strong> {incident.severity || incident.level}</p>
-                    <p>{incident.description}</p>
-                  </div>
-                </Popup> */}
-              </Marker>
-            );
-          })}
+          {showIncidents && incidents.map((incident) => (
+            <IncidentMarker
+              key={`incident-${incident.id}`}
+              incident={incident}
+              onMarkerClick={handleMarkerClick}
+            />
+          ))}
 
           {/* Render vehicles */}
-          {showVehicles && vehicles.map((vehicle) => {
-            // Use live location if available, otherwise use vehicle's stored location
-            const liveLocation = liveLocations[vehicle.id];
-            const lat = liveLocation?.lat || vehicle.latitude;
-            const lng = liveLocation?.lng || vehicle.longitude;
-
-            if (!lat || !lng) return null;
-
-            // Merge vehicle data with live location
-            const vehicleData = {
-              ...vehicle,
-              latitude: lat,
-              longitude: lng,
-              timestamp: liveLocation?.timestamp || vehicle.lastUpdate
-            };
-
-            return (
-              <Marker
-                key={`vehicle-${vehicle.id}`}
-                position={[lat, lng]}
-                icon={createVehicleIcon(vehicle.type, vehicle.status)}
-                eventHandlers={{
-                  click: (e) => {
-                    L.DomEvent.stopPropagation(e);
-                    handleMarkerClick(vehicle.id, 'vehicle');
-                  }
-                }}
-              >
-                {/* <Popup>
-                  <div className="livemap-popup-content">
-                    <h4>{VEHICLE_TYPE_EMOJIS[vehicle.type] || '🚙'} {vehicle.type}</h4>
-                    <p><strong>Status:</strong> {vehicle.status}</p>
-                    <p><strong>Capacity:</strong> {vehicle.capacity || 'N/A'}</p>
-                    <p><strong>Location:</strong> {lat.toFixed(4)}, {lng.toFixed(4)}</p>
-                  </div>
-                </Popup> */}
-              </Marker>
-            );
-          })}
+          {showVehicles && vehicles.map((vehicle) => (
+            <VehicleMarker
+              key={`vehicle-${vehicle.id}`}
+              vehicle={vehicle}
+              liveLocation={liveLocations[vehicle.id]}
+              onMarkerClick={handleMarkerClick}
+            />
+          ))}
 
           {selectedItem && (
             <DetailWindow

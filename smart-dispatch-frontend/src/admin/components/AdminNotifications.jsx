@@ -106,7 +106,6 @@ export default function AdminNotifications({
                     textTransform: 'capitalize'
                   }}
                 >
-                 { console.log(notif.type)}
                   {( 'Incident Alert')
                     .replace(/_/g, ' ')
                     .toUpperCase()}

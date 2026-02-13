@@ -174,7 +174,13 @@ export default function VehicleMap({ height = '100vh' }) {
     }).catch((e) => { console.error('fetchAvailableVehicles failed', e); setVehicles([]) })
 
     fetchPendingIncidents().then((data) => { if (mounted) setIncidents(data) }).catch(() => { })
-    return () => (mounted = false)
+    return () => {
+      mounted = false
+      // Clear suggestion timeout on unmount
+      if (suggestTimer.current) {
+        clearTimeout(suggestTimer.current)
+      }
+    }
   }, [])
 
   const [highlightPosition, setHighlightPosition] = useState(null)
@@ -189,6 +195,8 @@ export default function VehicleMap({ height = '100vh' }) {
       if (mapRef.current) tryFly()
       else {
         const id = setInterval(() => { if (mapRef.current) { tryFly(); clearInterval(id) } }, 200)
+        // Cleanup interval if component unmounts before map is ready
+        return () => clearInterval(id)
       }
     } else {
       setHighlightPosition(null)

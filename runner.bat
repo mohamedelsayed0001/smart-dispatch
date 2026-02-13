@@ -37,13 +37,19 @@ echo.
 echo [5/5] Load Test Scenarios:
 echo 1. Standard Randomized Incidents (Random distribution)
 echo 2. Equidistant Stress Test (2 incidents, same time, same proximity to Vehicle 1)
-set /p SCENARIO="Select scenario (1 or 2): "
+set /p SCENARIO="Select scenario (1: custom, 2: 2 incidents, 3: 100 incidetnts, 4: 500 incidents): "
 
 set TIMESTAMP=%date:~10,4%%date:~4,2%%date:~7,2%_%time:~0,2%%time:~3,2%%time:~6,2%
 set TIMESTAMP=%TIMESTAMP: =0%
 
 if "%SCENARIO%"=="2" (
     set JMX_FILE=EquidistantIncidents.jmx
+    set RESULTS_DIR=%~dp0simulation\jmeter\Reports\report_stress_%TIMESTAMP%
+) else if "%SCENARIO%"=="3" (
+    set JMX_FILE=Incident_100_20.jmx
+    set RESULTS_DIR=%~dp0simulation\jmeter\Reports\report_stress_%TIMESTAMP%
+) else if "%SCENARIO%"=="4" (
+    set JMX_FILE=Incident_500_60.jmx
     set RESULTS_DIR=%~dp0simulation\jmeter\Reports\report_stress_%TIMESTAMP%
 ) else (
     set JMX_FILE=IncidentGeneration.jmx

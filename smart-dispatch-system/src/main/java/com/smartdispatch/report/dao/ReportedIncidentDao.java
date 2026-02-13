@@ -27,8 +27,9 @@ public class ReportedIncidentDao {
      * Inserts a new incident and returns the generated id.
      */
     public Long addIncident(ReportedIncidentDto dto, int userId) {
-        final String sql = "INSERT INTO Incident (type, level, description, latitude, longitude, status, citizen_id) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        final String sql = "INSERT INTO Incident (type, level, description, latitude, longitude, status, time_reported, citizen_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
+        Timestamp now = Timestamp.valueOf(java.time.LocalDateTime.now());
 
         jdbcTemplate.update(connection -> {
             PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
@@ -38,7 +39,8 @@ public class ReportedIncidentDao {
             ps.setDouble(4, dto.getLatitude());
             ps.setDouble(5, dto.getLongitude());
             ps.setString(6, "PENDING");
-            ps.setInt(7, userId);
+            ps.setTimestamp(7, now);
+            ps.setInt(8, userId);
             return ps;
         }, keyHolder);
 

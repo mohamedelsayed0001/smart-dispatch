@@ -38,16 +38,14 @@ public class AdminNotificationService {
     @Scheduled(fixedRate = 60000)
     public void notifyUnassignedIncidents() {
         List<Incident> pending = incidentDao.getAllPendingIncidents();
-        ZoneId zonePlus2 = ZoneId.of("UTC+2");
-        ZoneOffset utc = ZoneOffset.UTC;
         LocalDateTime now = LocalDateTime.now();
+        System.out.println("[DEBUG] Checking unassigned incidents at: " + now);
         for (Incident inc : pending) {
             LocalDateTime reported = inc.getTimeReported();
             if (reported != null) {
-                ZonedDateTime reportedZoned = reported.atZone(zonePlus2).withZoneSameInstant(utc);
-                LocalDateTime reportedUtc = reportedZoned.toLocalDateTime();
-                long minutes = ChronoUnit.MINUTES.between(reportedUtc, now);
-                if (minutes > 2 && !notifiedUnassignedIncidents.contains(inc.getId())) {
+                long seconds = ChronoUnit.SECONDS.between(reported, now);
+                System.out.println("[DEBUG] Incident #" + inc.getId() + " - Reported: " + reported + ", Now: " + now + ", Seconds elapsed: " + seconds);
+                if (seconds >= 120 && !notifiedUnassignedIncidents.contains(inc.getId())) {
                     String content = "Incident #" + inc.getId() + " has been unassigned for more than 2 minutes.";
                     NotificationDto notificationDto = new NotificationDto(
                         NotificationType.INCIDENT_ALERT.name(),

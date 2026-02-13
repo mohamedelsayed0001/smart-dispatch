@@ -252,8 +252,6 @@ public class DispatcherService implements IDispatcherService {
             return null;
         }
 
-        //vehicleDao.updateStatus(closestVehicle.getId(), VehicleStatus.ONROUTE);
-
         Assignment assignment = Assignment.builder()
                 .dispatcherId(3L)
                 .vehicleId(closestVehicle.getId())
@@ -263,11 +261,6 @@ public class DispatcherService implements IDispatcherService {
 
         Long assignmentId = assignmentDao.createAssignment(assignment);
         assignment.setId(assignmentId);
-
-        // incidentDao.updateStatus(incidentId, IncidentStatus.ASSIGNED);
-
-        //incident.setStatus(IncidentStatus.ASSIGNED);
-        //closestVehicle.setStatus(VehicleStatus.ONROUTE);
 
         LocationCoordinates location = redisAssignmentUtil.getVehicleLocationFromRedis(closestVehicle.getId());
 

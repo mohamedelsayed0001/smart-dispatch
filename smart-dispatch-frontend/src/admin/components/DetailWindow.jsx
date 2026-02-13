@@ -39,7 +39,7 @@ const DetailWindow = ({ item, type, onClose, vehicles, incidents }) => {
             </div>
             <div className="livemap-detail-row">
               <span className="livemap-detail-label">Status:</span>
-              <span className={`livemap-detail-value livemap-status-${item.status?.toLowerCase()}`}>
+              <span className={`livemap-detail-value livemap-status-${incidents.find(v => v.id === item.id)?.status?.toLowerCase()}`}>
                 {incidents.find(v => v.id === item.id)?.status || 'N/A'}
               </span>
             </div>
@@ -78,7 +78,7 @@ const DetailWindow = ({ item, type, onClose, vehicles, incidents }) => {
             </div>
             <div className="livemap-detail-row">
               <span className="livemap-detail-label">Status:</span>
-              <span className={`livemap-detail-value livemap-status-${item.status?.toLowerCase()}`}>
+              <span className={`livemap-detail-value livemap-status-${vehicles.find(v => v.id === item.id).status?.toLowerCase()}`}>
                 {vehicles.find(v => v.id === item.id)?.status || 'N/A'}
               </span>
             </div>

@@ -37,6 +37,7 @@ const AdminPage = () => {
   const [notifList, setNotifList] = useState([]);
   const [snackbarNotif, setSnackbarNotif] = useState(null);
   const stompNotifClientRef = useRef(null);
+  const snackbarTimeoutRef = useRef(null);
 
   // Subscribe to admin notifications WebSocket globally
   useEffect(() => {
@@ -63,7 +64,11 @@ const AdminPage = () => {
               return newList.length > 40 ? newList.slice(0, 40) : newList;
             });
             setSnackbarNotif(notif);
-            setTimeout(() => setSnackbarNotif(null), 4000);
+            // Clear previous timeout
+            if (snackbarTimeoutRef.current) {
+              clearTimeout(snackbarTimeoutRef.current);
+            }
+            snackbarTimeoutRef.current = setTimeout(() => setSnackbarNotif(null), 4000);
           } catch (e) {
             console.error('Failed to parse admin notification', e);
           }
@@ -82,6 +87,10 @@ const AdminPage = () => {
       if (stompNotifClientRef.current) {
         try { stompNotifClientRef.current.deactivate(); } catch (e) { }
         stompNotifClientRef.current = null;
+      }
+      // Clear snackbar timeout on unmount
+      if (snackbarTimeoutRef.current) {
+        clearTimeout(snackbarTimeoutRef.current);
       }
     };
   }, []);
@@ -148,7 +157,11 @@ const AdminPage = () => {
       return newList.length > 10 ? newList.slice(0, 10) : newList;
     });
     setSnackbarNotif(notif);
-    setTimeout(() => setSnackbarNotif(null), 4000);
+    // Clear previous timeout
+    if (snackbarTimeoutRef.current) {
+      clearTimeout(snackbarTimeoutRef.current);
+    }
+    snackbarTimeoutRef.current = setTimeout(() => setSnackbarNotif(null), 4000);
   }, []);
   // Fetch notifications from backend and mark all as read
   const fetchNotifications = async (limit = 10) => {
