@@ -81,6 +81,10 @@ Schema and seed data are initialized from:
 - [smart-dispatch-system/src/main/resources/schema.sql](smart-dispatch-system/src/main/resources/schema.sql)
 - [smart-dispatch-system/src/main/resources/data.sql](smart-dispatch-system/src/main/resources/data.sql)
 
+## Stress Testing Videos
+
+Stress test videos demonstrating the system under load are available [here](https://drive.google.com/drive/u/0/folders/1wYrG2XEeHgYSn0-zW2MHo1jWFcvl98TR). The folder contains 3 videos showing performance results.
+
 ## Notes
 
 - If you change ports or hosts, update both backend and frontend configs.
