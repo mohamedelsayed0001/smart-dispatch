@@ -4,6 +4,10 @@ Smart Dispatch is an end-to-end emergency response platform that turns incidents
 
 Last updated: Feb 13, 2026
 
+## Stress Testing Videos
+
+Stress test videos demonstrating the system under load are available [here](https://drive.google.com/drive/u/0/folders/1wYrG2XEeHgYSn0-zW2MHo1jWFcvl98TR). The folder contains 3 videos showing performance results.
+
 ## Highlights
 
 - Live incident lifecycle from report to resolution
@@ -80,10 +84,6 @@ Schema and seed data are initialized from:
 
 - [smart-dispatch-system/src/main/resources/schema.sql](smart-dispatch-system/src/main/resources/schema.sql)
 - [smart-dispatch-system/src/main/resources/data.sql](smart-dispatch-system/src/main/resources/data.sql)
-
-## Stress Testing Videos
-
-Stress test videos demonstrating the system under load are available [here](https://drive.google.com/drive/u/0/folders/1wYrG2XEeHgYSn0-zW2MHo1jWFcvl98TR). The folder contains 3 videos showing performance results.
 
 ## Notes
 
